@@ -1,0 +1,9 @@
+{
+  "$schema": "https://nestjs.com/schemas/cli/manifest.json",
+  "collection": "@nestjs/schematics",
+  "sourceRoot": "src",
+  "compilerOptions": {
+    "webpack": false,
+    "tsconfigPath": "tsconfig.json"
+  }
+}

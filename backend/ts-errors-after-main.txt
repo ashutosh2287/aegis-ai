@@ -1,0 +1,35 @@
+src/auth/jwt.strategy.ts(15,11): error TS2345: Argument of type '[{ jwtFromRequest: JwtFromRequestFunction<any>; ignoreExpiration: false; secretOrKey: string | undefined; }]' is not assignable to parameter of type '[opt: StrategyOptionsWithRequest] | [opt: StrategyOptionsWithoutRequest]'.
+  Type '[{ jwtFromRequest: JwtFromRequestFunction<any>; ignoreExpiration: false; secretOrKey: string | undefined; }]' is not assignable to type '[opt: StrategyOptionsWithoutRequest]'.
+    Type '{ jwtFromRequest: JwtFromRequestFunction<any>; ignoreExpiration: false; secretOrKey: string | undefined; }' is not assignable to type 'StrategyOptionsWithoutRequest'.
+      Type '{ jwtFromRequest: JwtFromRequestFunction<any>; ignoreExpiration: false; secretOrKey: string | undefined; }' is not assignable to type 'Omit<WithSecretOrKey, "secretOrKeyProvider"> & { passReqToCallback?: false | undefined; }'.
+        Type '{ jwtFromRequest: JwtFromRequestFunction<any>; ignoreExpiration: false; secretOrKey: string | undefined; }' is not assignable to type 'Omit<WithSecretOrKey, "secretOrKeyProvider">'.
+          Types of property 'secretOrKey' are incompatible.
+            Type 'string | undefined' is not assignable to type 'string | Buffer<ArrayBufferLike>'.
+              Type 'undefined' is not assignable to type 'string | Buffer<ArrayBufferLike>'.
+src/auth/services/auth.service.ts(31,74): error TS2341: Property 'supabaseService' is private and only accessible within class 'TokenService'.
+src/auth/services/auth.service.ts(83,74): error TS2341: Property 'supabaseService' is private and only accessible within class 'TokenService'.
+src/auth/services/auth.service.ts(118,41): error TS2341: Property 'jwtService' is private and only accessible within class 'TokenService'.
+src/auth/services/auth.service.ts(119,35): error TS2341: Property 'configService' is private and only accessible within class 'TokenService'.
+src/auth/strategies/jwt.strategy.ts(16,11): error TS2345: Argument of type '[{ jwtFromRequest: JwtFromRequestFunction<any>; ignoreExpiration: false; secretOrKey: string | undefined; }]' is not assignable to parameter of type '[opt: StrategyOptionsWithRequest] | [opt: StrategyOptionsWithoutRequest]'.
+  Type '[{ jwtFromRequest: JwtFromRequestFunction<any>; ignoreExpiration: false; secretOrKey: string | undefined; }]' is not assignable to type '[opt: StrategyOptionsWithoutRequest]'.
+    Type '{ jwtFromRequest: JwtFromRequestFunction<any>; ignoreExpiration: false; secretOrKey: string | undefined; }' is not assignable to type 'StrategyOptionsWithoutRequest'.
+      Type '{ jwtFromRequest: JwtFromRequestFunction<any>; ignoreExpiration: false; secretOrKey: string | undefined; }' is not assignable to type 'Omit<WithSecretOrKey, "secretOrKeyProvider"> & { passReqToCallback?: false | undefined; }'.
+        Type '{ jwtFromRequest: JwtFromRequestFunction<any>; ignoreExpiration: false; secretOrKey: string | undefined; }' is not assignable to type 'Omit<WithSecretOrKey, "secretOrKeyProvider">'.
+          Types of property 'secretOrKey' are incompatible.
+            Type 'string | undefined' is not assignable to type 'string | Buffer<ArrayBufferLike>'.
+              Type 'undefined' is not assignable to type 'string | Buffer<ArrayBufferLike>'.
+src/common/interceptors/response.interceptor.ts(8,10): error TS2724: '"stream"' has no exported member named 'isStream'. Did you mean 'Stream'?
+src/common/utils/validate.util.ts(29,54): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(object: object, validatorOptions?: ValidatorOptions | undefined): Promise<ValidationError[]>', gave the following error.
+    Argument of type 'T' is not assignable to parameter of type 'object'.
+  Overload 2 of 2, '(schemaName: string, object: object, validatorOptions?: ValidatorOptions | undefined): Promise<ValidationError[]>', gave the following error.
+    Argument of type 'T' is not assignable to parameter of type 'string'.
+src/exercise/services/exercise.service.ts(234,50): error TS7006: Parameter 'muscleId' implicitly has an 'any' type.
+src/exercise/services/exercise.service.ts(239,55): error TS7006: Parameter 'equipmentId' implicitly has an 'any' type.
+src/exercise/services/exercise.service.ts(400,54): error TS7006: Parameter 'muscleId' implicitly has an 'any' type.
+src/exercise/services/exercise.service.ts(435,59): error TS7006: Parameter 'equipmentId' implicitly has an 'any' type.
+src/main.ts(46,29): error TS2554: Expected 2 arguments, but got 0.
+src/main.ts(50,11): error TS2554: Expected 1 arguments, but got 0.
+src/main.ts(51,11): error TS2349: This expression is not callable.
+  Type 'typeof import("C:/Final year project/Aegis AI/backend/node_modules/helmet/index")' has no call signatures.
+src/supabase/supabase.service.ts(38,42): error TS7006: Parameter 'payload' implicitly has an 'any' type.
