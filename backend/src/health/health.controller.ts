@@ -1,6 +1,4 @@
 import {
-  Controller,
-  Get,
   Inject,
 } from '@nestjs/common';
 import {
@@ -10,16 +8,21 @@ import {
 } from '@nestjs/terminus';
 import { ConfigService } from '@nestjs/config';
 import { SupabaseService } from '../supabase/supabase.service';
-import { Logger } from 'nestjs-pino';
+import {
+  Controller,
+  Get,
+  Logger,
+} from '@nestjs/common';
 
 @Controller('health')
 export class HealthController {
-  constructor(
-    private readonly health: HealthCheckService,
-    private readonly configService: ConfigService,
-    private readonly supabaseService: SupabaseService,
-    private readonly logger: Logger,
-  ) {}
+  private readonly logger = new Logger(HealthController.name);
+
+constructor(
+  private readonly health: HealthCheckService,
+  private readonly configService: ConfigService,
+  private readonly supabaseService: SupabaseService,
+) {}
 
   @Get()
   @HealthCheck()

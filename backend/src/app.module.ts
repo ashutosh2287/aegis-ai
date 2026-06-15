@@ -10,6 +10,7 @@ import { join } from 'path';
 import { configValidationSchema } from './config/config.validation';
 import { ExerciseModule } from './exercise/exercise.module';
 import { WorkoutModule } from './workout/workout.module';
+import { LoggerModule } from 'nestjs-pino';
 
 @Module({
   imports: [
@@ -19,6 +20,19 @@ import { WorkoutModule } from './workout/workout.module';
       envFilePath: ['.env.development.local', '.env.development', '.env'],
       validationSchema: configValidationSchema,
     }),
+    LoggerModule.forRoot({
+  pinoHttp: {
+    transport:
+      process.env.NODE_ENV !== 'production'
+        ? {
+            target: 'pino-pretty',
+            options: {
+              singleLine: true,
+            },
+          }
+        : undefined,
+  },
+}),
     // Throttler for rate limiting
     ThrottlerModule.forRootAsync({
       inject: [ConfigService],

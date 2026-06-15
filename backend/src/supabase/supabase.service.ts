@@ -1,6 +1,5 @@
-import { Injectable, Inject, OnModuleInit, OnModuleDestroy } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { Logger } from 'nestjs-pino';
+import { Injectable, Inject, OnModuleInit, OnModuleDestroy, Logger } from '@nestjs/common';
 
 // Supabase client type - using any to avoid importing heavy types in foundation
 // In implementation, you can create a more specific type if needed
@@ -8,11 +7,12 @@ type SupabaseClient = any;
 
 @Injectable()
 export class SupabaseService implements OnModuleInit, OnModuleDestroy {
-  constructor(
-    @Inject('SUPABASE_CLIENT') private readonly supabaseClient: SupabaseClient,
-    private readonly configService: ConfigService,
-    private readonly logger: Logger,
-  ) {}
+  private readonly logger = new Logger(SupabaseService.name);
+
+constructor(
+  @Inject('SUPABASE_CLIENT') private readonly supabaseClient: SupabaseClient,
+  private readonly configService: ConfigService,
+) {}
 
   onModuleInit() {
     this.logger.log('Supabase client initialized');
