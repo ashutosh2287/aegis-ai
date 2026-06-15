@@ -1,1 +1,28 @@
-node_modules
+# dependencies
+node_modules/
+
+# build
+dist/
+backend/dist/
+
+# typescript
+*.tsbuildinfo
+
+# logs
+*.log
+
+# env
+.env
+.env.*
+
+# temporary files
+ts-errors*.txt
+verify.txt
+BUILD_STATUS.txt
+
+# vscode
+.vscode/
+
+# OS
+.DS_Store
+Thumbs.db
