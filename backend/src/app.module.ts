@@ -9,6 +9,7 @@ import { ServeStaticModule, ServeStaticModuleOptions } from '@nestjs/serve-stati
 import { join } from 'path';
 import { configValidationSchema } from './config/config.validation';
 import { ExerciseModule } from './exercise/exercise.module';
+import { WorkoutModule } from './workout/workout.module';
 
 @Module({
   imports: [
@@ -42,6 +43,7 @@ import { ExerciseModule } from './exercise/exercise.module';
         serveRoot: '/uploads',
       }],
     }),
+    WorkoutModule,
   ],
   controllers: [HealthController],
   providers: [],
