@@ -18,3 +18,9 @@ export enum DifficultyLevel {
   Intermediate = 'intermediate',
   Advanced = 'advanced',
 }
+
+export enum SessionStatus {
+  ACTIVE = 'active',
+  COMPLETED = 'completed',
+  ABANDONED = 'abandoned'
+}

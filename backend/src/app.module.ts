@@ -10,6 +10,8 @@ import { join } from 'path';
 import { configValidationSchema } from './config/config.validation';
 import { ExerciseModule } from './exercise/exercise.module';
 import { WorkoutModule } from './workout/workout.module';
+import { WorkoutSetsModule } from './workout-sets/workout-sets.module';
+import { WorkoutSessionsModule } from './workout-sessions/workout-sessions.module';
 import { LoggerModule } from 'nestjs-pino';
 
 @Module({
@@ -21,18 +23,18 @@ import { LoggerModule } from 'nestjs-pino';
       validationSchema: configValidationSchema,
     }),
     LoggerModule.forRoot({
-  pinoHttp: {
-    transport:
-      process.env.NODE_ENV !== 'production'
-        ? {
-            target: 'pino-pretty',
-            options: {
-              singleLine: true,
-            },
-          }
-        : undefined,
-  },
-}),
+      pinoHttp: {
+        transport:
+          process.env.NODE_ENV !== 'production'
+            ? {
+                target: 'pino-pretty',
+                options: {
+                  singleLine: true,
+                },
+              }
+            : undefined,
+      },
+    }),
     // Throttler for rate limiting
     ThrottlerModule.forRootAsync({
       inject: [ConfigService],
@@ -58,6 +60,8 @@ import { LoggerModule } from 'nestjs-pino';
       }],
     }),
     WorkoutModule,
+    WorkoutSetsModule,
+    WorkoutSessionsModule,
   ],
   controllers: [HealthController],
   providers: [],
