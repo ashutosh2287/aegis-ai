@@ -12,6 +12,7 @@ import { ExerciseModule } from './exercise/exercise.module';
 import { WorkoutModule } from './workout/workout.module';
 import { WorkoutSetsModule } from './workout-sets/workout-sets.module';
 import { WorkoutSessionsModule } from './workout-sessions/workout-sessions.module';
+import { AnalyticsModule } from './analytics/analytics.module';
 import { LoggerModule } from 'nestjs-pino';
 
 @Module({
@@ -51,6 +52,8 @@ import { LoggerModule } from 'nestjs-pino';
     AuthModule,
     // Exercise module
     ExerciseModule,
+    // Analytics module
+    AnalyticsModule,
     // Serve static files (if needed for uploads, etc.)
     ServeStaticModule.forRootAsync({
       inject: [ConfigService],
