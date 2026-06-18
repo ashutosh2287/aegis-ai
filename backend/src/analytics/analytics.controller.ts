@@ -4,7 +4,6 @@ import {
   Param,
   UseGuards,
   Req,
-  Request,
   NotFoundException,
   BadRequestException,
   InternalServerErrorException,
@@ -14,6 +13,7 @@ import { AnalyticsService } from './analytics.service';
 import { DashboardService } from './dashboard.service';
 import { JwtAuthGuard } from '@/auth/guards/jwt-auth.guard';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
+import { AuthenticatedRequest } from '@/common/interfaces/authenticated-request.interface';
 
 @Controller('analytics')
 @ApiTags('Analytics')
@@ -30,8 +30,8 @@ export class AnalyticsController {
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({ status: 500, description: 'Internal server error' })
   @ApiBearerAuth()
-  async getDashboard(@Req() req: Request) {
-    const user = (req as any).user;
+  async getDashboard(@Req() req: AuthenticatedRequest) {
+    const user = req.user;
     if (!user) {
       throw new UnauthorizedException('User not found');
     }
@@ -45,8 +45,8 @@ export class AnalyticsController {
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({ status: 500, description: 'Internal server error' })
   @ApiBearerAuth()
-  async getWeeklyVolume(@Req() req: Request) {
-    const user = (req as any).user;
+  async getWeeklyVolume(@Req() req: AuthenticatedRequest) {
+    const user = req.user;
     if (!user) {
       throw new UnauthorizedException('User not found');
     }
@@ -60,8 +60,8 @@ export class AnalyticsController {
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({ status: 500, description: 'Internal server error' })
   @ApiBearerAuth()
-  async getMonthlyVolume(@Req() req: Request) {
-    const user = (req as any).user;
+  async getMonthlyVolume(@Req() req: AuthenticatedRequest) {
+    const user = req.user;
     if (!user) {
       throw new UnauthorizedException('User not found');
     }
@@ -76,8 +76,8 @@ export class AnalyticsController {
   @ApiResponse({ status: 404, description: 'Exercise not found' })
   @ApiResponse({ status: 500, description: 'Internal server error' })
   @ApiBearerAuth()
-  async getExerciseVolume(@Param('id') exerciseId: string, @Req() req: Request) {
-    const user = (req as any).user;
+  async getExerciseVolume(@Param('id') exerciseId: string, @Req() req: AuthenticatedRequest) {
+    const user = req.user;
     if (!user) {
       throw new UnauthorizedException('User not found');
     }
@@ -92,8 +92,8 @@ export class AnalyticsController {
   @ApiResponse({ status: 404, description: 'Session not found' })
   @ApiResponse({ status: 500, description: 'Internal server error' })
   @ApiBearerAuth()
-  async getSessionVolume(@Param('id') sessionId: string, @Req() req: Request) {
-    const user = (req as any).user;
+  async getSessionVolume(@Param('id') sessionId: string, @Req() req: AuthenticatedRequest) {
+    const user = req.user;
     if (!user) {
       throw new UnauthorizedException('User not found');
     }
@@ -108,8 +108,8 @@ export class AnalyticsController {
   @ApiResponse({ status: 404, description: 'Exercise not found' })
   @ApiResponse({ status: 500, description: 'Internal server error' })
   @ApiBearerAuth()
-  async getExerciseProgression(@Param('id') exerciseId: string, @Req() req: Request) {
-    const user = (req as any).user;
+  async getExerciseProgression(@Param('id') exerciseId: string, @Req() req: AuthenticatedRequest) {
+    const user = req.user;
     if (!user) {
       throw new UnauthorizedException('User not found');
     }
@@ -124,8 +124,8 @@ export class AnalyticsController {
   @ApiResponse({ status: 404, description: 'Exercise not found' })
   @ApiResponse({ status: 500, description: 'Internal server error' })
   @ApiBearerAuth()
-  async getExerciseTrend(@Param('id') exerciseId: string, @Req() req: Request) {
-    const user = (req as any).user;
+  async getExerciseTrend(@Param('id') exerciseId: string, @Req() req: AuthenticatedRequest) {
+    const user = req.user;
     if (!user) {
       throw new UnauthorizedException('User not found');
     }
@@ -140,8 +140,8 @@ export class AnalyticsController {
   @ApiResponse({ status: 404, description: 'Exercise not found' })
   @ApiResponse({ status: 500, description: 'Internal server error' })
   @ApiBearerAuth()
-  async getExercisePersonalRecords(@Param('id') exerciseId: string, @Req() req: Request) {
-    const user = (req as any).user;
+  async getExercisePersonalRecords(@Param('id') exerciseId: string, @Req() req: AuthenticatedRequest) {
+    const user = req.user;
     if (!user) {
       throw new UnauthorizedException('User not found');
     }
@@ -155,8 +155,8 @@ export class AnalyticsController {
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({ status: 500, description: 'Internal server error' })
   @ApiBearerAuth()
-  async getPersonalRecords(@Req() req: Request) {
-    const user = (req as any).user;
+  async getPersonalRecords(@Req() req: AuthenticatedRequest) {
+    const user = req.user;
     if (!user) {
       throw new UnauthorizedException('User not found');
     }
@@ -170,8 +170,8 @@ export class AnalyticsController {
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({ status: 500, description: 'Internal server error' })
   @ApiBearerAuth()
-  async getWorkoutConsistency(@Req() req: Request) {
-    const user = (req as any).user;
+  async getWorkoutConsistency(@Req() req: AuthenticatedRequest) {
+    const user = req.user;
     if (!user) {
       throw new UnauthorizedException('User not found');
     }

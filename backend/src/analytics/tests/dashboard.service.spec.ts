@@ -1,6 +1,8 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { DashboardService } from '../dashboard.service';
 import { AnalyticsService } from '../analytics.service';
+import { InternalServerErrorException } from '@nestjs/common';
+import { Logger } from '@nestjs/common';
 
 describe('DashboardService', () => {
   let service: DashboardService;
@@ -56,6 +58,31 @@ describe('DashboardService', () => {
       expect(mockAnalyticsService.getWeeklyVolume).toHaveBeenCalledWith(mockUserId);
       expect(mockAnalyticsService.getMonthlyVolume).toHaveBeenCalledWith(mockUserId);
       expect(mockAnalyticsService.getPersonalRecords).toHaveBeenCalledWith(mockUserId);
+    });
+
+    it('should throw InternalServerErrorException when analytics service fails', async () => {
+      const errorMessage = 'Database connection failed';
+      mockAnalyticsService.getWorkoutConsistency.mockRejectedValue(new Error(errorMessage));
+
+      await expect(service.getDashboardData(mockUserId)).rejects.toThrow(InternalServerErrorException);
+      await expect(service.getDashboardData(mockUserId)).rejects.toThrow('Failed to generate dashboard data');
+    });
+
+    it('should log error when dashboard generation fails', async () => {
+      const errorMessage = 'Database connection failed';
+      const error = new Error(errorMessage);
+      mockAnalyticsService.getWorkoutConsistency.mockRejectedValue(error);
+
+      const loggerErrorSpy = jest.spyOn(Logger.prototype, 'error');
+
+      try {
+        await service.getDashboardData(mockUserId);
+      } catch (e) {
+        // Expected
+      }
+
+      expect(loggerErrorSpy).toHaveBeenCalled();
+      loggerErrorSpy.mockRestore();
     });
   });
 });
