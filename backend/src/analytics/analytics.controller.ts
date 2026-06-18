@@ -11,13 +11,17 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { AnalyticsService } from './analytics.service';
+import { DashboardService } from './dashboard.service';
 import { JwtAuthGuard } from '@/auth/guards/jwt-auth.guard';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
 
 @Controller('analytics')
 @ApiTags('Analytics')
 export class AnalyticsController {
-  constructor(private readonly analyticsService: AnalyticsService) {}
+  constructor(
+    private readonly analyticsService: AnalyticsService,
+    private readonly dashboardService: DashboardService,
+  ) {}
 
   @Get('dashboard')
   @UseGuards(JwtAuthGuard)
@@ -31,7 +35,7 @@ export class AnalyticsController {
     if (!user) {
       throw new UnauthorizedException('User not found');
     }
-    return this.analyticsService.getDashboard();
+    return this.dashboardService.getDashboardData(user.id);
   }
 
   @Get('volume/week')

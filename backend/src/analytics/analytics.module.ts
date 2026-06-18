@@ -1,9 +1,10 @@
 import { Module } from '@nestjs/common';
 import { AnalyticsController } from './analytics.controller';
 import { AnalyticsService } from './analytics.service';
+import { DashboardService } from './dashboard.service';
 
 @Module({
   controllers: [AnalyticsController],
-  providers: [AnalyticsService]
+  providers: [AnalyticsService, DashboardService]
 })
 export class AnalyticsModule {}
