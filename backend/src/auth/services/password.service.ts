@@ -1,6 +1,6 @@
-import { Injectable, InternalServerErrorException } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
-import { SupabaseService } from '../../supabase/supabase.service';
+import { Injectable, InternalServerErrorException } from "@nestjs/common";
+import { ConfigService } from "@nestjs/config";
+import { SupabaseService } from "../../supabase/supabase.service";
 
 @Injectable()
 export class PasswordService {
@@ -14,7 +14,7 @@ export class PasswordService {
    * @param email - The email to reset
    */
   async requestPasswordReset(email: string): Promise<{ message: string }> {
-    const redirectTo = `${this.configService.get<string>('WEB_URL')}/auth/reset-password`;
+    const redirectTo = `${this.configService.get<string>("WEB_URL")}/auth/reset-password`;
 
     const { error } = await this.supabaseService
       .getClient()
@@ -23,9 +23,11 @@ export class PasswordService {
       });
 
     if (error) {
-      throw new InternalServerErrorException(`Failed to send reset password email: ${error.message}`);
+      throw new InternalServerErrorException(
+        `Failed to send reset password email: ${error.message}`,
+      );
     }
 
-    return { message: 'Password reset email sent' };
+    return { message: "Password reset email sent" };
   }
 }

@@ -1,5 +1,15 @@
-import { IsString, IsInt, IsArray, IsEnum, IsOptional, IsBoolean } from 'class-validator';
-import { MovementPattern, DifficultyLevel } from '../../common/enums/database.enums';
+import {
+  IsString,
+  IsInt,
+  IsArray,
+  IsEnum,
+  IsOptional,
+  IsBoolean,
+} from "class-validator";
+import {
+  MovementPattern,
+  DifficultyLevel,
+} from "../../common/enums/database.enums";
 
 export class ExerciseResponseDto {
   @IsString()

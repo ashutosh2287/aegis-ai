@@ -1,10 +1,10 @@
-import { Injectable } from '@nestjs/common';
-import { PassportStrategy } from '@nestjs/passport';
-import { ExtractJwt, Strategy } from 'passport-jwt';
-import { ConfigService } from '@nestjs/config';
-import { JwtService } from '@nestjs/jwt';
-import { SupabaseService } from '../../supabase/supabase.service';
-import { UserProfile } from '../interfaces/auth.interface';
+import { Injectable } from "@nestjs/common";
+import { PassportStrategy } from "@nestjs/passport";
+import { ExtractJwt, Strategy } from "passport-jwt";
+import { ConfigService } from "@nestjs/config";
+import { JwtService } from "@nestjs/jwt";
+import { SupabaseService } from "../../supabase/supabase.service";
+import { UserProfile } from "../interfaces/auth.interface";
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
@@ -13,9 +13,9 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     private readonly jwtService: JwtService,
     private readonly supabaseService: SupabaseService,
   ) {
-    const jwtSecret = configService.get<string>('JWT_SECRET');
+    const jwtSecret = configService.get<string>("JWT_SECRET");
     if (!jwtSecret) {
-      throw new Error('JWT_SECRET is not defined');
+      throw new Error("JWT_SECRET is not defined");
     }
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
@@ -32,9 +32,9 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     // Fetch the user profile from the database
     const { data, error } = await this.supabaseService
       .getClient()
-      .from('profiles')
-      .select('*')
-      .eq('id', userId)
+      .from("profiles")
+      .select("*")
+      .eq("id", userId)
       .single();
 
     if (error || !data) {

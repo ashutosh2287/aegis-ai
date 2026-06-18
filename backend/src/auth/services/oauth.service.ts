@@ -1,6 +1,6 @@
-import { Injectable, InternalServerErrorException } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
-import { SupabaseService } from '../../supabase/supabase.service';
+import { Injectable, InternalServerErrorException } from "@nestjs/common";
+import { ConfigService } from "@nestjs/config";
+import { SupabaseService } from "../../supabase/supabase.service";
 
 @Injectable()
 export class OAuthService {
@@ -17,14 +17,16 @@ export class OAuthService {
     const { data, error } = await this.supabaseService
       .getClient()
       .auth.signInWithOAuth({
-        provider: 'google',
+        provider: "google",
         options: {
-          redirectTo: `${this.configService.get<string>('WEB_URL')}/auth/google/callback`,
+          redirectTo: `${this.configService.get<string>("WEB_URL")}/auth/google/callback`,
         },
       });
 
     if (error) {
-      throw new InternalServerErrorException(`Google OAuth failed: ${error.message}`);
+      throw new InternalServerErrorException(
+        `Google OAuth failed: ${error.message}`,
+      );
     }
 
     return { url: data.url };
@@ -42,12 +44,16 @@ export class OAuthService {
       .auth.exchangeCodeForSession(code);
 
     if (authError) {
-      throw new InternalServerErrorException(`Google OAuth failed: ${authError.message}`);
+      throw new InternalServerErrorException(
+        `Google OAuth failed: ${authError.message}`,
+      );
     }
 
     const user = authData.user;
     if (!user) {
-      throw new InternalServerErrorException('No user returned from Google OAuth');
+      throw new InternalServerErrorException(
+        "No user returned from Google OAuth",
+      );
     }
 
     return { user };

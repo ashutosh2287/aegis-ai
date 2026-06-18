@@ -3,9 +3,9 @@ import {
   ExecutionContext,
   Injectable,
   NestInterceptor,
-} from '@nestjs/common';
-import { map, Observable } from 'rxjs';
-import { Stream } from 'stream';
+} from "@nestjs/common";
+import { map, Observable } from "rxjs";
+import { Stream } from "stream";
 
 @Injectable()
 export class ResponseInterceptor<T> implements NestInterceptor<T, any> {

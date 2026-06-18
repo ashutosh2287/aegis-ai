@@ -3,11 +3,11 @@ import {
   ExecutionContext,
   Injectable,
   NestInterceptor,
-} from '@nestjs/common';
-import { Observable, throwError, TimeoutError as RxJSTimeoutError } from 'rxjs';
-import { timeout, catchError } from 'rxjs/operators';
-import { ConfigService } from '@nestjs/config';
-import { Logger } from 'nestjs-pino';
+} from "@nestjs/common";
+import { Observable, throwError, TimeoutError as RxJSTimeoutError } from "rxjs";
+import { timeout, catchError } from "rxjs/operators";
+import { ConfigService } from "@nestjs/config";
+import { Logger } from "nestjs-pino";
 
 @Injectable()
 export class TimeoutInterceptor implements NestInterceptor {
@@ -18,7 +18,7 @@ export class TimeoutInterceptor implements NestInterceptor {
 
   intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
     const timeoutSeconds =
-      this.configService.get<number>('requestTimeout') || 30;
+      this.configService.get<number>("requestTimeout") || 30;
     const timeoutMilliseconds = timeoutSeconds * 1000;
 
     return next.handle().pipe(
@@ -29,9 +29,7 @@ export class TimeoutInterceptor implements NestInterceptor {
             `Request timeout after ${timeoutSeconds} seconds`,
             `Timeout on ${context.getType()}`,
           );
-          return throwError(
-            () => new Error('Request timeout'),
-          );
+          return throwError(() => new Error("Request timeout"));
         }
         return throwError(() => err);
       }),

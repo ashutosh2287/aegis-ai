@@ -1,4 +1,4 @@
-import { IsInt, Min, Max, IsNumber, IsOptional } from 'class-validator';
+import { IsInt, Min, Max, IsNumber, IsOptional } from "class-validator";
 
 export class UpdateWorkoutSetDto {
   @IsInt()

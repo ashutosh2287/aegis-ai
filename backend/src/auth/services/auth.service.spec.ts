@@ -1,11 +1,11 @@
-import { Test, TestingModule } from '@nestjs/testing';
-import { AuthService } from './auth.service';
-import { TokenService } from './token.service';
-import { OAuthService } from './oauth.service';
-import { ProfileService } from './profile.service';
-import { PasswordService } from './password.service';
+import { Test, TestingModule } from "@nestjs/testing";
+import { AuthService } from "./auth.service";
+import { TokenService } from "./token.service";
+import { OAuthService } from "./oauth.service";
+import { ProfileService } from "./profile.service";
+import { PasswordService } from "./password.service";
 
-describe('AuthService', () => {
+describe("AuthService", () => {
   let service: AuthService;
   let tokenService: TokenService;
   let oauthService: OAuthService;
@@ -25,18 +25,18 @@ describe('AuthService', () => {
   const mockConfigService = {
     get: jest.fn((key) => {
       switch (key) {
-        case 'JWT_SECRET':
-          return 'jwt-secret';
-        case 'JWT_EXPIRES_IN':
-          return '15m';
-        case 'JWT_REFRESH_SECRET':
-          return 'jwt-refresh-secret';
-        case 'JWT_REFRESH_EXPIRES_IN':
-          return '7d';
-        case 'JWT_REFRESH_EXPIRES_IN_MS':
+        case "JWT_SECRET":
+          return "jwt-secret";
+        case "JWT_EXPIRES_IN":
+          return "15m";
+        case "JWT_REFRESH_SECRET":
+          return "jwt-refresh-secret";
+        case "JWT_REFRESH_EXPIRES_IN":
+          return "7d";
+        case "JWT_REFRESH_EXPIRES_IN_MS":
           return 604800000;
-        case 'WEB_URL':
-          return 'http://localhost:3000';
+        case "WEB_URL":
+          return "http://localhost:3000";
         default:
           return null;
       }
@@ -106,38 +106,40 @@ describe('AuthService', () => {
     passwordService = module.get<PasswordService>(PasswordService);
   });
 
-  it('should be defined', () => {
+  it("should be defined", () => {
     expect(service).toBeDefined();
   });
 
-  describe('signup', () => {
-    it('should sign up a user and return tokens', async () => {
+  describe("signup", () => {
+    it("should sign up a user and return tokens", async () => {
       const signupDto = {
-        email: 'test@example.com',
-        password: 'password123',
-        fullName: 'Test User',
+        email: "test@example.com",
+        password: "password123",
+        fullName: "Test User",
       };
 
       mockSupabaseClient.auth.signUp.mockResolvedValue({
         data: {
           user: {
-            id: 'user-id',
-            email: 'test@example.com',
+            id: "user-id",
+            email: "test@example.com",
           },
         },
         error: null,
       });
 
-      mockSupabaseClient.from().insert.mockResolvedValue({ data: [], error: null });
+      mockSupabaseClient
+        .from()
+        .insert.mockResolvedValue({ data: [], error: null });
 
-      mockTokenService.signAccessToken.mockReturnValue('access-token');
-      mockTokenService.signRefreshToken.mockResolvedValue('refresh-token');
+      mockTokenService.signAccessToken.mockReturnValue("access-token");
+      mockTokenService.signRefreshToken.mockResolvedValue("refresh-token");
 
       const result = await service.signup(signupDto);
 
       expect(result).toEqual({
-        accessToken: 'access-token',
-        refreshToken: 'refresh-token',
+        accessToken: "access-token",
+        refreshToken: "refresh-token",
       });
     });
   });

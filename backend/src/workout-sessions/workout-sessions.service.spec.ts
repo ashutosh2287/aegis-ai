@@ -1,19 +1,19 @@
-import { Test, TestingModule } from '@nestjs/testing';
-import { WorkoutSessionsService } from './workout-sessions.service';
-import { SupabaseService } from '../supabase/supabase.service';
-import { NotFoundException, ConflictException } from '@nestjs/common';
-import { SessionStatus } from '../common/enums/database.enums';
-import { CreateWorkoutSessionDto } from './dto/create-workout-session.dto';
+import { Test, TestingModule } from "@nestjs/testing";
+import { WorkoutSessionsService } from "./workout-sessions.service";
+import { SupabaseService } from "../supabase/supabase.service";
+import { NotFoundException, ConflictException } from "@nestjs/common";
+import { SessionStatus } from "../common/enums/database.enums";
+import { CreateWorkoutSessionDto } from "./dto/create-workout-session.dto";
 
-describe('WorkoutSessionsService', () => {
+describe("WorkoutSessionsService", () => {
   let service: WorkoutSessionsService;
   let supabaseService: SupabaseService;
   let mockClient: any;
   let updateChain: any;
 
-  const mockUserId = 'user-123';
-  const mockWorkoutId = 'workout-123';
-  const mockSessionId = 'session-123';
+  const mockUserId = "user-123";
+  const mockWorkoutId = "workout-123";
+  const mockSessionId = "session-123";
 
   beforeEach(async () => {
     updateChain = {
@@ -63,168 +63,236 @@ describe('WorkoutSessionsService', () => {
     jest.clearAllMocks();
   });
 
-  describe('createSession', () => {
-    it('should create a session successfully', async () => {
+  describe("createSession", () => {
+    it("should create a session successfully", async () => {
       // Mock workout exists and belongs to user
-      mockClient.from().select().eq().eq().is().single.mockResolvedValueOnce({
-        data: { id: mockWorkoutId },
-        error: null,
-      });
+      mockClient
+        .from()
+        .select()
+        .eq()
+        .eq()
+        .is()
+        .single.mockResolvedValueOnce({
+          data: { id: mockWorkoutId },
+          error: null,
+        });
       // Mock no active session
-      mockClient.from().select().eq().eq().is().single.mockResolvedValueOnce({
-        data: null,
-        error: { code: 'PGRST116' }, // No rows found
-      });
+      mockClient
+        .from()
+        .select()
+        .eq()
+        .eq()
+        .is()
+        .single.mockResolvedValueOnce({
+          data: null,
+          error: { code: "PGRST116" }, // No rows found
+        });
       // Mock session creation
-      mockClient.from().insert().select().single.mockResolvedValueOnce({
-        data: {
-          id: mockSessionId,
-          user_id: mockUserId,
-          workout_id: mockWorkoutId,
-          status: SessionStatus.ACTIVE,
-          started_at: new Date().toISOString(),
-          completed_at: null,
-          duration_seconds: null,
-          notes: 'Test notes',
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-          deleted_at: null,
-        },
-        error: null,
-      });
+      mockClient
+        .from()
+        .insert()
+        .select()
+        .single.mockResolvedValueOnce({
+          data: {
+            id: mockSessionId,
+            user_id: mockUserId,
+            workout_id: mockWorkoutId,
+            status: SessionStatus.ACTIVE,
+            started_at: new Date().toISOString(),
+            completed_at: null,
+            duration_seconds: null,
+            notes: "Test notes",
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+            deleted_at: null,
+          },
+          error: null,
+        });
 
       const dto = new CreateWorkoutSessionDto();
-      dto.notes = 'Test notes';
+      dto.notes = "Test notes";
 
-      const result = await service.createSession(mockUserId, mockWorkoutId, dto);
+      const result = await service.createSession(
+        mockUserId,
+        mockWorkoutId,
+        dto,
+      );
 
       expect(result).toBeDefined();
       expect(result.id).toBe(mockSessionId);
-      expect(result.notes).toBe('Test notes');
+      expect(result.notes).toBe("Test notes");
     });
 
-    it('should throw NotFoundException if workout not found', async () => {
-      mockClient.from().select().eq().eq().is().single.mockResolvedValueOnce({
-        data: null,
-        error: { code: 'PGRST116' },
-      });
+    it("should throw NotFoundException if workout not found", async () => {
+      mockClient
+        .from()
+        .select()
+        .eq()
+        .eq()
+        .is()
+        .single.mockResolvedValueOnce({
+          data: null,
+          error: { code: "PGRST116" },
+        });
 
       const dto = new CreateWorkoutSessionDto();
-      await expect(service.createSession(mockUserId, mockWorkoutId, dto)).rejects.toThrow(
-        NotFoundException,
-      );
+      await expect(
+        service.createSession(mockUserId, mockWorkoutId, dto),
+      ).rejects.toThrow(NotFoundException);
     });
 
-    it('should throw ConflictException if user already has an active session', async () => {
-      mockClient.from().select().eq().eq().is().single.mockResolvedValueOnce({
-        data: { id: mockWorkoutId },
-        error: null,
-      });
-      mockClient.from().select().eq().eq().is().single.mockResolvedValueOnce({
-        data: { id: 'existing-session-id' },
-        error: null,
-      });
+    it("should throw ConflictException if user already has an active session", async () => {
+      mockClient
+        .from()
+        .select()
+        .eq()
+        .eq()
+        .is()
+        .single.mockResolvedValueOnce({
+          data: { id: mockWorkoutId },
+          error: null,
+        });
+      mockClient
+        .from()
+        .select()
+        .eq()
+        .eq()
+        .is()
+        .single.mockResolvedValueOnce({
+          data: { id: "existing-session-id" },
+          error: null,
+        });
 
       const dto = new CreateWorkoutSessionDto();
-      await expect(service.createSession(mockUserId, mockWorkoutId, dto)).rejects.toThrow(
-        ConflictException,
-      );
+      await expect(
+        service.createSession(mockUserId, mockWorkoutId, dto),
+      ).rejects.toThrow(ConflictException);
     });
   });
 
-  describe('getSessionById', () => {
-    it('should return a session if found', async () => {
-      mockClient.from().select().eq().eq().is().single.mockResolvedValueOnce({
-        data: {
-          id: mockSessionId,
-          user_id: mockUserId,
-          workout_id: mockWorkoutId,
-          status: SessionStatus.ACTIVE,
-          started_at: new Date().toISOString(),
-          completed_at: null,
-          duration_seconds: null,
-          notes: null,
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-          deleted_at: null,
-        },
-        error: null,
-      });
+  describe("getSessionById", () => {
+    it("should return a session if found", async () => {
+      mockClient
+        .from()
+        .select()
+        .eq()
+        .eq()
+        .is()
+        .single.mockResolvedValueOnce({
+          data: {
+            id: mockSessionId,
+            user_id: mockUserId,
+            workout_id: mockWorkoutId,
+            status: SessionStatus.ACTIVE,
+            started_at: new Date().toISOString(),
+            completed_at: null,
+            duration_seconds: null,
+            notes: null,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+            deleted_at: null,
+          },
+          error: null,
+        });
 
       const result = await service.getSessionById(mockUserId, mockSessionId);
       expect(result).not.toBeNull();
       expect(result!.id).toBe(mockSessionId);
     });
 
-    it('should throw NotFoundException if session not found', async () => {
-      mockClient.from().select().eq().eq().is().single.mockResolvedValueOnce({
-        data: null,
-        error: { code: 'PGRST116' },
-      });
+    it("should throw NotFoundException if session not found", async () => {
+      mockClient
+        .from()
+        .select()
+        .eq()
+        .eq()
+        .is()
+        .single.mockResolvedValueOnce({
+          data: null,
+          error: { code: "PGRST116" },
+        });
 
-      await expect(service.getSessionById(mockUserId, mockSessionId)).rejects.toThrow(
-        NotFoundException,
-      );
+      await expect(
+        service.getSessionById(mockUserId, mockSessionId),
+      ).rejects.toThrow(NotFoundException);
     });
   });
 
-  describe('getActiveSession', () => {
-    it('should return the active session if exists', async () => {
-      mockClient.from().select().eq().eq().is().single.mockResolvedValueOnce({
-        data: {
-          id: mockSessionId,
-          user_id: mockUserId,
-          workout_id: mockWorkoutId,
-          status: SessionStatus.ACTIVE,
-          started_at: new Date().toISOString(),
-          completed_at: null,
-          duration_seconds: null,
-          notes: null,
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-          deleted_at: null,
-        },
-        error: null,
-      });
+  describe("getActiveSession", () => {
+    it("should return the active session if exists", async () => {
+      mockClient
+        .from()
+        .select()
+        .eq()
+        .eq()
+        .is()
+        .single.mockResolvedValueOnce({
+          data: {
+            id: mockSessionId,
+            user_id: mockUserId,
+            workout_id: mockWorkoutId,
+            status: SessionStatus.ACTIVE,
+            started_at: new Date().toISOString(),
+            completed_at: null,
+            duration_seconds: null,
+            notes: null,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+            deleted_at: null,
+          },
+          error: null,
+        });
 
       const result = await service.getActiveSession(mockUserId);
       expect(result).not.toBeNull();
       expect(result!.id).toBe(mockSessionId);
     });
 
-    it('should return null if no active session exists', async () => {
-      mockClient.from().select().eq().eq().is().single.mockResolvedValueOnce({
-        data: null,
-        error: { code: 'PGRST116' },
-      });
+    it("should return null if no active session exists", async () => {
+      mockClient
+        .from()
+        .select()
+        .eq()
+        .eq()
+        .is()
+        .single.mockResolvedValueOnce({
+          data: null,
+          error: { code: "PGRST116" },
+        });
 
       const result = await service.getActiveSession(mockUserId);
       expect(result).toBeNull();
     });
   });
 
-  describe('completeSession', () => {
-    it('should complete an active session', async () => {
+  describe("completeSession", () => {
+    it("should complete an active session", async () => {
       const startedAt = new Date();
       startedAt.setSeconds(startedAt.getSeconds() - 10); // 10 seconds ago
 
       // Fetch session
-      mockClient.from().select().eq().eq().is().single.mockResolvedValueOnce({
-        data: {
-          id: mockSessionId,
-          user_id: mockUserId,
-          workout_id: mockWorkoutId,
-          status: SessionStatus.ACTIVE,
-          started_at: startedAt.toISOString(),
-          completed_at: null,
-          duration_seconds: null,
-          notes: null,
-          created_at: startedAt.toISOString(),
-          updated_at: startedAt.toISOString(),
-          deleted_at: null,
-        },
-        error: null,
-      });
+      mockClient
+        .from()
+        .select()
+        .eq()
+        .eq()
+        .is()
+        .single.mockResolvedValueOnce({
+          data: {
+            id: mockSessionId,
+            user_id: mockUserId,
+            workout_id: mockWorkoutId,
+            status: SessionStatus.ACTIVE,
+            started_at: startedAt.toISOString(),
+            completed_at: null,
+            duration_seconds: null,
+            notes: null,
+            created_at: startedAt.toISOString(),
+            updated_at: startedAt.toISOString(),
+            deleted_at: null,
+          },
+          error: null,
+        });
       // Update session
       updateChain.select().single.mockResolvedValueOnce({
         data: {
@@ -248,52 +316,64 @@ describe('WorkoutSessionsService', () => {
       expect(result.durationSeconds).toBe(10);
     });
 
-    it('should throw ConflictException if session is not active', async () => {
-      mockClient.from().select().eq().eq().is().single.mockResolvedValueOnce({
-        data: {
-          id: mockSessionId,
-          user_id: mockUserId,
-          workout_id: mockWorkoutId,
-          status: SessionStatus.COMPLETED,
-          started_at: new Date().toISOString(),
-          completed_at: new Date().toISOString(),
-          duration_seconds: 60,
-          notes: null,
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-          deleted_at: null,
-        },
-        error: null,
-      });
+    it("should throw ConflictException if session is not active", async () => {
+      mockClient
+        .from()
+        .select()
+        .eq()
+        .eq()
+        .is()
+        .single.mockResolvedValueOnce({
+          data: {
+            id: mockSessionId,
+            user_id: mockUserId,
+            workout_id: mockWorkoutId,
+            status: SessionStatus.COMPLETED,
+            started_at: new Date().toISOString(),
+            completed_at: new Date().toISOString(),
+            duration_seconds: 60,
+            notes: null,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+            deleted_at: null,
+          },
+          error: null,
+        });
 
-      await expect(service.completeSession(mockUserId, mockSessionId)).rejects.toThrow(
-        ConflictException,
-      );
+      await expect(
+        service.completeSession(mockUserId, mockSessionId),
+      ).rejects.toThrow(ConflictException);
     });
   });
 
-  describe('abandonSession', () => {
-    it('should abandon an active session', async () => {
+  describe("abandonSession", () => {
+    it("should abandon an active session", async () => {
       const startedAt = new Date();
       startedAt.setSeconds(startedAt.getSeconds() - 10); // 10 seconds ago
 
       // Fetch session
-      mockClient.from().select().eq().eq().is().single.mockResolvedValueOnce({
-        data: {
-          id: mockSessionId,
-          user_id: mockUserId,
-          workout_id: mockWorkoutId,
-          status: SessionStatus.ACTIVE,
-          started_at: startedAt.toISOString(),
-          completed_at: null,
-          duration_seconds: null,
-          notes: null,
-          created_at: startedAt.toISOString(),
-          updated_at: startedAt.toISOString(),
-          deleted_at: null,
-        },
-        error: null,
-      });
+      mockClient
+        .from()
+        .select()
+        .eq()
+        .eq()
+        .is()
+        .single.mockResolvedValueOnce({
+          data: {
+            id: mockSessionId,
+            user_id: mockUserId,
+            workout_id: mockWorkoutId,
+            status: SessionStatus.ACTIVE,
+            started_at: startedAt.toISOString(),
+            completed_at: null,
+            duration_seconds: null,
+            notes: null,
+            created_at: startedAt.toISOString(),
+            updated_at: startedAt.toISOString(),
+            deleted_at: null,
+          },
+          error: null,
+        });
       // Update session
       updateChain.select().single.mockResolvedValueOnce({
         data: {
@@ -317,51 +397,71 @@ describe('WorkoutSessionsService', () => {
       expect(result.durationSeconds).toBe(10);
     });
 
-    it('should throw ConflictException if session is not active', async () => {
-      mockClient.from().select().eq().eq().is().single.mockResolvedValueOnce({
-        data: {
-          id: mockSessionId,
-          user_id: mockUserId,
-          workout_id: mockWorkoutId,
-          status: SessionStatus.COMPLETED,
-          started_at: new Date().toISOString(),
-          completed_at: new Date().toISOString(),
-          duration_seconds: 60,
-          notes: null,
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-          deleted_at: null,
-        },
-        error: null,
-      });
+    it("should throw ConflictException if session is not active", async () => {
+      mockClient
+        .from()
+        .select()
+        .eq()
+        .eq()
+        .is()
+        .single.mockResolvedValueOnce({
+          data: {
+            id: mockSessionId,
+            user_id: mockUserId,
+            workout_id: mockWorkoutId,
+            status: SessionStatus.COMPLETED,
+            started_at: new Date().toISOString(),
+            completed_at: new Date().toISOString(),
+            duration_seconds: 60,
+            notes: null,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+            deleted_at: null,
+          },
+          error: null,
+        });
 
-      await expect(service.abandonSession(mockUserId, mockSessionId)).rejects.toThrow(
-        ConflictException,
-      );
+      await expect(
+        service.abandonSession(mockUserId, mockSessionId),
+      ).rejects.toThrow(ConflictException);
     });
   });
 
-  describe('deleteSession', () => {
-    it('should soft delete a session', async () => {
-      mockClient.from().select().eq().eq().is().single.mockResolvedValueOnce({
-        data: { id: mockSessionId },
-        error: null,
-      });
+  describe("deleteSession", () => {
+    it("should soft delete a session", async () => {
+      mockClient
+        .from()
+        .select()
+        .eq()
+        .eq()
+        .is()
+        .single.mockResolvedValueOnce({
+          data: { id: mockSessionId },
+          error: null,
+        });
       const updateEqMock = jest.fn().mockResolvedValue({ error: null });
       mockClient.from().update().eq = updateEqMock;
 
-      await expect(service.deleteSession(mockUserId, mockSessionId)).resolves.toBeUndefined();
+      await expect(
+        service.deleteSession(mockUserId, mockSessionId),
+      ).resolves.toBeUndefined();
     });
 
-    it('should throw NotFoundException if session not found', async () => {
-      mockClient.from().select().eq().eq().is().single.mockResolvedValueOnce({
-        data: null,
-        error: { code: 'PGRST116' },
-      });
+    it("should throw NotFoundException if session not found", async () => {
+      mockClient
+        .from()
+        .select()
+        .eq()
+        .eq()
+        .is()
+        .single.mockResolvedValueOnce({
+          data: null,
+          error: { code: "PGRST116" },
+        });
 
-      await expect(service.deleteSession(mockUserId, mockSessionId)).rejects.toThrow(
-        NotFoundException,
-      );
+      await expect(
+        service.deleteSession(mockUserId, mockSessionId),
+      ).rejects.toThrow(NotFoundException);
     });
   });
 });

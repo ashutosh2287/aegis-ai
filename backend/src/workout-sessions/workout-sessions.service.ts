@@ -1,9 +1,18 @@
-import { Injectable, NotFoundException, BadRequestException, ConflictException, InternalServerErrorException } from '@nestjs/common';
-import { SupabaseService } from '../supabase/supabase.service';
-import { CreateWorkoutSessionDto } from './dto/create-workout-session.dto';
-import { GetWorkoutSessionsDto } from './dto/get-workout-sessions.dto';
-import { WorkoutSession, WorkoutSessionResponse } from './interfaces/workout-session.interface';
-import { SessionStatus } from '../common/enums/database.enums';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+  ConflictException,
+  InternalServerErrorException,
+} from "@nestjs/common";
+import { SupabaseService } from "../supabase/supabase.service";
+import { CreateWorkoutSessionDto } from "./dto/create-workout-session.dto";
+import { GetWorkoutSessionsDto } from "./dto/get-workout-sessions.dto";
+import {
+  WorkoutSession,
+  WorkoutSessionResponse,
+} from "./interfaces/workout-session.interface";
+import { SessionStatus } from "../common/enums/database.enums";
 
 @Injectable()
 export class WorkoutSessionsService {
@@ -20,23 +29,29 @@ export class WorkoutSessionsService {
    * @param dto - The session data (notes)
    * @returns Promise of the created session
    */
-  async createSession(userId: string, workoutId: string, dto: CreateWorkoutSessionDto): Promise<WorkoutSessionResponse> {
+  async createSession(
+    userId: string,
+    workoutId: string,
+    dto: CreateWorkoutSessionDto,
+  ): Promise<WorkoutSessionResponse> {
     const client = this.getClient();
 
     // Check if the workout exists and belongs to the user
     const { data: workoutData, error: workoutError } = await client
-      .from('workouts')
-      .select('id')
-      .eq('id', workoutId)
-      .eq('user_id', userId)
-      .is('deleted_at', null)
+      .from("workouts")
+      .select("id")
+      .eq("id", workoutId)
+      .eq("user_id", userId)
+      .is("deleted_at", null)
       .single();
 
     if (workoutError) {
-      if (workoutError.code === 'PGRST116') {
+      if (workoutError.code === "PGRST116") {
         throw new NotFoundException(`Workout with ID ${workoutId} not found`);
       }
-      throw new InternalServerErrorException(`Failed to fetch workout: ${workoutError.message}`);
+      throw new InternalServerErrorException(
+        `Failed to fetch workout: ${workoutError.message}`,
+      );
     }
 
     if (!workoutData) {
@@ -45,19 +60,23 @@ export class WorkoutSessionsService {
 
     // Check if the user already has an active session
     const { data: activeSessionData, error: activeSessionError } = await client
-      .from('workout_sessions')
-      .select('id')
-      .eq('user_id', userId)
-      .eq('status', SessionStatus.ACTIVE)
-      .is('deleted_at', null)
+      .from("workout_sessions")
+      .select("id")
+      .eq("user_id", userId)
+      .eq("status", SessionStatus.ACTIVE)
+      .is("deleted_at", null)
       .single();
 
-    if (activeSessionError && activeSessionError.code !== 'PGRST116') {
-      throw new InternalServerErrorException(`Failed to check for active session: ${activeSessionError.message}`);
+    if (activeSessionError && activeSessionError.code !== "PGRST116") {
+      throw new InternalServerErrorException(
+        `Failed to check for active session: ${activeSessionError.message}`,
+      );
     }
 
     if (activeSessionData) {
-      throw new ConflictException('User already has an active session. Please complete or abandon it before starting a new one.');
+      throw new ConflictException(
+        "User already has an active session. Please complete or abandon it before starting a new one.",
+      );
     }
 
     // Create the session
@@ -70,17 +89,21 @@ export class WorkoutSessionsService {
     };
 
     const { data: sessionDataResult, error: sessionError } = await client
-      .from('workout_sessions')
+      .from("workout_sessions")
       .insert(sessionData)
       .select()
       .single();
 
     if (sessionError) {
-      throw new InternalServerErrorException(`Failed to create session: ${sessionError.message}`);
+      throw new InternalServerErrorException(
+        `Failed to create session: ${sessionError.message}`,
+      );
     }
 
     if (!sessionDataResult) {
-      throw new InternalServerErrorException('Session created but no data returned');
+      throw new InternalServerErrorException(
+        "Session created but no data returned",
+      );
     }
 
     return this.mapToResponse(sessionDataResult);
@@ -92,33 +115,46 @@ export class WorkoutSessionsService {
    * @param dto - The query parameters
    * @returns Promise of array of sessions and pagination metadata
    */
-  async getSessions(userId: string, dto: GetWorkoutSessionsDto): Promise<{ sessions: WorkoutSessionResponse[]; pagination: { page: number; limit: number; total: number; totalPages: number } }> {
+  async getSessions(
+    userId: string,
+    dto: GetWorkoutSessionsDto,
+  ): Promise<{
+    sessions: WorkoutSessionResponse[];
+    pagination: {
+      page: number;
+      limit: number;
+      total: number;
+      totalPages: number;
+    };
+  }> {
     const client = this.getClient();
 
     // Build the query
-    let query = client.from('workout_sessions').select('*', { count: 'exact' });
+    let query = client.from("workout_sessions").select("*", { count: "exact" });
 
     // Filter by user and exclude soft-deleted
-    query = query.eq('user_id', userId).is('deleted_at', null);
+    query = query.eq("user_id", userId).is("deleted_at", null);
 
     // Apply filters
     if (dto.status) {
-      query = query.eq('status', dto.status);
+      query = query.eq("status", dto.status);
     }
     if (dto.workoutId) {
-      query = query.eq('workout_id', dto.workoutId);
+      query = query.eq("workout_id", dto.workoutId);
     }
     if (dto.startDate) {
-      query = query.gte('started_at', dto.startDate);
+      query = query.gte("started_at", dto.startDate);
     }
     if (dto.endDate) {
-      query = query.lte('started_at', dto.endDate);
+      query = query.lte("started_at", dto.endDate);
     }
 
     // Apply sorting
-    const sortBy = dto.sortBy ?? 'started_at';
-    const sortOrder = dto.sortOrder ?? 'DESC';
-    query = query.order(sortBy, { ascending: sortOrder.toUpperCase() === 'ASC' });
+    const sortBy = dto.sortBy ?? "started_at";
+    const sortOrder = dto.sortOrder ?? "DESC";
+    query = query.order(sortBy, {
+      ascending: sortOrder.toUpperCase() === "ASC",
+    });
 
     // Apply pagination
     const page = dto.page ?? 1;
@@ -131,10 +167,14 @@ export class WorkoutSessionsService {
     const { data: sessionsData, error: sessionsError, count } = await query;
 
     if (sessionsError) {
-      throw new InternalServerErrorException(`Failed to fetch sessions: ${sessionsError.message}`);
+      throw new InternalServerErrorException(
+        `Failed to fetch sessions: ${sessionsError.message}`,
+      );
     }
 
-    const sessions = sessionsData.map((session: any) => this.mapToResponse(session));
+    const sessions = sessionsData.map((session: any) =>
+      this.mapToResponse(session),
+    );
 
     const total = count ?? 0;
     const totalPages = Math.ceil(total / limit);
@@ -145,8 +185,8 @@ export class WorkoutSessionsService {
         page,
         limit,
         total,
-        totalPages
-      }
+        totalPages,
+      },
     };
   }
 
@@ -156,22 +196,27 @@ export class WorkoutSessionsService {
    * @param sessionId - The ID of the session
    * @returns Promise of the session
    */
-  async getSessionById(userId: string, sessionId: string): Promise<WorkoutSessionResponse> {
+  async getSessionById(
+    userId: string,
+    sessionId: string,
+  ): Promise<WorkoutSessionResponse> {
     const client = this.getClient();
 
     const { data: sessionData, error: sessionError } = await client
-      .from('workout_sessions')
-      .select('*')
-      .eq('id', sessionId)
-      .eq('user_id', userId)
-      .is('deleted_at', null)
+      .from("workout_sessions")
+      .select("*")
+      .eq("id", sessionId)
+      .eq("user_id", userId)
+      .is("deleted_at", null)
       .single();
 
     if (sessionError) {
-      if (sessionError.code === 'PGRST116') {
+      if (sessionError.code === "PGRST116") {
         throw new NotFoundException(`Session with ID ${sessionId} not found`);
       }
-      throw new InternalServerErrorException(`Failed to fetch session: ${sessionError.message}`);
+      throw new InternalServerErrorException(
+        `Failed to fetch session: ${sessionError.message}`,
+      );
     }
 
     if (!sessionData) {
@@ -186,19 +231,23 @@ export class WorkoutSessionsService {
    * @param userId - The ID of the user
    * @returns Promise of the session or null if none exists
    */
-  async getActiveSession(userId: string): Promise<WorkoutSessionResponse | null> {
+  async getActiveSession(
+    userId: string,
+  ): Promise<WorkoutSessionResponse | null> {
     const client = this.getClient();
 
     const { data: sessionData, error: sessionError } = await client
-      .from('workout_sessions')
-      .select('*')
-      .eq('user_id', userId)
-      .eq('status', SessionStatus.ACTIVE)
-      .is('deleted_at', null)
+      .from("workout_sessions")
+      .select("*")
+      .eq("user_id", userId)
+      .eq("status", SessionStatus.ACTIVE)
+      .is("deleted_at", null)
       .single();
 
-    if (sessionError && sessionError.code !== 'PGRST116') {
-      throw new InternalServerErrorException(`Failed to fetch active session: ${sessionError.message}`);
+    if (sessionError && sessionError.code !== "PGRST116") {
+      throw new InternalServerErrorException(
+        `Failed to fetch active session: ${sessionError.message}`,
+      );
     }
 
     if (!sessionData) {
@@ -214,7 +263,18 @@ export class WorkoutSessionsService {
    * @param dto - The query parameters (defaults to status completed)
    * @returns Promise of array of sessions and pagination metadata
    */
-  async getHistorySessions(userId: string, dto: GetWorkoutSessionsDto): Promise<{ sessions: WorkoutSessionResponse[]; pagination: { page: number; limit: number; total: number; totalPages: number } }> {
+  async getHistorySessions(
+    userId: string,
+    dto: GetWorkoutSessionsDto,
+  ): Promise<{
+    sessions: WorkoutSessionResponse[];
+    pagination: {
+      page: number;
+      limit: number;
+      total: number;
+      totalPages: number;
+    };
+  }> {
     // Set default status to completed if not provided
     const historyDto = { ...dto };
     if (!historyDto.status) {
@@ -229,23 +289,28 @@ export class WorkoutSessionsService {
    * @param sessionId - The ID of the session to complete
    * @returns Promise of the updated session
    */
-  async completeSession(userId: string, sessionId: string): Promise<WorkoutSessionResponse> {
+  async completeSession(
+    userId: string,
+    sessionId: string,
+  ): Promise<WorkoutSessionResponse> {
     const client = this.getClient();
 
     // First, get the session to ensure it exists and belongs to the user and is active
     const { data: sessionData, error: sessionError } = await client
-      .from('workout_sessions')
-      .select('*')
-      .eq('id', sessionId)
-      .eq('user_id', userId)
-      .is('deleted_at', null)
+      .from("workout_sessions")
+      .select("*")
+      .eq("id", sessionId)
+      .eq("user_id", userId)
+      .is("deleted_at", null)
       .single();
 
     if (sessionError) {
-      if (sessionError.code === 'PGRST116') {
+      if (sessionError.code === "PGRST116") {
         throw new NotFoundException(`Session with ID ${sessionId} not found`);
       }
-      throw new InternalServerErrorException(`Failed to fetch session: ${sessionError.message}`);
+      throw new InternalServerErrorException(
+        `Failed to fetch session: ${sessionError.message}`,
+      );
     }
 
     if (!sessionData) {
@@ -253,35 +318,43 @@ export class WorkoutSessionsService {
     }
 
     if (sessionData.status !== SessionStatus.ACTIVE) {
-      throw new ConflictException(`Cannot complete session with status ${sessionData.status}. Only active sessions can be completed.`);
+      throw new ConflictException(
+        `Cannot complete session with status ${sessionData.status}. Only active sessions can be completed.`,
+      );
     }
 
     // Calculate duration
     const startedAt = new Date(sessionData.started_at);
     const completedAt = new Date();
-    const durationSeconds = Math.floor((completedAt.getTime() - startedAt.getTime()) / 1000);
+    const durationSeconds = Math.floor(
+      (completedAt.getTime() - startedAt.getTime()) / 1000,
+    );
 
     // Update the session
     const updateData = {
       status: SessionStatus.COMPLETED,
       completed_at: completedAt.toISOString(),
       duration_seconds: durationSeconds,
-      updated_at: new Date().toISOString()
+      updated_at: new Date().toISOString(),
     };
 
     const { data: updatedSessionData, error: updateError } = await client
-      .from('workout_sessions')
+      .from("workout_sessions")
       .update(updateData)
-      .eq('id', sessionId)
+      .eq("id", sessionId)
       .select()
       .single();
 
     if (updateError) {
-      throw new InternalServerErrorException(`Failed to complete session: ${updateError.message}`);
+      throw new InternalServerErrorException(
+        `Failed to complete session: ${updateError.message}`,
+      );
     }
 
     if (!updatedSessionData) {
-      throw new InternalServerErrorException('Session completed but no data returned');
+      throw new InternalServerErrorException(
+        "Session completed but no data returned",
+      );
     }
 
     return this.mapToResponse(updatedSessionData);
@@ -293,23 +366,28 @@ export class WorkoutSessionsService {
    * @param sessionId - The ID of the session to abandon
    * @returns Promise of the updated session
    */
-  async abandonSession(userId: string, sessionId: string): Promise<WorkoutSessionResponse> {
+  async abandonSession(
+    userId: string,
+    sessionId: string,
+  ): Promise<WorkoutSessionResponse> {
     const client = this.getClient();
 
     // First, get the session to ensure it exists and belongs to the user and is active
     const { data: sessionData, error: sessionError } = await client
-      .from('workout_sessions')
-      .select('*')
-      .eq('id', sessionId)
-      .eq('user_id', userId)
-      .is('deleted_at', null)
+      .from("workout_sessions")
+      .select("*")
+      .eq("id", sessionId)
+      .eq("user_id", userId)
+      .is("deleted_at", null)
       .single();
 
     if (sessionError) {
-      if (sessionError.code === 'PGRST116') {
+      if (sessionError.code === "PGRST116") {
         throw new NotFoundException(`Session with ID ${sessionId} not found`);
       }
-      throw new InternalServerErrorException(`Failed to fetch session: ${sessionError.message}`);
+      throw new InternalServerErrorException(
+        `Failed to fetch session: ${sessionError.message}`,
+      );
     }
 
     if (!sessionData) {
@@ -317,35 +395,43 @@ export class WorkoutSessionsService {
     }
 
     if (sessionData.status !== SessionStatus.ACTIVE) {
-      throw new ConflictException(`Cannot abandon session with status ${sessionData.status}. Only active sessions can be abandoned.`);
+      throw new ConflictException(
+        `Cannot abandon session with status ${sessionData.status}. Only active sessions can be abandoned.`,
+      );
     }
 
     // Calculate duration (optional, but we'll set completed_at and duration for consistency)
     const startedAt = new Date(sessionData.started_at);
     const completedAt = new Date();
-    const durationSeconds = Math.floor((completedAt.getTime() - startedAt.getTime()) / 1000);
+    const durationSeconds = Math.floor(
+      (completedAt.getTime() - startedAt.getTime()) / 1000,
+    );
 
     // Update the session
     const updateData = {
       status: SessionStatus.ABANDONED,
       completed_at: completedAt.toISOString(),
       duration_seconds: durationSeconds,
-      updated_at: new Date().toISOString()
+      updated_at: new Date().toISOString(),
     };
 
     const { data: updatedSessionData, error: updateError } = await client
-      .from('workout_sessions')
+      .from("workout_sessions")
       .update(updateData)
-      .eq('id', sessionId)
+      .eq("id", sessionId)
       .select()
       .single();
 
     if (updateError) {
-      throw new InternalServerErrorException(`Failed to abandon session: ${updateError.message}`);
+      throw new InternalServerErrorException(
+        `Failed to abandon session: ${updateError.message}`,
+      );
     }
 
     if (!updatedSessionData) {
-      throw new InternalServerErrorException('Session abandoned but no data returned');
+      throw new InternalServerErrorException(
+        "Session abandoned but no data returned",
+      );
     }
 
     return this.mapToResponse(updatedSessionData);
@@ -361,18 +447,20 @@ export class WorkoutSessionsService {
 
     // First, check if the session exists and belongs to the user and is not already deleted
     const { data: sessionData, error: sessionError } = await client
-      .from('workout_sessions')
-      .select('id')
-      .eq('id', sessionId)
-      .eq('user_id', userId)
-      .is('deleted_at', null)
+      .from("workout_sessions")
+      .select("id")
+      .eq("id", sessionId)
+      .eq("user_id", userId)
+      .is("deleted_at", null)
       .single();
 
     if (sessionError) {
-      if (sessionError.code === 'PGRST116') {
+      if (sessionError.code === "PGRST116") {
         throw new NotFoundException(`Session with ID ${sessionId} not found`);
       }
-      throw new InternalServerErrorException(`Failed to fetch session: ${sessionError.message}`);
+      throw new InternalServerErrorException(
+        `Failed to fetch session: ${sessionError.message}`,
+      );
     }
 
     if (!sessionData) {
@@ -381,12 +469,14 @@ export class WorkoutSessionsService {
 
     // Soft delete
     const { error: deleteError } = await client
-      .from('workout_sessions')
+      .from("workout_sessions")
       .update({ deleted_at: new Date().toISOString() })
-      .eq('id', sessionId);
+      .eq("id", sessionId);
 
     if (deleteError) {
-      throw new InternalServerErrorException(`Failed to delete session: ${deleteError.message}`);
+      throw new InternalServerErrorException(
+        `Failed to delete session: ${deleteError.message}`,
+      );
     }
   }
 
@@ -407,7 +497,7 @@ export class WorkoutSessionsService {
       notes: session.notes ?? undefined,
       createdAt: session.created_at,
       updatedAt: session.updated_at,
-      deletedAt: session.deleted_at ?? undefined
+      deletedAt: session.deleted_at ?? undefined,
     };
   }
 }

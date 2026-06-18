@@ -1,9 +1,9 @@
-import { Injectable } from '@nestjs/common';
-import { PassportStrategy } from '@nestjs/passport';
-import { ExtractJwt, Strategy } from 'passport-jwt';
-import { ConfigService } from '@nestjs/config';
-import { JwtService } from '@nestjs/jwt';
-import { SupabaseService } from '../supabase/supabase.service';
+import { Injectable } from "@nestjs/common";
+import { PassportStrategy } from "@nestjs/passport";
+import { ExtractJwt, Strategy } from "passport-jwt";
+import { ConfigService } from "@nestjs/config";
+import { JwtService } from "@nestjs/jwt";
+import { SupabaseService } from "../supabase/supabase.service";
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
@@ -12,9 +12,9 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     private readonly jwtService: JwtService,
     private readonly supabaseService: SupabaseService,
   ) {
-    const jwtSecret = configService.get<string>('JWT_SECRET');
+    const jwtSecret = configService.get<string>("JWT_SECRET");
     if (!jwtSecret) {
-      throw new Error('JWT_SECRET is not defined');
+      throw new Error("JWT_SECRET is not defined");
     }
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),

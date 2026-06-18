@@ -1,4 +1,4 @@
-import { Exercise } from '@/exercise/interfaces/exercise.interface';
+import { Exercise } from "@/exercise/interfaces/exercise.interface";
 
 export interface WorkoutExercise {
   id: string;

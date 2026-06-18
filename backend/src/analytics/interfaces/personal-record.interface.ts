@@ -1,4 +1,4 @@
-import { PersonalRecordType } from '@/analytics/enums/personal-record-type.enum';
+import { PersonalRecordType } from "@/analytics/enums/personal-record-type.enum";
 
 export interface PersonalRecord {
   type: PersonalRecordType;

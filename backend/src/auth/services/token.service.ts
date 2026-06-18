@@ -1,8 +1,12 @@
-import { Injectable, InternalServerErrorException, UnauthorizedException } from '@nestjs/common';
-import { JwtService } from '@nestjs/jwt';
-import { ConfigService } from '@nestjs/config';
-import { SupabaseService } from '../../supabase/supabase.service';
-import * as bcrypt from 'bcrypt';
+import {
+  Injectable,
+  InternalServerErrorException,
+  UnauthorizedException,
+} from "@nestjs/common";
+import { JwtService } from "@nestjs/jwt";
+import { ConfigService } from "@nestjs/config";
+import { SupabaseService } from "../../supabase/supabase.service";
+import * as bcrypt from "bcrypt";
 
 @Injectable()
 export class TokenService {
@@ -21,8 +25,8 @@ export class TokenService {
     return this.jwtService.sign(
       { sub: userId },
       {
-        secret: this.configService.get<string>('JWT_SECRET'),
-        expiresIn: this.configService.get<string>('JWT_EXPIRES_IN'),
+        secret: this.configService.get<string>("JWT_SECRET"),
+        expiresIn: this.configService.get<string>("JWT_EXPIRES_IN"),
       },
     );
   }
@@ -36,8 +40,8 @@ export class TokenService {
     const refreshToken = this.jwtService.sign(
       { sub: userId },
       {
-        secret: this.configService.get<string>('JWT_REFRESH_SECRET'),
-        expiresIn: this.configService.get<string>('JWT_REFRESH_EXPIRES_IN'),
+        secret: this.configService.get<string>("JWT_REFRESH_SECRET"),
+        expiresIn: this.configService.get<string>("JWT_REFRESH_EXPIRES_IN"),
       },
     );
 
@@ -45,13 +49,15 @@ export class TokenService {
     const tokenHash = await bcrypt.hash(refreshToken, 10);
 
     // Calculate expiration date
-    const expiresInMs = this.configService.get<number>('JWT_REFRESH_EXPIRES_IN_MS') || 7 * 24 * 60 * 60 * 1000; // 7 days
+    const expiresInMs =
+      this.configService.get<number>("JWT_REFRESH_EXPIRES_IN_MS") ||
+      7 * 24 * 60 * 60 * 1000; // 7 days
     const expiresAt = new Date(Date.now() + expiresInMs).toISOString();
 
     // Store the hash in the database
     const { error } = await this.supabaseService
       .getClient()
-      .from('refresh_tokens')
+      .from("refresh_tokens")
       .insert({
         user_id: userId,
         token_hash: tokenHash,
@@ -59,7 +65,9 @@ export class TokenService {
       });
 
     if (error) {
-      throw new InternalServerErrorException(`Failed to store refresh token: ${error.message}`);
+      throw new InternalServerErrorException(
+        `Failed to store refresh token: ${error.message}`,
+      );
     }
 
     return refreshToken;
@@ -74,11 +82,11 @@ export class TokenService {
   async verifyRefreshToken(token: string): Promise<{ userId: string }> {
     try {
       const payload = await this.jwtService.verifyAsync(token, {
-        secret: this.configService.get<string>('JWT_REFRESH_SECRET'),
+        secret: this.configService.get<string>("JWT_REFRESH_SECRET"),
       });
       return { userId: payload.sub };
     } catch (error) {
-      throw new UnauthorizedException('Invalid or expired refresh token');
+      throw new UnauthorizedException("Invalid or expired refresh token");
     }
   }
 
@@ -88,16 +96,19 @@ export class TokenService {
    * @param refreshToken - The refresh token to check
    * @returns Promise<boolean>
    */
-  async isValidRefreshToken(userId: string, refreshToken: string): Promise<boolean> {
+  async isValidRefreshToken(
+    userId: string,
+    refreshToken: string,
+  ): Promise<boolean> {
     const tokenHash = await bcrypt.hash(refreshToken, 10);
 
     const { data, error } = await this.supabaseService
       .getClient()
-      .from('refresh_tokens')
-      .select('*')
-      .eq('user_id', userId)
-      .eq('token_hash', tokenHash)
-      .gt('expires_at', new Date().toISOString())
+      .from("refresh_tokens")
+      .select("*")
+      .eq("user_id", userId)
+      .eq("token_hash", tokenHash)
+      .gt("expires_at", new Date().toISOString())
       .single();
 
     return !error && !!data;
@@ -112,12 +123,14 @@ export class TokenService {
 
     const { error } = await this.supabaseService
       .getClient()
-      .from('refresh_tokens')
+      .from("refresh_tokens")
       .delete()
-      .eq('token_hash', tokenHash);
+      .eq("token_hash", tokenHash);
 
     if (error) {
-      throw new InternalServerErrorException(`Failed to remove refresh token: ${error.message}`);
+      throw new InternalServerErrorException(
+        `Failed to remove refresh token: ${error.message}`,
+      );
     }
   }
 

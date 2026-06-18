@@ -1,9 +1,9 @@
-import { Test, TestingModule } from '@nestjs/testing';
-import { WorkoutSetsService } from './workout-sets.service';
-import { SupabaseService } from '../supabase/supabase.service';
-import { NotFoundException, BadRequestException } from '@nestjs/common';
+import { Test, TestingModule } from "@nestjs/testing";
+import { WorkoutSetsService } from "./workout-sets.service";
+import { SupabaseService } from "../supabase/supabase.service";
+import { NotFoundException, BadRequestException } from "@nestjs/common";
 
-describe('WorkoutSetsService', () => {
+describe("WorkoutSetsService", () => {
   let service: WorkoutSetsService;
   let supabaseService: SupabaseService;
 
@@ -54,27 +54,27 @@ describe('WorkoutSetsService', () => {
     supabaseService = module.get<SupabaseService>(SupabaseService);
   });
 
-  it('should be defined', () => {
+  it("should be defined", () => {
     expect(service).toBeDefined();
   });
 
-  describe('createSet', () => {
-    it('should create a set successfully', async () => {
+  describe("createSet", () => {
+    it("should create a set successfully", async () => {
       // Mock the workout exercise lookup
-      const mockWorkoutExerciseData = { id: 'we-1', workout_id: 'w-1' };
+      const mockWorkoutExerciseData = { id: "we-1", workout_id: "w-1" };
       // Mock the workout lookup
-      const mockWorkoutData = { id: 'w-1' };
+      const mockWorkoutData = { id: "w-1" };
       // Mock the set lookup for max set_number (returns empty, so set_number = 1)
       const mockSetData: any[] = [];
       // Mock the insert result
       const mockInsertResult = {
-        id: 's-1',
-        workout_exercise_id: 'we-1',
+        id: "s-1",
+        workout_exercise_id: "we-1",
         set_number: 1,
         reps: 10,
         weight: 80,
         rpe: 8,
-        notes: 'Felt strong',
+        notes: "Felt strong",
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
         deleted_at: null,
@@ -90,7 +90,10 @@ describe('WorkoutSetsService', () => {
           }),
         }),
       });
-      mockSingle.mockResolvedValueOnce({ data: mockWorkoutExerciseData, error: null });
+      mockSingle.mockResolvedValueOnce({
+        data: mockWorkoutExerciseData,
+        error: null,
+      });
 
       // 2) from('workouts').select().eq().eq().is().single()
       mockFrom.mockReturnValueOnce({
@@ -130,27 +133,28 @@ describe('WorkoutSetsService', () => {
       });
       mockSingle.mockResolvedValueOnce({ data: mockInsertResult, error: null });
 
-      const result = await service.createSet(
-        'we-1',
-        'user-1',
-        { reps: 10, weight: 80, rpe: 8, notes: 'Felt strong' },
-      );
+      const result = await service.createSet("we-1", "user-1", {
+        reps: 10,
+        weight: 80,
+        rpe: 8,
+        notes: "Felt strong",
+      });
 
       expect(result).toEqual({
-        id: 's-1',
-        workoutExerciseId: 'we-1',
+        id: "s-1",
+        workoutExerciseId: "we-1",
         setNumber: 1,
         reps: 10,
         weight: 80,
         rpe: 8,
-        notes: 'Felt strong',
+        notes: "Felt strong",
         createdAt: mockInsertResult.created_at,
         updatedAt: mockInsertResult.updated_at,
         deletedAt: mockInsertResult.deleted_at,
       });
     });
 
-    it('should throw NotFoundException when workout exercise not found', async () => {
+    it("should throw NotFoundException when workout exercise not found", async () => {
       mockFrom.mockReturnValueOnce({
         select: jest.fn().mockReturnValue({
           eq: jest.fn().mockReturnValue({
@@ -160,15 +164,18 @@ describe('WorkoutSetsService', () => {
           }),
         }),
       });
-      mockSingle.mockResolvedValueOnce({ data: null, error: { code: 'PGRST116' } });
+      mockSingle.mockResolvedValueOnce({
+        data: null,
+        error: { code: "PGRST116" },
+      });
 
       await expect(
-        service.createSet('we-1', 'user-1', { reps: 10 }),
+        service.createSet("we-1", "user-1", { reps: 10 }),
       ).rejects.toThrow(NotFoundException);
     });
 
-    it('should throw NotFoundException when workout not found (ownership violation)', async () => {
-      const mockWorkoutExerciseData = { id: 'we-1', workout_id: 'w-1' };
+    it("should throw NotFoundException when workout not found (ownership violation)", async () => {
+      const mockWorkoutExerciseData = { id: "we-1", workout_id: "w-1" };
 
       mockFrom.mockReturnValueOnce({
         select: jest.fn().mockReturnValue({
@@ -179,7 +186,10 @@ describe('WorkoutSetsService', () => {
           }),
         }),
       });
-      mockSingle.mockResolvedValueOnce({ data: mockWorkoutExerciseData, error: null });
+      mockSingle.mockResolvedValueOnce({
+        data: mockWorkoutExerciseData,
+        error: null,
+      });
 
       mockFrom.mockReturnValueOnce({
         select: jest.fn().mockReturnValue({
@@ -192,27 +202,30 @@ describe('WorkoutSetsService', () => {
           }),
         }),
       });
-      mockSingle.mockResolvedValueOnce({ data: null, error: { code: 'PGRST116' } });
+      mockSingle.mockResolvedValueOnce({
+        data: null,
+        error: { code: "PGRST116" },
+      });
 
       await expect(
-        service.createSet('we-1', 'user-1', { reps: 10 }),
+        service.createSet("we-1", "user-1", { reps: 10 }),
       ).rejects.toThrow(NotFoundException);
     });
   });
 
-  describe('getWorkoutSets', () => {
-    it('should get workout sets successfully', async () => {
-      const mockWorkoutExerciseData = { id: 'we-1', workout_id: 'w-1' };
-      const mockWorkoutData = { id: 'w-1' };
+  describe("getWorkoutSets", () => {
+    it("should get workout sets successfully", async () => {
+      const mockWorkoutExerciseData = { id: "we-1", workout_id: "w-1" };
+      const mockWorkoutData = { id: "w-1" };
       const mockSetsData = [
         {
-          id: 's-1',
-          workout_exercise_id: 'we-1',
+          id: "s-1",
+          workout_exercise_id: "we-1",
           set_number: 1,
           reps: 10,
           weight: 80,
           rpe: 8,
-          notes: 'Felt strong',
+          notes: "Felt strong",
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString(),
           deleted_at: null,
@@ -229,7 +242,10 @@ describe('WorkoutSetsService', () => {
           }),
         }),
       });
-      mockSingle.mockResolvedValueOnce({ data: mockWorkoutExerciseData, error: null });
+      mockSingle.mockResolvedValueOnce({
+        data: mockWorkoutExerciseData,
+        error: null,
+      });
 
       // 2) from('workouts').select().eq().eq().is().single()
       mockFrom.mockReturnValueOnce({
@@ -257,17 +273,17 @@ describe('WorkoutSetsService', () => {
       });
       mockOrder.mockResolvedValueOnce({ data: mockSetsData, error: null });
 
-      const result = await service.getWorkoutSets('we-1', 'user-1');
+      const result = await service.getWorkoutSets("we-1", "user-1");
 
       expect(result).toEqual([
         {
-          id: 's-1',
-          workoutExerciseId: 'we-1',
+          id: "s-1",
+          workoutExerciseId: "we-1",
           setNumber: 1,
           reps: 10,
           weight: 80,
           rpe: 8,
-          notes: 'Felt strong',
+          notes: "Felt strong",
           createdAt: mockSetsData[0].created_at,
           updatedAt: mockSetsData[0].updated_at,
           deletedAt: mockSetsData[0].deleted_at,
@@ -275,7 +291,7 @@ describe('WorkoutSetsService', () => {
       ]);
     });
 
-    it('should throw NotFoundException when workout exercise not found', async () => {
+    it("should throw NotFoundException when workout exercise not found", async () => {
       mockFrom.mockReturnValueOnce({
         select: jest.fn().mockReturnValue({
           eq: jest.fn().mockReturnValue({
@@ -285,15 +301,18 @@ describe('WorkoutSetsService', () => {
           }),
         }),
       });
-      mockSingle.mockResolvedValueOnce({ data: null, error: { code: 'PGRST116' } });
+      mockSingle.mockResolvedValueOnce({
+        data: null,
+        error: { code: "PGRST116" },
+      });
 
-      await expect(
-        service.getWorkoutSets('we-1', 'user-1'),
-      ).rejects.toThrow(NotFoundException);
+      await expect(service.getWorkoutSets("we-1", "user-1")).rejects.toThrow(
+        NotFoundException,
+      );
     });
 
-    it('should throw NotFoundException when workout not found (ownership violation)', async () => {
-      const mockWorkoutExerciseData = { id: 'we-1', workout_id: 'w-1' };
+    it("should throw NotFoundException when workout not found (ownership violation)", async () => {
+      const mockWorkoutExerciseData = { id: "we-1", workout_id: "w-1" };
 
       mockFrom.mockReturnValueOnce({
         select: jest.fn().mockReturnValue({
@@ -304,7 +323,10 @@ describe('WorkoutSetsService', () => {
           }),
         }),
       });
-      mockSingle.mockResolvedValueOnce({ data: mockWorkoutExerciseData, error: null });
+      mockSingle.mockResolvedValueOnce({
+        data: mockWorkoutExerciseData,
+        error: null,
+      });
 
       mockFrom.mockReturnValueOnce({
         select: jest.fn().mockReturnValue({
@@ -317,26 +339,29 @@ describe('WorkoutSetsService', () => {
           }),
         }),
       });
-      mockSingle.mockResolvedValueOnce({ data: null, error: { code: 'PGRST116' } });
+      mockSingle.mockResolvedValueOnce({
+        data: null,
+        error: { code: "PGRST116" },
+      });
 
-      await expect(
-        service.getWorkoutSets('we-1', 'user-1'),
-      ).rejects.toThrow(NotFoundException);
+      await expect(service.getWorkoutSets("we-1", "user-1")).rejects.toThrow(
+        NotFoundException,
+      );
     });
   });
 
-  describe('updateSet', () => {
-    it('should update a set successfully', async () => {
-      const mockWorkoutExerciseData = { id: 'we-1', workout_id: 'w-1' };
-      const mockWorkoutData = { id: 'w-1' };
+  describe("updateSet", () => {
+    it("should update a set successfully", async () => {
+      const mockWorkoutExerciseData = { id: "we-1", workout_id: "w-1" };
+      const mockWorkoutData = { id: "w-1" };
       const mockSetData = {
-        id: 's-1',
-        workout_exercise_id: 'we-1',
+        id: "s-1",
+        workout_exercise_id: "we-1",
         set_number: 1,
         reps: 10,
         weight: 80,
         rpe: 8,
-        notes: 'Felt strong',
+        notes: "Felt strong",
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
         deleted_at: null,
@@ -346,7 +371,7 @@ describe('WorkoutSetsService', () => {
         reps: 12,
         weight: 82.5,
         rpe: 7,
-        notes: 'Improved',
+        notes: "Improved",
         updated_at: new Date().toISOString(),
       };
 
@@ -360,7 +385,10 @@ describe('WorkoutSetsService', () => {
           }),
         }),
       });
-      mockSingle.mockResolvedValueOnce({ data: mockWorkoutExerciseData, error: null });
+      mockSingle.mockResolvedValueOnce({
+        data: mockWorkoutExerciseData,
+        error: null,
+      });
 
       // 2) from('workouts').select().eq().eq().is().single()
       mockFrom.mockReturnValueOnce({
@@ -403,30 +431,33 @@ describe('WorkoutSetsService', () => {
       mockSelect.mockReturnValueOnce({
         single: mockSingle,
       });
-      mockSingle.mockResolvedValueOnce({ data: mockUpdatedSetData, error: null });
+      mockSingle.mockResolvedValueOnce({
+        data: mockUpdatedSetData,
+        error: null,
+      });
 
-      const result = await service.updateSet(
-        'we-1',
-        'user-1',
-        's-1',
-        { reps: 12, weight: 82.5, rpe: 7, notes: 'Improved' },
-      );
+      const result = await service.updateSet("we-1", "user-1", "s-1", {
+        reps: 12,
+        weight: 82.5,
+        rpe: 7,
+        notes: "Improved",
+      });
 
       expect(result).toEqual({
-        id: 's-1',
-        workoutExerciseId: 'we-1',
+        id: "s-1",
+        workoutExerciseId: "we-1",
         setNumber: 1,
         reps: 12,
         weight: 82.5,
         rpe: 7,
-        notes: 'Improved',
+        notes: "Improved",
         createdAt: mockUpdatedSetData.created_at,
         updatedAt: mockUpdatedSetData.updated_at,
         deletedAt: mockUpdatedSetData.deleted_at,
       });
     });
 
-    it('should throw NotFoundException when workout exercise not found', async () => {
+    it("should throw NotFoundException when workout exercise not found", async () => {
       mockFrom.mockReturnValueOnce({
         select: jest.fn().mockReturnValue({
           eq: jest.fn().mockReturnValue({
@@ -436,15 +467,18 @@ describe('WorkoutSetsService', () => {
           }),
         }),
       });
-      mockSingle.mockResolvedValueOnce({ data: null, error: { code: 'PGRST116' } });
+      mockSingle.mockResolvedValueOnce({
+        data: null,
+        error: { code: "PGRST116" },
+      });
 
       await expect(
-        service.updateSet('we-1', 'user-1', 's-1', { reps: 12 }),
+        service.updateSet("we-1", "user-1", "s-1", { reps: 12 }),
       ).rejects.toThrow(NotFoundException);
     });
 
-    it('should throw NotFoundException when workout not found (ownership violation)', async () => {
-      const mockWorkoutExerciseData = { id: 'we-1', workout_id: 'w-1' };
+    it("should throw NotFoundException when workout not found (ownership violation)", async () => {
+      const mockWorkoutExerciseData = { id: "we-1", workout_id: "w-1" };
 
       mockFrom.mockReturnValueOnce({
         select: jest.fn().mockReturnValue({
@@ -455,7 +489,10 @@ describe('WorkoutSetsService', () => {
           }),
         }),
       });
-      mockSingle.mockResolvedValueOnce({ data: mockWorkoutExerciseData, error: null });
+      mockSingle.mockResolvedValueOnce({
+        data: mockWorkoutExerciseData,
+        error: null,
+      });
 
       mockFrom.mockReturnValueOnce({
         select: jest.fn().mockReturnValue({
@@ -468,16 +505,19 @@ describe('WorkoutSetsService', () => {
           }),
         }),
       });
-      mockSingle.mockResolvedValueOnce({ data: null, error: { code: 'PGRST116' } });
+      mockSingle.mockResolvedValueOnce({
+        data: null,
+        error: { code: "PGRST116" },
+      });
 
       await expect(
-        service.updateSet('we-1', 'user-1', 's-1', { reps: 12 }),
+        service.updateSet("we-1", "user-1", "s-1", { reps: 12 }),
       ).rejects.toThrow(NotFoundException);
     });
 
-    it('should throw NotFoundException when set not found', async () => {
-      const mockWorkoutExerciseData = { id: 'we-1', workout_id: 'w-1' };
-      const mockWorkoutData = { id: 'w-1' };
+    it("should throw NotFoundException when set not found", async () => {
+      const mockWorkoutExerciseData = { id: "we-1", workout_id: "w-1" };
+      const mockWorkoutData = { id: "w-1" };
 
       mockFrom.mockReturnValueOnce({
         select: jest.fn().mockReturnValue({
@@ -488,7 +528,10 @@ describe('WorkoutSetsService', () => {
           }),
         }),
       });
-      mockSingle.mockResolvedValueOnce({ data: mockWorkoutExerciseData, error: null });
+      mockSingle.mockResolvedValueOnce({
+        data: mockWorkoutExerciseData,
+        error: null,
+      });
 
       mockFrom.mockReturnValueOnce({
         select: jest.fn().mockReturnValue({
@@ -514,19 +557,22 @@ describe('WorkoutSetsService', () => {
           }),
         }),
       });
-      mockSingle.mockResolvedValueOnce({ data: null, error: { code: 'PGRST116' } });
+      mockSingle.mockResolvedValueOnce({
+        data: null,
+        error: { code: "PGRST116" },
+      });
 
       await expect(
-        service.updateSet('we-1', 'user-1', 's-1', { reps: 12 }),
+        service.updateSet("we-1", "user-1", "s-1", { reps: 12 }),
       ).rejects.toThrow(NotFoundException);
     });
   });
 
-  describe('deleteSet', () => {
-    it('should delete a set successfully', async () => {
-      const mockWorkoutExerciseData = { id: 'we-1', workout_id: 'w-1' };
-      const mockWorkoutData = { id: 'w-1' };
-      const mockSetData = { id: 's-1' };
+  describe("deleteSet", () => {
+    it("should delete a set successfully", async () => {
+      const mockWorkoutExerciseData = { id: "we-1", workout_id: "w-1" };
+      const mockWorkoutData = { id: "w-1" };
+      const mockSetData = { id: "s-1" };
 
       // 1) from('workout_exercises').select().eq().is().single()
       mockFrom.mockReturnValueOnce({
@@ -538,7 +584,10 @@ describe('WorkoutSetsService', () => {
           }),
         }),
       });
-      mockSingle.mockResolvedValueOnce({ data: mockWorkoutExerciseData, error: null });
+      mockSingle.mockResolvedValueOnce({
+        data: mockWorkoutExerciseData,
+        error: null,
+      });
 
       // 2) from('workouts').select().eq().eq().is().single()
       mockFrom.mockReturnValueOnce({
@@ -578,11 +627,11 @@ describe('WorkoutSetsService', () => {
       mockEq.mockResolvedValueOnce({ error: null });
 
       await expect(
-        service.deleteSet('we-1', 'user-1', 's-1'),
+        service.deleteSet("we-1", "user-1", "s-1"),
       ).resolves.not.toThrow();
     });
 
-    it('should throw NotFoundException when workout exercise not found', async () => {
+    it("should throw NotFoundException when workout exercise not found", async () => {
       mockFrom.mockReturnValueOnce({
         select: jest.fn().mockReturnValue({
           eq: jest.fn().mockReturnValue({
@@ -592,15 +641,18 @@ describe('WorkoutSetsService', () => {
           }),
         }),
       });
-      mockSingle.mockResolvedValueOnce({ data: null, error: { code: 'PGRST116' } });
+      mockSingle.mockResolvedValueOnce({
+        data: null,
+        error: { code: "PGRST116" },
+      });
 
-      await expect(
-        service.deleteSet('we-1', 'user-1', 's-1'),
-      ).rejects.toThrow(NotFoundException);
+      await expect(service.deleteSet("we-1", "user-1", "s-1")).rejects.toThrow(
+        NotFoundException,
+      );
     });
 
-    it('should throw NotFoundException when workout not found (ownership violation)', async () => {
-      const mockWorkoutExerciseData = { id: 'we-1', workout_id: 'w-1' };
+    it("should throw NotFoundException when workout not found (ownership violation)", async () => {
+      const mockWorkoutExerciseData = { id: "we-1", workout_id: "w-1" };
 
       mockFrom.mockReturnValueOnce({
         select: jest.fn().mockReturnValue({
@@ -611,7 +663,10 @@ describe('WorkoutSetsService', () => {
           }),
         }),
       });
-      mockSingle.mockResolvedValueOnce({ data: mockWorkoutExerciseData, error: null });
+      mockSingle.mockResolvedValueOnce({
+        data: mockWorkoutExerciseData,
+        error: null,
+      });
 
       mockFrom.mockReturnValueOnce({
         select: jest.fn().mockReturnValue({
@@ -624,16 +679,19 @@ describe('WorkoutSetsService', () => {
           }),
         }),
       });
-      mockSingle.mockResolvedValueOnce({ data: null, error: { code: 'PGRST116' } });
+      mockSingle.mockResolvedValueOnce({
+        data: null,
+        error: { code: "PGRST116" },
+      });
 
-      await expect(
-        service.deleteSet('we-1', 'user-1', 's-1'),
-      ).rejects.toThrow(NotFoundException);
+      await expect(service.deleteSet("we-1", "user-1", "s-1")).rejects.toThrow(
+        NotFoundException,
+      );
     });
 
-    it('should throw NotFoundException when set not found', async () => {
-      const mockWorkoutExerciseData = { id: 'we-1', workout_id: 'w-1' };
-      const mockWorkoutData = { id: 'w-1' };
+    it("should throw NotFoundException when set not found", async () => {
+      const mockWorkoutExerciseData = { id: "we-1", workout_id: "w-1" };
+      const mockWorkoutData = { id: "w-1" };
 
       mockFrom.mockReturnValueOnce({
         select: jest.fn().mockReturnValue({
@@ -644,7 +702,10 @@ describe('WorkoutSetsService', () => {
           }),
         }),
       });
-      mockSingle.mockResolvedValueOnce({ data: mockWorkoutExerciseData, error: null });
+      mockSingle.mockResolvedValueOnce({
+        data: mockWorkoutExerciseData,
+        error: null,
+      });
 
       mockFrom.mockReturnValueOnce({
         select: jest.fn().mockReturnValue({
@@ -670,19 +731,22 @@ describe('WorkoutSetsService', () => {
           }),
         }),
       });
-      mockSingle.mockResolvedValueOnce({ data: null, error: { code: 'PGRST116' } });
+      mockSingle.mockResolvedValueOnce({
+        data: null,
+        error: { code: "PGRST116" },
+      });
 
-      await expect(
-        service.deleteSet('we-1', 'user-1', 's-1'),
-      ).rejects.toThrow(NotFoundException);
+      await expect(service.deleteSet("we-1", "user-1", "s-1")).rejects.toThrow(
+        NotFoundException,
+      );
     });
   });
 
-  describe('reorderSets', () => {
-    it('should reorder sets successfully', async () => {
-      const mockWorkoutExerciseData = { id: 'we-1', workout_id: 'w-1' };
-      const mockWorkoutData = { id: 'w-1' };
-      const mockExistingSetsData = [{ id: 's-1' }, { id: 's-2' }];
+  describe("reorderSets", () => {
+    it("should reorder sets successfully", async () => {
+      const mockWorkoutExerciseData = { id: "we-1", workout_id: "w-1" };
+      const mockWorkoutData = { id: "w-1" };
+      const mockExistingSetsData = [{ id: "s-1" }, { id: "s-2" }];
 
       // 1) from('workout_exercises').select().eq().is().single()
       mockFrom.mockReturnValueOnce({
@@ -694,7 +758,10 @@ describe('WorkoutSetsService', () => {
           }),
         }),
       });
-      mockSingle.mockResolvedValueOnce({ data: mockWorkoutExerciseData, error: null });
+      mockSingle.mockResolvedValueOnce({
+        data: mockWorkoutExerciseData,
+        error: null,
+      });
 
       // 2) from('workouts').select().eq().eq().is().single()
       mockFrom.mockReturnValueOnce({
@@ -722,25 +789,27 @@ describe('WorkoutSetsService', () => {
 
       // 4) from('workout_sets').update().eq() -- one call per item in dto.items
       mockUpdate.mockReturnValue({ eq: mockEq });
-      mockEq.mockResolvedValueOnce({ error: null }).mockResolvedValueOnce({ error: null });
+      mockEq
+        .mockResolvedValueOnce({ error: null })
+        .mockResolvedValueOnce({ error: null });
       mockFrom.mockReturnValue({ update: mockUpdate });
 
       const dto = {
         items: [
-          { id: 's-1', setNumber: 2 },
-          { id: 's-2', setNumber: 1 },
+          { id: "s-1", setNumber: 2 },
+          { id: "s-2", setNumber: 1 },
         ],
       };
 
       await expect(
-        service.reorderSets('we-1', 'user-1', dto),
+        service.reorderSets("we-1", "user-1", dto),
       ).resolves.not.toThrow();
 
       expect(mockUpdate).toHaveBeenCalledTimes(2);
       expect(mockEq).toHaveBeenCalledTimes(2);
     });
 
-    it('should throw NotFoundException when workout exercise not found', async () => {
+    it("should throw NotFoundException when workout exercise not found", async () => {
       mockFrom.mockReturnValueOnce({
         select: jest.fn().mockReturnValue({
           eq: jest.fn().mockReturnValue({
@@ -750,17 +819,20 @@ describe('WorkoutSetsService', () => {
           }),
         }),
       });
-      mockSingle.mockResolvedValueOnce({ data: null, error: { code: 'PGRST116' } });
+      mockSingle.mockResolvedValueOnce({
+        data: null,
+        error: { code: "PGRST116" },
+      });
 
-      const dto = { items: [{ id: 's-1', setNumber: 1 }] };
+      const dto = { items: [{ id: "s-1", setNumber: 1 }] };
 
-      await expect(
-        service.reorderSets('we-1', 'user-1', dto),
-      ).rejects.toThrow(NotFoundException);
+      await expect(service.reorderSets("we-1", "user-1", dto)).rejects.toThrow(
+        NotFoundException,
+      );
     });
 
-    it('should throw NotFoundException when workout not found (ownership violation)', async () => {
-      const mockWorkoutExerciseData = { id: 'we-1', workout_id: 'w-1' };
+    it("should throw NotFoundException when workout not found (ownership violation)", async () => {
+      const mockWorkoutExerciseData = { id: "we-1", workout_id: "w-1" };
 
       mockFrom.mockReturnValueOnce({
         select: jest.fn().mockReturnValue({
@@ -771,7 +843,10 @@ describe('WorkoutSetsService', () => {
           }),
         }),
       });
-      mockSingle.mockResolvedValueOnce({ data: mockWorkoutExerciseData, error: null });
+      mockSingle.mockResolvedValueOnce({
+        data: mockWorkoutExerciseData,
+        error: null,
+      });
 
       mockFrom.mockReturnValueOnce({
         select: jest.fn().mockReturnValue({
@@ -784,19 +859,22 @@ describe('WorkoutSetsService', () => {
           }),
         }),
       });
-      mockSingle.mockResolvedValueOnce({ data: null, error: { code: 'PGRST116' } });
+      mockSingle.mockResolvedValueOnce({
+        data: null,
+        error: { code: "PGRST116" },
+      });
 
-      const dto = { items: [{ id: 's-1', setNumber: 1 }] };
+      const dto = { items: [{ id: "s-1", setNumber: 1 }] };
 
-      await expect(
-        service.reorderSets('we-1', 'user-1', dto),
-      ).rejects.toThrow(NotFoundException);
+      await expect(service.reorderSets("we-1", "user-1", dto)).rejects.toThrow(
+        NotFoundException,
+      );
     });
 
-    it('should throw NotFoundException when one or more set IDs not found', async () => {
-      const mockWorkoutExerciseData = { id: 'we-1', workout_id: 'w-1' };
-      const mockWorkoutData = { id: 'w-1' };
-      const mockExistingSetsData = [{ id: 's-1' }];
+    it("should throw NotFoundException when one or more set IDs not found", async () => {
+      const mockWorkoutExerciseData = { id: "we-1", workout_id: "w-1" };
+      const mockWorkoutData = { id: "w-1" };
+      const mockExistingSetsData = [{ id: "s-1" }];
 
       mockFrom.mockReturnValueOnce({
         select: jest.fn().mockReturnValue({
@@ -807,7 +885,10 @@ describe('WorkoutSetsService', () => {
           }),
         }),
       });
-      mockSingle.mockResolvedValueOnce({ data: mockWorkoutExerciseData, error: null });
+      mockSingle.mockResolvedValueOnce({
+        data: mockWorkoutExerciseData,
+        error: null,
+      });
 
       mockFrom.mockReturnValueOnce({
         select: jest.fn().mockReturnValue({
@@ -833,20 +914,20 @@ describe('WorkoutSetsService', () => {
 
       const dto = {
         items: [
-          { id: 's-1', setNumber: 1 },
-          { id: 's-2', setNumber: 2 }, // s-2 does not exist
+          { id: "s-1", setNumber: 1 },
+          { id: "s-2", setNumber: 2 }, // s-2 does not exist
         ],
       };
 
-      await expect(
-        service.reorderSets('we-1', 'user-1', dto),
-      ).rejects.toThrow(NotFoundException);
+      await expect(service.reorderSets("we-1", "user-1", dto)).rejects.toThrow(
+        NotFoundException,
+      );
     });
 
-    it('should throw BadRequestException when number of IDs does not match', async () => {
-      const mockWorkoutExerciseData = { id: 'we-1', workout_id: 'w-1' };
-      const mockWorkoutData = { id: 'w-1' };
-      const mockExistingSetsData = [{ id: 's-1' }, { id: 's-2' }];
+    it("should throw BadRequestException when number of IDs does not match", async () => {
+      const mockWorkoutExerciseData = { id: "we-1", workout_id: "w-1" };
+      const mockWorkoutData = { id: "w-1" };
+      const mockExistingSetsData = [{ id: "s-1" }, { id: "s-2" }];
 
       mockFrom.mockReturnValueOnce({
         select: jest.fn().mockReturnValue({
@@ -857,7 +938,10 @@ describe('WorkoutSetsService', () => {
           }),
         }),
       });
-      mockSingle.mockResolvedValueOnce({ data: mockWorkoutExerciseData, error: null });
+      mockSingle.mockResolvedValueOnce({
+        data: mockWorkoutExerciseData,
+        error: null,
+      });
 
       mockFrom.mockReturnValueOnce({
         select: jest.fn().mockReturnValue({
@@ -882,12 +966,12 @@ describe('WorkoutSetsService', () => {
       mockIs.mockResolvedValueOnce({ data: mockExistingSetsData, error: null });
 
       const dto = {
-        items: [{ id: 's-1', setNumber: 1 }], // Only one item, but there are two sets
+        items: [{ id: "s-1", setNumber: 1 }], // Only one item, but there are two sets
       };
 
-      await expect(
-        service.reorderSets('we-1', 'user-1', dto),
-      ).rejects.toThrow(BadRequestException);
+      await expect(service.reorderSets("we-1", "user-1", dto)).rejects.toThrow(
+        BadRequestException,
+      );
     });
   });
 });

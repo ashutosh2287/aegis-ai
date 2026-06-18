@@ -1,4 +1,7 @@
-import { MovementPattern, DifficultyLevel } from '../../common/enums/database.enums';
+import {
+  MovementPattern,
+  DifficultyLevel,
+} from "../../common/enums/database.enums";
 
 export interface Exercise {
   id: string;

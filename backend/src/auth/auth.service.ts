@@ -1,7 +1,7 @@
-import { Injectable, BadRequestException } from '@nestjs/common';
-import { JwtService } from '@nestjs/jwt';
-import { ConfigService } from '@nestjs/config';
-import { SupabaseService } from '../supabase/supabase.service';
+import { Injectable, BadRequestException } from "@nestjs/common";
+import { JwtService } from "@nestjs/jwt";
+import { ConfigService } from "@nestjs/config";
+import { SupabaseService } from "../supabase/supabase.service";
 
 @Injectable()
 export class AuthService {
@@ -20,7 +20,7 @@ export class AuthService {
     return this.jwtService.sign(
       { sub: userId },
       {
-        expiresIn: this.configService.get<string>('JWT_EXPIRES_IN'),
+        expiresIn: this.configService.get<string>("JWT_EXPIRES_IN"),
       },
     );
   }
@@ -34,8 +34,8 @@ export class AuthService {
     return this.jwtService.sign(
       { sub: userId },
       {
-        secret: this.configService.get<string>('JWT_REFRESH_SECRET'),
-        expiresIn: this.configService.get<string>('JWT_REFRESH_EXPIRES_IN'),
+        secret: this.configService.get<string>("JWT_REFRESH_SECRET"),
+        expiresIn: this.configService.get<string>("JWT_REFRESH_EXPIRES_IN"),
       },
     );
   }
@@ -49,11 +49,11 @@ export class AuthService {
   async verifyRefreshToken(token: string): Promise<{ userId: string }> {
     try {
       const payload = await this.jwtService.verifyAsync(token, {
-        secret: this.configService.get<string>('JWT_REFRESH_SECRET'),
+        secret: this.configService.get<string>("JWT_REFRESH_SECRET"),
       });
       return { userId: payload.sub };
     } catch (error) {
-      throw new BadRequestException('Invalid or expired refresh token');
+      throw new BadRequestException("Invalid or expired refresh token");
     }
   }
 
@@ -76,6 +76,6 @@ export class AuthService {
   async validateUser(email: string, password: string): Promise<any> {
     // This would be implemented in the UserService (business module)
     // For now, we throw an error indicating it's not implemented
-    throw new Error('User validation not implemented in foundation');
+    throw new Error("User validation not implemented in foundation");
   }
 }

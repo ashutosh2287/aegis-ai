@@ -1,28 +1,22 @@
-import {
-  Inject,
-} from '@nestjs/common';
+import { Inject } from "@nestjs/common";
 import {
   HealthCheck,
   HealthCheckService,
   TypeOrmHealthIndicator,
-} from '@nestjs/terminus';
-import { ConfigService } from '@nestjs/config';
-import { SupabaseService } from '../supabase/supabase.service';
-import {
-  Controller,
-  Get,
-  Logger,
-} from '@nestjs/common';
+} from "@nestjs/terminus";
+import { ConfigService } from "@nestjs/config";
+import { SupabaseService } from "../supabase/supabase.service";
+import { Controller, Get, Logger } from "@nestjs/common";
 
-@Controller('health')
+@Controller("health")
 export class HealthController {
   private readonly logger = new Logger(HealthController.name);
 
-constructor(
-  private readonly health: HealthCheckService,
-  private readonly configService: ConfigService,
-  private readonly supabaseService: SupabaseService,
-) {}
+  constructor(
+    private readonly health: HealthCheckService,
+    private readonly configService: ConfigService,
+    private readonly supabaseService: SupabaseService,
+  ) {}
 
   @Get()
   @HealthCheck()
@@ -44,17 +38,17 @@ constructor(
           // Let's do a simple query on the profiles table (which should exist after migration).
           const { data, error } = await this.supabaseService
             .getClient()
-            .from('profiles')
-            .select('count')
+            .from("profiles")
+            .select("count")
             .limit(1);
 
           if (error) {
             throw error;
           }
-          return { supabase: { status: 'up' } };
+          return { supabase: { status: "up" } };
         } catch (err) {
-          this.logger.error(err, 'Supabase health check failed');
-          return { supabase: { status: 'down' } };
+          this.logger.error(err, "Supabase health check failed");
+          return { supabase: { status: "down" } };
         }
       },
       // You can add more health checks here (e.g., disk, memory, etc.)

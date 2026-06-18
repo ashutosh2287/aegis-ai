@@ -1,9 +1,9 @@
-import { Test, TestingModule } from '@nestjs/testing';
-import { WorkoutController } from './workout.controller';
-import { WorkoutService } from './workout.service';
-import { JwtAuthGuard } from '@/auth/guards/jwt-auth.guard';
+import { Test, TestingModule } from "@nestjs/testing";
+import { WorkoutController } from "./workout.controller";
+import { WorkoutService } from "./workout.service";
+import { JwtAuthGuard } from "@/auth/guards/jwt-auth.guard";
 
-describe('WorkoutController', () => {
+describe("WorkoutController", () => {
   let controller: WorkoutController;
   let service: WorkoutService;
 
@@ -28,7 +28,7 @@ describe('WorkoutController', () => {
     service = module.get<WorkoutService>(WorkoutService);
   });
 
-  it('should be defined', () => {
+  it("should be defined", () => {
     expect(controller).toBeDefined();
   });
 });

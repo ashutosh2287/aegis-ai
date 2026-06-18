@@ -1,0 +1,298 @@
+
+> aegis-ai-backend@1.0.0 lint
+> eslint "{src,apps,libs,test}/**/*.ts" --fix
+
+
+C:\Final year project\Aegis AI\backend\src\analytics\analytics.service.ts
+     4:3   error    'BadRequestException' is defined but never used         @typescript-eslint/no-unused-vars
+   101:11  warning  Unexpected any. Specify a different type                @typescript-eslint/no-explicit-any
+   101:19  warning  Unexpected any. Specify a different type                @typescript-eslint/no-explicit-any
+   395:11  error    'maxSetsExerciseId' is assigned a value but never used  @typescript-eslint/no-unused-vars
+   630:19  error    'workoutExerciseId' is assigned a value but never used  @typescript-eslint/no-unused-vars
+   691:48  warning  Unexpected any. Specify a different type                @typescript-eslint/no-explicit-any
+   715:29  warning  Unexpected any. Specify a different type                @typescript-eslint/no-explicit-any
+   792:54  warning  Unexpected any. Specify a different type                @typescript-eslint/no-explicit-any
+   812:56  warning  Unexpected any. Specify a different type                @typescript-eslint/no-explicit-any
+   836:29  warning  Unexpected any. Specify a different type                @typescript-eslint/no-explicit-any
+   871:46  warning  Unexpected any. Specify a different type                @typescript-eslint/no-explicit-any
+   891:53  warning  Unexpected any. Specify a different type                @typescript-eslint/no-explicit-any
+   910:48  warning  Unexpected any. Specify a different type                @typescript-eslint/no-explicit-any
+   934:29  warning  Unexpected any. Specify a different type                @typescript-eslint/no-explicit-any
+   969:46  warning  Unexpected any. Specify a different type                @typescript-eslint/no-explicit-any
+   988:53  warning  Unexpected any. Specify a different type                @typescript-eslint/no-explicit-any
+  1007:48  warning  Unexpected any. Specify a different type                @typescript-eslint/no-explicit-any
+  1031:29  warning  Unexpected any. Specify a different type                @typescript-eslint/no-explicit-any
+  1114:35  warning  Unexpected any. Specify a different type                @typescript-eslint/no-explicit-any
+  1162:14  error    Unexpected constant condition                           no-constant-condition
+
+C:\Final year project\Aegis AI\backend\src\analytics\dashboard.service.ts
+    4:10  error    'PersonalRecord' is defined but never used     @typescript-eslint/no-unused-vars
+   21:11  error    'supabase' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  160:40  warning  Unexpected any. Specify a different type       @typescript-eslint/no-explicit-any
+  257:39  warning  Unexpected any. Specify a different type       @typescript-eslint/no-explicit-any
+
+C:\Final year project\Aegis AI\backend\src\analytics\tests\analytics.controller.spec.ts
+   9:7   error    'dashboardService' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  52:12  warning  Unexpected any. Specify a different type               @typescript-eslint/no-explicit-any
+  81:12  warning  Unexpected any. Specify a different type               @typescript-eslint/no-explicit-any
+
+C:\Final year project\Aegis AI\backend\src\analytics\tests\analytics.service.spec.ts
+   4:10  error    'PersonalRecordType' is defined but never used  @typescript-eslint/no-unused-vars
+  12:23  warning  Unexpected any. Specify a different type        @typescript-eslint/no-explicit-any
+  13:24  warning  Unexpected any. Specify a different type        @typescript-eslint/no-explicit-any
+  14:30  warning  Unexpected any. Specify a different type        @typescript-eslint/no-explicit-any
+  15:31  warning  Unexpected any. Specify a different type        @typescript-eslint/no-explicit-any
+  18:18  warning  Unexpected any. Specify a different type        @typescript-eslint/no-explicit-any
+  35:38  warning  Unexpected any. Specify a different type        @typescript-eslint/no-explicit-any
+  35:50  warning  Unexpected any. Specify a different type        @typescript-eslint/no-explicit-any
+  42:42  warning  Unexpected any. Specify a different type        @typescript-eslint/no-explicit-any
+  42:54  warning  Unexpected any. Specify a different type        @typescript-eslint/no-explicit-any
+  51:46  warning  Unexpected any. Specify a different type        @typescript-eslint/no-explicit-any
+  51:54  warning  Unexpected any. Specify a different type        @typescript-eslint/no-explicit-any
+  65:46  warning  Unexpected any. Specify a different type        @typescript-eslint/no-explicit-any
+  65:54  warning  Unexpected any. Specify a different type        @typescript-eslint/no-explicit-any
+
+C:\Final year project\Aegis AI\backend\src\auth\auth.service.ts
+  55:14  error    'error' is defined but never used         @typescript-eslint/no-unused-vars
+  65:31  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  76:22  error    'email' is defined but never used         @typescript-eslint/no-unused-vars
+  76:37  error    'password' is defined but never used      @typescript-eslint/no-unused-vars
+  76:64  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Final year project\Aegis AI\backend\src\auth\controllers\auth.controller.spec.ts
+  12:7  error  'configService' is assigned a value but never used    @typescript-eslint/no-unused-vars
+  13:7  error  'supabaseService' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+C:\Final year project\Aegis AI\backend\src\auth\controllers\auth.controller.ts
+  10:3  error  'InternalServerErrorException' is defined but never used  @typescript-eslint/no-unused-vars
+  28:3  error  'ApiBearerAuth' is defined but never used                 @typescript-eslint/no-unused-vars
+
+C:\Final year project\Aegis AI\backend\src\auth\dto\reset-password.dto.ts
+  1:19  error  'IsString' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Final year project\Aegis AI\backend\src\auth\dto\update-profile.dto.ts
+  1:32  error  'IsUrl' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Final year project\Aegis AI\backend\src\auth\interfaces\auth.interface.ts
+  12:44  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  26:32  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  27:33  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Final year project\Aegis AI\backend\src\auth\jwt.strategy.ts
+  26:27  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Final year project\Aegis AI\backend\src\auth\services\auth.service.spec.ts
+  10:7   error    'tokenService' is assigned a value but never used     @typescript-eslint/no-unused-vars
+  11:7   error    'oauthService' is assigned a value but never used     @typescript-eslint/no-unused-vars
+  12:7   error    'profileService' is assigned a value but never used   @typescript-eslint/no-unused-vars
+  13:7   error    'passwordService' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  15:27  warning  Unexpected any. Specify a different type              @typescript-eslint/no-explicit-any
+
+C:\Final year project\Aegis AI\backend\src\auth\services\auth.service.ts
+  120:11  error    'profile' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  140:18  warning  Unexpected any. Specify a different type      @typescript-eslint/no-explicit-any
+  146:14  error    'error' is defined but never used             @typescript-eslint/no-unused-vars
+
+C:\Final year project\Aegis AI\backend\src\auth\services\token.service.ts
+  88:14  error  'error' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Final year project\Aegis AI\backend\src\auth\strategies\jwt.strategy.ts
+   7:10  error    'UserProfile' is defined but never used   @typescript-eslint/no-unused-vars
+  27:27  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Final year project\Aegis AI\backend\src\auth\strategies\refresh-token.strategy.ts
+  20:23  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  20:37  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Final year project\Aegis AI\backend\src\common\filters\http-exception.filter.ts
+  51:25  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Final year project\Aegis AI\backend\src\common\interceptors\response.interceptor.ts
+  11:67  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  12:71  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Final year project\Aegis AI\backend\src\common\interceptors\timeout.interceptor.ts
+  19:71  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Final year project\Aegis AI\backend\src\common\utils\validate.util.ts
+  15:33  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Final year project\Aegis AI\backend\src\exercise\controllers\exercise.controller.ts
+  12:3  error  'BadRequestException' is defined but never used           @typescript-eslint/no-unused-vars
+  13:3  error  'InternalServerErrorException' is defined but never used  @typescript-eslint/no-unused-vars
+  28:3  error  'ApiBearerAuth' is defined but never used                 @typescript-eslint/no-unused-vars
+
+C:\Final year project\Aegis AI\backend\src\exercise\dto\exercise-response.dto.ts
+  3:3  error  'IsInt' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Final year project\Aegis AI\backend\src\exercise\exercise.controller.spec.ts
+  8:7  error  'service' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+C:\Final year project\Aegis AI\backend\src\exercise\exercise.service.spec.ts
+  7:7  error  'supabaseService' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+C:\Final year project\Aegis AI\backend\src\exercise\services\exercise.service.ts
+   11:10  error    'Exercise' is defined but never used         @typescript-eslint/no-unused-vars
+   14:3   error    'MovementPattern' is defined but never used  @typescript-eslint/no-unused-vars
+   15:3   error    'DifficultyLevel' is defined but never used  @typescript-eslint/no-unused-vars
+  103:35  warning  Unexpected any. Specify a different type     @typescript-eslint/no-explicit-any
+  105:37  warning  Unexpected any. Specify a different type     @typescript-eslint/no-explicit-any
+  175:33  warning  Unexpected any. Specify a different type     @typescript-eslint/no-explicit-any
+  177:35  warning  Unexpected any. Specify a different type     @typescript-eslint/no-explicit-any
+  222:58  warning  Unexpected any. Specify a different type     @typescript-eslint/no-explicit-any
+  233:37  warning  Unexpected any. Specify a different type     @typescript-eslint/no-explicit-any
+  279:51  warning  Unexpected any. Specify a different type     @typescript-eslint/no-explicit-any
+  280:56  warning  Unexpected any. Specify a different type     @typescript-eslint/no-explicit-any
+  372:23  warning  Unexpected any. Specify a different type     @typescript-eslint/no-explicit-any
+  466:39  warning  Unexpected any. Specify a different type     @typescript-eslint/no-explicit-any
+  476:55  warning  Unexpected any. Specify a different type     @typescript-eslint/no-explicit-any
+  512:41  warning  Unexpected any. Specify a different type     @typescript-eslint/no-explicit-any
+  522:60  warning  Unexpected any. Specify a different type     @typescript-eslint/no-explicit-any
+
+C:\Final year project\Aegis AI\backend\src\health\health.controller.ts
+   1:10  error  'Inject' is defined but never used                  @typescript-eslint/no-unused-vars
+   5:3   error  'TypeOrmHealthIndicator' is defined but never used  @typescript-eslint/no-unused-vars
+  39:19  error  'data' is assigned a value but never used           @typescript-eslint/no-unused-vars
+
+C:\Final year project\Aegis AI\backend\src\main.ts
+  11:10  error  'ThrottlerGuard' is defined but never used  @typescript-eslint/no-unused-vars
+  12:10  error  'APP_GUARD' is defined but never used       @typescript-eslint/no-unused-vars
+  13:10  error  'JwtAuthGuard' is defined but never used    @typescript-eslint/no-unused-vars
+
+C:\Final year project\Aegis AI\backend\src\supabase\supabase.module.ts
+  11:34  error  A `require()` style import is forbidden  @typescript-eslint/no-require-imports
+
+C:\Final year project\Aegis AI\backend\src\supabase\supabase.service.ts
+  12:23  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  52:27  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  53:27  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Final year project\Aegis AI\backend\src\types\passport.d.ts
+  6:15  error  An interface declaring no members is equivalent to its supertype  @typescript-eslint/no-empty-object-type
+
+C:\Final year project\Aegis AI\backend\src\workout-exercises\workout-exercises.controller.ts
+   13:3   error    'BadRequestException' is defined but never used           @typescript-eslint/no-unused-vars
+   14:3   error    'InternalServerErrorException' is defined but never used  @typescript-eslint/no-unused-vars
+   54:26  warning  Unexpected any. Specify a different type                  @typescript-eslint/no-explicit-any
+   81:26  warning  Unexpected any. Specify a different type                  @typescript-eslint/no-explicit-any
+  110:26  warning  Unexpected any. Specify a different type                  @typescript-eslint/no-explicit-any
+  176:26  warning  Unexpected any. Specify a different type                  @typescript-eslint/no-explicit-any
+  206:26  warning  Unexpected any. Specify a different type                  @typescript-eslint/no-explicit-any
+
+C:\Final year project\Aegis AI\backend\src\workout-exercises\workout-exercises.service.spec.ts
+    8:7   error    'supabaseService' is assigned a value but never used  @typescript-eslint/no-unused-vars
+   14:7   error    'mockInsert' is assigned a value but never used       @typescript-eslint/no-unused-vars
+   16:7   error    'mockDelete' is assigned a value but never used       @typescript-eslint/no-unused-vars
+   18:7   error    'mockIn' is assigned a value but never used           @typescript-eslint/no-unused-vars
+   22:7   error    'mockIs' is assigned a value but never used           @typescript-eslint/no-unused-vars
+   96:31  warning  Unexpected any. Specify a different type              @typescript-eslint/no-explicit-any
+   97:26  warning  Unexpected any. Specify a different type              @typescript-eslint/no-explicit-any
+  219:33  warning  Unexpected any. Specify a different type              @typescript-eslint/no-explicit-any
+  220:28  warning  Unexpected any. Specify a different type              @typescript-eslint/no-explicit-any
+  237:33  warning  Unexpected any. Specify a different type              @typescript-eslint/no-explicit-any
+  238:28  warning  Unexpected any. Specify a different type              @typescript-eslint/no-explicit-any
+
+C:\Final year project\Aegis AI\backend\src\workout-exercises\workout-exercises.service.ts
+   12:3   error    'ReorderItemDto' is defined but never used  @typescript-eslint/no-unused-vars
+  312:23  warning  Unexpected any. Specify a different type    @typescript-eslint/no-explicit-any
+  495:59  warning  Unexpected any. Specify a different type    @typescript-eslint/no-explicit-any
+
+C:\Final year project\Aegis AI\backend\src\workout-sessions\workout-sessions.controller.ts
+   13:3   error    'NotFoundException' is defined but never used             @typescript-eslint/no-unused-vars
+   14:3   error    'BadRequestException' is defined but never used           @typescript-eslint/no-unused-vars
+   15:3   error    'ConflictException' is defined but never used             @typescript-eslint/no-unused-vars
+   16:3   error    'InternalServerErrorException' is defined but never used  @typescript-eslint/no-unused-vars
+   57:26  warning  Unexpected any. Specify a different type                  @typescript-eslint/no-explicit-any
+   87:26  warning  Unexpected any. Specify a different type                  @typescript-eslint/no-explicit-any
+  108:26  warning  Unexpected any. Specify a different type                  @typescript-eslint/no-explicit-any
+  130:26  warning  Unexpected any. Specify a different type                  @typescript-eslint/no-explicit-any
+  161:26  warning  Unexpected any. Specify a different type                  @typescript-eslint/no-explicit-any
+  184:26  warning  Unexpected any. Specify a different type                  @typescript-eslint/no-explicit-any
+  207:26  warning  Unexpected any. Specify a different type                  @typescript-eslint/no-explicit-any
+  229:26  warning  Unexpected any. Specify a different type                  @typescript-eslint/no-explicit-any
+
+C:\Final year project\Aegis AI\backend\src\workout-sessions\workout-sessions.service.spec.ts
+  10:7   error    'supabaseService' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  11:19  warning  Unexpected any. Specify a different type              @typescript-eslint/no-explicit-any
+  12:20  warning  Unexpected any. Specify a different type              @typescript-eslint/no-explicit-any
+
+C:\Final year project\Aegis AI\backend\src\workout-sessions\workout-sessions.service.ts
+    4:3   error    'BadRequestException' is defined but never used  @typescript-eslint/no-unused-vars
+   12:3   error    'WorkoutSession' is defined but never used       @typescript-eslint/no-unused-vars
+  175:49  warning  Unexpected any. Specify a different type         @typescript-eslint/no-explicit-any
+  488:34  warning  Unexpected any. Specify a different type         @typescript-eslint/no-explicit-any
+
+C:\Final year project\Aegis AI\backend\src\workout-sets\dto\reorder-workout-sets.dto.ts
+  7:3  error  'ArrayMinSize' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Final year project\Aegis AI\backend\src\workout-sets\workout-sets.controller.ts
+   12:3   error    'NotFoundException' is defined but never used             @typescript-eslint/no-unused-vars
+   13:3   error    'BadRequestException' is defined but never used           @typescript-eslint/no-unused-vars
+   14:3   error    'InternalServerErrorException' is defined but never used  @typescript-eslint/no-unused-vars
+   49:26  warning  Unexpected any. Specify a different type                  @typescript-eslint/no-explicit-any
+   69:26  warning  Unexpected any. Specify a different type                  @typescript-eslint/no-explicit-any
+   95:26  warning  Unexpected any. Specify a different type                  @typescript-eslint/no-explicit-any
+  125:26  warning  Unexpected any. Specify a different type                  @typescript-eslint/no-explicit-any
+  148:26  warning  Unexpected any. Specify a different type                  @typescript-eslint/no-explicit-any
+
+C:\Final year project\Aegis AI\backend\src\workout-sets\workout-sets.service.spec.ts
+   8:7   error    'supabaseService' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  13:7   error    'mockInsert' is assigned a value but never used       @typescript-eslint/no-unused-vars
+  68:26  warning  Unexpected any. Specify a different type              @typescript-eslint/no-explicit-any
+
+C:\Final year project\Aegis AI\backend\src\workout-sets\workout-sets.service.ts
+  229:58  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  341:23  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  595:51  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Final year project\Aegis AI\backend\src\workout\dto\update-workout.dto.ts
+   2:3   error  'IsString' is defined but never used        @typescript-eslint/no-unused-vars
+   3:3   error  'IsOptional' is defined but never used      @typescript-eslint/no-unused-vars
+   4:3   error  'IsArray' is defined but never used         @typescript-eslint/no-unused-vars
+   5:3   error  'ValidateNested' is defined but never used  @typescript-eslint/no-unused-vars
+   6:3   error  'IsInt' is defined but never used           @typescript-eslint/no-unused-vars
+   7:3   error  'IsPositive' is defined but never used      @typescript-eslint/no-unused-vars
+   8:3   error  'IsNumber' is defined but never used        @typescript-eslint/no-unused-vars
+  10:10  error  'Type' is defined but never used            @typescript-eslint/no-unused-vars
+
+C:\Final year project\Aegis AI\backend\src\workout\workout.controller.spec.ts
+  8:7  error  'service' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+C:\Final year project\Aegis AI\backend\src\workout\workout.controller.ts
+   12:3   error    'NotFoundException' is defined but never used             @typescript-eslint/no-unused-vars
+   13:3   error    'BadRequestException' is defined but never used           @typescript-eslint/no-unused-vars
+   14:3   error    'InternalServerErrorException' is defined but never used  @typescript-eslint/no-unused-vars
+   26:3   error    'ApiBearerAuth' is defined but never used                 @typescript-eslint/no-unused-vars
+   40:26  warning  Unexpected any. Specify a different type                  @typescript-eslint/no-explicit-any
+   70:26  warning  Unexpected any. Specify a different type                  @typescript-eslint/no-explicit-any
+   78:11  warning  Unexpected any. Specify a different type                  @typescript-eslint/no-explicit-any
+   94:64  warning  Unexpected any. Specify a different type                  @typescript-eslint/no-explicit-any
+   99:39  warning  Unexpected any. Specify a different type                  @typescript-eslint/no-explicit-any
+  124:26  warning  Unexpected any. Specify a different type                  @typescript-eslint/no-explicit-any
+  132:11  warning  Unexpected any. Specify a different type                  @typescript-eslint/no-explicit-any
+  148:64  warning  Unexpected any. Specify a different type                  @typescript-eslint/no-explicit-any
+  153:39  warning  Unexpected any. Specify a different type                  @typescript-eslint/no-explicit-any
+  180:26  warning  Unexpected any. Specify a different type                  @typescript-eslint/no-explicit-any
+  189:11  warning  Unexpected any. Specify a different type                  @typescript-eslint/no-explicit-any
+  205:64  warning  Unexpected any. Specify a different type                  @typescript-eslint/no-explicit-any
+  210:39  warning  Unexpected any. Specify a different type                  @typescript-eslint/no-explicit-any
+  236:26  warning  Unexpected any. Specify a different type                  @typescript-eslint/no-explicit-any
+
+C:\Final year project\Aegis AI\backend\src\workout\workout.service.spec.ts
+  7:7  error  'supabaseService' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+C:\Final year project\Aegis AI\backend\src\workout\workout.service.ts
+    4:3   error    'BadRequestException' is defined but never used       @typescript-eslint/no-unused-vars
+   40:24  warning  Unexpected any. Specify a different type              @typescript-eslint/no-explicit-any
+  243:39  warning  Unexpected any. Specify a different type              @typescript-eslint/no-explicit-any
+  321:53  warning  Unexpected any. Specify a different type              @typescript-eslint/no-explicit-any
+  368:11  error    'existingWorkout' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  372:23  warning  Unexpected any. Specify a different type              @typescript-eslint/no-explicit-any
+  427:53  warning  Unexpected any. Specify a different type              @typescript-eslint/no-explicit-any
+  532:11  error    'existingWorkout' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+C:\Final year project\Aegis AI\backend\test\exercise.e2e-spec.ts
+  91:42  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+✖ 199 problems (80 errors, 119 warnings)
+

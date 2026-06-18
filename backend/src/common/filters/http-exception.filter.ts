@@ -4,8 +4,8 @@ import {
   ArgumentsHost,
   HttpException,
   HttpStatus,
-} from '@nestjs/common';
-import { Logger } from 'nestjs-pino';
+} from "@nestjs/common";
+import { Logger } from "nestjs-pino";
 
 @Catch()
 export class HttpExceptionFilter implements ExceptionFilter {
@@ -24,15 +24,15 @@ export class HttpExceptionFilter implements ExceptionFilter {
       message = exception.getResponse();
     } else {
       status = HttpStatus.INTERNAL_SERVER_ERROR;
-      message = 'Internal server error';
+      message = "Internal server error";
       // Log unexpected errors
-      this.logger.error(exception, 'Unexpected error');
+      this.logger.error(exception, "Unexpected error");
     }
 
     // Log the error for monitoring (we already logged unexpected errors above)
     // For expected errors, we can log at warn level
     if (!(exception instanceof HttpException) || status >= 500) {
-      this.logger.error(exception, 'Error caught by HttpExceptionFilter');
+      this.logger.error(exception, "Error caught by HttpExceptionFilter");
     } else {
       this.logger.warn(
         `${message}`,
@@ -46,7 +46,9 @@ export class HttpExceptionFilter implements ExceptionFilter {
       path: request.url,
       method: request.method,
       message:
-        typeof message === 'string' ? message : (message as any).message || 'Error',
+        typeof message === "string"
+          ? message
+          : (message as any).message || "Error",
     });
   }
 }

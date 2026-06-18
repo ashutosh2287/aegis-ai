@@ -1,8 +1,8 @@
-import { IsString, IsOptional, IsIn } from 'class-validator';
+import { IsString, IsOptional, IsIn } from "class-validator";
 
 export class VolumeQueryDto {
   @IsOptional()
-  @IsIn(['day', 'week', 'month', 'year'])
+  @IsIn(["day", "week", "month", "year"])
   timeframe?: string;
 
   @IsOptional()

@@ -3,7 +3,7 @@ export interface StrengthProgression {
   currentOneRepMax: number;
   bestOneRepMax: number;
   improvementPercentage: number;
-  trend: 'UPWARD' | 'DOWNWARD' | 'STABLE';
+  trend: "UPWARD" | "DOWNWARD" | "STABLE";
   totalWorkouts: number;
 }
 

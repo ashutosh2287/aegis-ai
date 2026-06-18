@@ -1,8 +1,8 @@
-import { Test, TestingModule } from '@nestjs/testing';
-import { ExerciseService } from './services/exercise.service';
-import { SupabaseService } from '../supabase/supabase.service';
+import { Test, TestingModule } from "@nestjs/testing";
+import { ExerciseService } from "./services/exercise.service";
+import { SupabaseService } from "../supabase/supabase.service";
 
-describe('ExerciseService', () => {
+describe("ExerciseService", () => {
   let service: ExerciseService;
   let supabaseService: SupabaseService;
 
@@ -37,7 +37,7 @@ describe('ExerciseService', () => {
     supabaseService = module.get<SupabaseService>(SupabaseService);
   });
 
-  it('should be defined', () => {
+  it("should be defined", () => {
     expect(service).toBeDefined();
   });
 

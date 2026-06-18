@@ -1,5 +1,13 @@
-import { IsString, IsOptional, IsArray, ValidateNested, IsInt, IsPositive, IsNumber } from 'class-validator';
-import { Type } from 'class-transformer';
+import {
+  IsString,
+  IsOptional,
+  IsArray,
+  ValidateNested,
+  IsInt,
+  IsPositive,
+  IsNumber,
+} from "class-validator";
+import { Type } from "class-transformer";
 
 export class SetResponseDto {
   @IsString()
@@ -21,12 +29,12 @@ export class SetResponseDto {
   weight?: number;
 
   @IsNumber()
-@IsOptional()
-rpe?: number;
+  @IsOptional()
+  rpe?: number;
 
-@IsString()
-@IsOptional()
-notes?: string;
+  @IsString()
+  @IsOptional()
+  notes?: string;
 
   @IsString()
   createdAt!: string;

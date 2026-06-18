@@ -1,5 +1,12 @@
-import { IsUUID, IsInt, Min, IsArray, ValidateNested, ArrayMinSize } from 'class-validator';
-import { Type } from 'class-transformer';
+import {
+  IsUUID,
+  IsInt,
+  Min,
+  IsArray,
+  ValidateNested,
+  ArrayMinSize,
+} from "class-validator";
+import { Type } from "class-transformer";
 
 class ReorderItemDto {
   @IsUUID()

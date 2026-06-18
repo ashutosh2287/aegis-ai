@@ -1,8 +1,8 @@
-import { IsString, IsOptional, IsIn } from 'class-validator';
+import { IsString, IsOptional, IsIn } from "class-validator";
 
 export class ProgressionQueryDto {
   @IsOptional()
-  @IsIn(['week', 'month', 'year', 'all'])
+  @IsIn(["week", "month", "year", "all"])
   timeframe?: string;
 
   @IsOptional()

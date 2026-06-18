@@ -1,12 +1,12 @@
-import { Test, TestingModule } from '@nestjs/testing';
-import { AuthController } from './auth.controller';
-import { AuthService } from '../services/auth.service';
-import { ConfigService } from '@nestjs/config';
-import { SupabaseService } from '../../supabase/supabase.service';
-import { JwtAuthGuard } from '../guards/jwt-auth.guard';
-import { RefreshTokenGuard } from '../guards/refresh-token.guard';
+import { Test, TestingModule } from "@nestjs/testing";
+import { AuthController } from "./auth.controller";
+import { AuthService } from "../services/auth.service";
+import { ConfigService } from "@nestjs/config";
+import { SupabaseService } from "../../supabase/supabase.service";
+import { JwtAuthGuard } from "../guards/jwt-auth.guard";
+import { RefreshTokenGuard } from "../guards/refresh-token.guard";
 
-describe('AuthController', () => {
+describe("AuthController", () => {
   let controller: AuthController;
   let authService: AuthService;
   let configService: ConfigService;
@@ -24,7 +24,7 @@ describe('AuthController', () => {
 
   const mockConfigService = {
     get: jest.fn((key) => {
-      if (key === 'WEB_URL') return 'http://localhost:3000';
+      if (key === "WEB_URL") return "http://localhost:3000";
       return null;
     }),
   };
@@ -62,52 +62,65 @@ describe('AuthController', () => {
     supabaseService = module.get<SupabaseService>(SupabaseService);
   });
 
-  it('should be defined', () => {
+  it("should be defined", () => {
     expect(controller).toBeDefined();
   });
 
-  describe('signup', () => {
-    it('should call authService.signup', async () => {
-      const signupDto = { email: 'test@example.com', password: 'password123' };
-      mockAuthService.signup.mockResolvedValue({ accessToken: 'token', refreshToken: 'token' });
+  describe("signup", () => {
+    it("should call authService.signup", async () => {
+      const signupDto = { email: "test@example.com", password: "password123" };
+      mockAuthService.signup.mockResolvedValue({
+        accessToken: "token",
+        refreshToken: "token",
+      });
       await controller.signup(signupDto);
       expect(authService.signup).toHaveBeenCalledWith(signupDto);
     });
   });
 
-  describe('login', () => {
-    it('should call authService.login', async () => {
-      const loginDto = { email: 'test@example.com', password: 'password123' };
-      mockAuthService.login.mockResolvedValue({ accessToken: 'token', refreshToken: 'token' });
+  describe("login", () => {
+    it("should call authService.login", async () => {
+      const loginDto = { email: "test@example.com", password: "password123" };
+      mockAuthService.login.mockResolvedValue({
+        accessToken: "token",
+        refreshToken: "token",
+      });
       await controller.login(loginDto);
       expect(authService.login).toHaveBeenCalledWith(loginDto);
     });
   });
 
-  describe('refreshToken', () => {
-    it('should call authService.refreshToken', async () => {
-      const refreshTokenDto = { refreshToken: 'token' };
-      mockAuthService.refreshToken.mockResolvedValue({ accessToken: 'token', refreshToken: 'token' });
+  describe("refreshToken", () => {
+    it("should call authService.refreshToken", async () => {
+      const refreshTokenDto = { refreshToken: "token" };
+      mockAuthService.refreshToken.mockResolvedValue({
+        accessToken: "token",
+        refreshToken: "token",
+      });
       await controller.refreshToken(refreshTokenDto);
       expect(authService.refreshToken).toHaveBeenCalledWith(refreshTokenDto);
     });
   });
 
-  describe('logout', () => {
-    it('should call authService.logout', async () => {
-      const refreshTokenDto = { refreshToken: 'token' };
+  describe("logout", () => {
+    it("should call authService.logout", async () => {
+      const refreshTokenDto = { refreshToken: "token" };
       mockAuthService.logout.mockResolvedValue(undefined);
       await controller.logout(refreshTokenDto);
-      expect(authService.logout).toHaveBeenCalledWith('token');
+      expect(authService.logout).toHaveBeenCalledWith("token");
     });
   });
 
-  describe('requestPasswordReset', () => {
-    it('should call authService.requestPasswordReset', async () => {
-      const resetPasswordDto = { email: 'test@example.com' };
-      mockAuthService.requestPasswordReset.mockResolvedValue({ message: 'sent' });
+  describe("requestPasswordReset", () => {
+    it("should call authService.requestPasswordReset", async () => {
+      const resetPasswordDto = { email: "test@example.com" };
+      mockAuthService.requestPasswordReset.mockResolvedValue({
+        message: "sent",
+      });
       await controller.requestPasswordReset(resetPasswordDto);
-      expect(authService.requestPasswordReset).toHaveBeenCalledWith(resetPasswordDto);
+      expect(authService.requestPasswordReset).toHaveBeenCalledWith(
+        resetPasswordDto,
+      );
     });
   });
 

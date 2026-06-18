@@ -1,9 +1,9 @@
-import { Test, TestingModule } from '@nestjs/testing';
-import { WorkoutExercisesService } from './workout-exercises.service';
-import { SupabaseService } from '../supabase/supabase.service';
-import { ExerciseService } from '../exercise/services/exercise.service';
+import { Test, TestingModule } from "@nestjs/testing";
+import { WorkoutExercisesService } from "./workout-exercises.service";
+import { SupabaseService } from "../supabase/supabase.service";
+import { ExerciseService } from "../exercise/services/exercise.service";
 
-describe('WorkoutExercisesService', () => {
+describe("WorkoutExercisesService", () => {
   let service: WorkoutExercisesService;
   let supabaseService: SupabaseService;
   let exerciseService: ExerciseService;
@@ -65,11 +65,11 @@ describe('WorkoutExercisesService', () => {
     exerciseService = module.get<ExerciseService>(ExerciseService);
   });
 
-  describe('addExerciseToWorkout', () => {
-    it('should add an exercise to a workout', async () => {
-      const workoutId = 'workout-id';
-      const userId = 'user-id';
-      const dto = { exerciseId: 'exercise-id', notes: 'Test notes' };
+  describe("addExerciseToWorkout", () => {
+    it("should add an exercise to a workout", async () => {
+      const workoutId = "workout-id";
+      const userId = "user-id";
+      const dto = { exerciseId: "exercise-id", notes: "Test notes" };
 
       // Mock workout exists: from('workouts').select('id').eq('id', workoutId).eq('user_id', userId).is('deleted_at', null).single()
       mockFrom.mockReturnValueOnce({
@@ -83,12 +83,15 @@ describe('WorkoutExercisesService', () => {
           }),
         }),
       });
-      mockSingle.mockResolvedValueOnce({ data: { id: workoutId, user_id: userId }, error: null });
+      mockSingle.mockResolvedValueOnce({
+        data: { id: workoutId, user_id: userId },
+        error: null,
+      });
 
       // Mock exercise exists
       (exerciseService.getExerciseById as jest.Mock).mockResolvedValueOnce({
-        id: 'exercise-id',
-        name: 'Test Exercise',
+        id: "exercise-id",
+        name: "Test Exercise",
         description: null,
         movementPattern: 0 as any,
         difficulty: 0 as any,
@@ -129,7 +132,7 @@ describe('WorkoutExercisesService', () => {
       });
       mockSingle.mockResolvedValueOnce({
         data: {
-          id: 'workout-exercise-id',
+          id: "workout-exercise-id",
           workout_id: workoutId,
           exercise_id: dto.exerciseId,
           order_index: 0,
@@ -144,15 +147,15 @@ describe('WorkoutExercisesService', () => {
       const result = await service.addExerciseToWorkout(workoutId, userId, dto);
 
       expect(result).toBeDefined();
-      expect(result.id).toBe('workout-exercise-id');
+      expect(result.id).toBe("workout-exercise-id");
       expect(result.notes).toBe(dto.notes);
     });
   });
 
-  describe('getWorkoutExercises', () => {
-    it('should return workout exercises for a workout', async () => {
-      const workoutId = 'workout-id';
-      const userId = 'user-id';
+  describe("getWorkoutExercises", () => {
+    it("should return workout exercises for a workout", async () => {
+      const workoutId = "workout-id";
+      const userId = "user-id";
 
       // Mock workout exists
       mockFrom.mockReturnValueOnce({
@@ -166,7 +169,10 @@ describe('WorkoutExercisesService', () => {
           }),
         }),
       });
-      mockSingle.mockResolvedValueOnce({ data: { id: workoutId, user_id: userId }, error: null });
+      mockSingle.mockResolvedValueOnce({
+        data: { id: workoutId, user_id: userId },
+        error: null,
+      });
 
       // Mock workout exercises query
       mockFrom.mockReturnValueOnce({
@@ -181,9 +187,9 @@ describe('WorkoutExercisesService', () => {
       mockOrder.mockResolvedValueOnce({
         data: [
           {
-            id: 'we1',
+            id: "we1",
             workout_id: workoutId,
-            exercise_id: 'exercise-id-1',
+            exercise_id: "exercise-id-1",
             order_index: 0,
             notes: null,
             created_at: new Date().toISOString(),
@@ -191,11 +197,11 @@ describe('WorkoutExercisesService', () => {
             deleted_at: null,
           },
           {
-            id: 'we2',
+            id: "we2",
             workout_id: workoutId,
-            exercise_id: 'exercise-id-2',
+            exercise_id: "exercise-id-2",
             order_index: 1,
-            notes: 'Notes',
+            notes: "Notes",
             created_at: new Date().toISOString(),
             updated_at: new Date().toISOString(),
             deleted_at: null,
@@ -207,8 +213,8 @@ describe('WorkoutExercisesService', () => {
       // Mock exercise service getExerciseById for each exercise
       (exerciseService.getExerciseById as jest.Mock)
         .mockResolvedValueOnce({
-          id: 'exercise-id-1',
-          name: 'Exercise 1',
+          id: "exercise-id-1",
+          name: "Exercise 1",
           description: null,
           movementPattern: 0 as any,
           difficulty: 0 as any,
@@ -225,8 +231,8 @@ describe('WorkoutExercisesService', () => {
           equipmentNeeded: [],
         })
         .mockResolvedValueOnce({
-          id: 'exercise-id-2',
-          name: 'Exercise 2',
+          id: "exercise-id-2",
+          name: "Exercise 2",
           description: null,
           movementPattern: 0 as any,
           difficulty: 0 as any,
@@ -246,19 +252,19 @@ describe('WorkoutExercisesService', () => {
       const result = await service.getWorkoutExercises(workoutId, userId);
 
       expect(result).toHaveLength(2);
-      expect(result[0].id).toBe('we1');
-      expect(result[0].exercise.name).toBe('Exercise 1');
-      expect(result[1].id).toBe('we2');
-      expect(result[1].exercise.name).toBe('Exercise 2');
+      expect(result[0].id).toBe("we1");
+      expect(result[0].exercise.name).toBe("Exercise 1");
+      expect(result[1].id).toBe("we2");
+      expect(result[1].exercise.name).toBe("Exercise 2");
     });
   });
 
-  describe('updateWorkoutExercise', () => {
-    it('should update a workout exercise', async () => {
-      const workoutId = 'workout-id';
-      const userId = 'user-id';
-      const workoutExerciseId = 'we-id';
-      const dto = { notes: 'Updated notes' };
+  describe("updateWorkoutExercise", () => {
+    it("should update a workout exercise", async () => {
+      const workoutId = "workout-id";
+      const userId = "user-id";
+      const workoutExerciseId = "we-id";
+      const dto = { notes: "Updated notes" };
 
       // Mock workout exists
       mockFrom.mockReturnValueOnce({
@@ -272,7 +278,10 @@ describe('WorkoutExercisesService', () => {
           }),
         }),
       });
-      mockSingle.mockResolvedValueOnce({ data: { id: workoutId, user_id: userId }, error: null });
+      mockSingle.mockResolvedValueOnce({
+        data: { id: workoutId, user_id: userId },
+        error: null,
+      });
 
       // Mock workout exercise exists
       mockFrom.mockReturnValueOnce({
@@ -286,7 +295,10 @@ describe('WorkoutExercisesService', () => {
           }),
         }),
       });
-      mockSingle.mockResolvedValueOnce({ data: { id: workoutExerciseId, workout_id: workoutId }, error: null });
+      mockSingle.mockResolvedValueOnce({
+        data: { id: workoutExerciseId, workout_id: workoutId },
+        error: null,
+      });
 
       // Mock update for workout_exercise
       mockFrom.mockReturnValueOnce({
@@ -305,7 +317,7 @@ describe('WorkoutExercisesService', () => {
         data: {
           id: workoutExerciseId,
           workout_id: workoutId,
-          exercise_id: 'exercise-id',
+          exercise_id: "exercise-id",
           order_index: 0,
           notes: dto.notes,
           created_at: new Date().toISOString(),
@@ -315,20 +327,25 @@ describe('WorkoutExercisesService', () => {
         error: null,
       });
 
-      await service.updateWorkoutExercise(workoutId, userId, workoutExerciseId, dto);
+      await service.updateWorkoutExercise(
+        workoutId,
+        userId,
+        workoutExerciseId,
+        dto,
+      );
 
       // Verify the update was called with the correct parameters
-      expect(mockFrom).toHaveBeenCalledWith('workout_exercises');
+      expect(mockFrom).toHaveBeenCalledWith("workout_exercises");
       expect(mockUpdate).toHaveBeenCalledWith({ notes: dto.notes });
-      expect(mockEq).toHaveBeenCalledWith('id', workoutExerciseId);
+      expect(mockEq).toHaveBeenCalledWith("id", workoutExerciseId);
     });
   });
 
-  describe('deleteWorkoutExercise', () => {
-    it('should soft delete a workout exercise', async () => {
-      const workoutId = 'workout-id';
-      const userId = 'user-id';
-      const workoutExerciseId = 'we-id';
+  describe("deleteWorkoutExercise", () => {
+    it("should soft delete a workout exercise", async () => {
+      const workoutId = "workout-id";
+      const userId = "user-id";
+      const workoutExerciseId = "we-id";
 
       // Mock workout exists
       mockFrom.mockReturnValueOnce({
@@ -342,7 +359,10 @@ describe('WorkoutExercisesService', () => {
           }),
         }),
       });
-      mockSingle.mockResolvedValueOnce({ data: { id: workoutId, user_id: userId }, error: null });
+      mockSingle.mockResolvedValueOnce({
+        data: { id: workoutId, user_id: userId },
+        error: null,
+      });
 
       // Mock workout exercise exists
       mockFrom.mockReturnValueOnce({
@@ -356,7 +376,10 @@ describe('WorkoutExercisesService', () => {
           }),
         }),
       });
-      mockSingle.mockResolvedValueOnce({ data: { id: workoutExerciseId, workout_id: workoutId }, error: null });
+      mockSingle.mockResolvedValueOnce({
+        data: { id: workoutExerciseId, workout_id: workoutId },
+        error: null,
+      });
 
       // Mock update for soft delete
       mockFrom.mockReturnValueOnce({
@@ -370,17 +393,19 @@ describe('WorkoutExercisesService', () => {
       await service.deleteWorkoutExercise(workoutId, userId, workoutExerciseId);
 
       // Verify the update was called with the correct parameters
-      expect(mockFrom).toHaveBeenCalledWith('workout_exercises');
-      expect(mockUpdate).toHaveBeenCalledWith({ deleted_at: expect.any(String) });
-      expect(mockEq).toHaveBeenCalledWith('id', workoutExerciseId);
+      expect(mockFrom).toHaveBeenCalledWith("workout_exercises");
+      expect(mockUpdate).toHaveBeenCalledWith({
+        deleted_at: expect.any(String),
+      });
+      expect(mockEq).toHaveBeenCalledWith("id", workoutExerciseId);
     });
   });
 
-  describe('reorderWorkoutExercises', () => {
-    it('should reorder workout exercises', async () => {
-      const workoutId = 'workout-id';
-      const userId = 'user-id';
-      const workoutExerciseIds = ['we1', 'we2', 'we3'];
+  describe("reorderWorkoutExercises", () => {
+    it("should reorder workout exercises", async () => {
+      const workoutId = "workout-id";
+      const userId = "user-id";
+      const workoutExerciseIds = ["we1", "we2", "we3"];
 
       // Mock workout exists
       mockFrom.mockReturnValueOnce({
@@ -394,7 +419,10 @@ describe('WorkoutExercisesService', () => {
           }),
         }),
       });
-      mockSingle.mockResolvedValueOnce({ data: { id: workoutId, user_id: userId }, error: null });
+      mockSingle.mockResolvedValueOnce({
+        data: { id: workoutId, user_id: userId },
+        error: null,
+      });
 
       // Mock get current exercises
       mockFrom.mockReturnValueOnce({
@@ -402,9 +430,9 @@ describe('WorkoutExercisesService', () => {
           eq: jest.fn().mockReturnValue({
             is: jest.fn().mockResolvedValue({
               data: [
-                { id: 'we1', orderIndex: 0 },
-                { id: 'we2', orderIndex: 1 },
-                { id: 'we3', orderIndex: 2 },
+                { id: "we1", orderIndex: 0 },
+                { id: "we2", orderIndex: 1 },
+                { id: "we3", orderIndex: 2 },
               ],
               error: null,
             }),
@@ -417,7 +445,8 @@ describe('WorkoutExercisesService', () => {
       mockUpdate.mockReturnValue({
         eq: mockEq,
       });
-      mockEq.mockResolvedValueOnce({ error: null })
+      mockEq
+        .mockResolvedValueOnce({ error: null })
         .mockResolvedValueOnce({ error: null })
         .mockResolvedValueOnce({ error: null });
 
@@ -427,7 +456,10 @@ describe('WorkoutExercisesService', () => {
 
       // Prepare the DTO for reorder
       const reorderDto = {
-        items: workoutExerciseIds.map((id, index) => ({ id, orderIndex: index })),
+        items: workoutExerciseIds.map((id, index) => ({
+          id,
+          orderIndex: index,
+        })),
       };
 
       await service.reorderWorkoutExercises(workoutId, userId, reorderDto);
@@ -440,9 +472,9 @@ describe('WorkoutExercisesService', () => {
 
       // Verify that eq was called three times with the correct parameters
       expect(mockEq).toHaveBeenCalledTimes(3);
-      expect(mockEq).toHaveBeenNthCalledWith(1, 'id', 'we1');
-      expect(mockEq).toHaveBeenNthCalledWith(2, 'id', 'we2');
-      expect(mockEq).toHaveBeenNthCalledWith(3, 'id', 'we3');
+      expect(mockEq).toHaveBeenNthCalledWith(1, "id", "we1");
+      expect(mockEq).toHaveBeenNthCalledWith(2, "id", "we2");
+      expect(mockEq).toHaveBeenNthCalledWith(3, "id", "we3");
     });
   });
 });

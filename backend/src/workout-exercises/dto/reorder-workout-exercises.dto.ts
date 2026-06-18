@@ -1,10 +1,5 @@
-import {
-  IsArray,
-  IsInt,
-  IsUUID,
-  ValidateNested,
-} from 'class-validator';
-import { Type } from 'class-transformer';
+import { IsArray, IsInt, IsUUID, ValidateNested } from "class-validator";
+import { Type } from "class-transformer";
 
 export class ReorderItemDto {
   @IsUUID()

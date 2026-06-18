@@ -1,5 +1,5 @@
-import { ClassTransformOptions, plainToInstance } from 'class-transformer';
-import { validate, ValidationError } from 'class-validator';
+import { ClassTransformOptions, plainToInstance } from "class-transformer";
+import { validate, ValidationError } from "class-validator";
 
 export class ValidationUtil {
   /**
@@ -34,9 +34,9 @@ export class ValidationUtil {
     if (errors.length > 0) {
       const messages = errors
         .map((error) => {
-          return Object.values(error.constraints || {}).join(', ');
+          return Object.values(error.constraints || {}).join(", ");
         })
-        .join('; ');
+        .join("; ");
       throw new Error(`Validation failed: ${messages}`);
     }
 

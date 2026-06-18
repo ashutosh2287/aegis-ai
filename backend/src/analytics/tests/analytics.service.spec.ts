@@ -1,8 +1,9 @@
-import { Test, TestingModule } from '@nestjs/testing';
-import { AnalyticsService } from '../analytics.service';
-import { SupabaseService } from '../../supabase/supabase.service';
+import { Test, TestingModule } from "@nestjs/testing";
+import { AnalyticsService } from "../analytics.service";
+import { SupabaseService } from "../../supabase/supabase.service";
+import { PersonalRecordType } from "../enums/personal-record-type.enum";
 
-describe('AnalyticsService', () => {
+describe("AnalyticsService", () => {
   let service: AnalyticsService;
   let supabaseService: SupabaseService;
 
@@ -10,25 +11,25 @@ describe('AnalyticsService', () => {
   const createMockSupabaseClient = () => {
     let resolvedData: any = [];
     let resolvedError: any = null;
-    let resolvedDataQueue: any[] = [];
-    let resolvedErrorQueue: any[] = [];
+    const resolvedDataQueue: any[] = [];
+    const resolvedErrorQueue: any[] = [];
 
     // Declare chain first to avoid TS2448
     const chain: any = {};
 
     // Now assign properties
     chain.from = jest.fn().mockReturnValue(chain);
-chain.select = jest.fn().mockReturnValue(chain);
-chain.eq = jest.fn().mockReturnValue(chain);
-chain.is = jest.fn().mockReturnValue(chain);
-chain.in = jest.fn().mockReturnValue(chain);
-chain.gte = jest.fn().mockReturnValue(chain);
-chain.lte = jest.fn().mockReturnValue(chain);
-chain.order = jest.fn().mockReturnValue(chain);
-chain.limit = jest.fn().mockReturnValue(chain);
-chain.single = jest.fn().mockReturnValue(chain);
-chain.not = jest.fn().mockReturnValue(chain);
-chain.group = jest.fn().mockReturnValue(chain);
+    chain.select = jest.fn().mockReturnValue(chain);
+    chain.eq = jest.fn().mockReturnValue(chain);
+    chain.is = jest.fn().mockReturnValue(chain);
+    chain.in = jest.fn().mockReturnValue(chain);
+    chain.gte = jest.fn().mockReturnValue(chain);
+    chain.lte = jest.fn().mockReturnValue(chain);
+    chain.order = jest.fn().mockReturnValue(chain);
+    chain.limit = jest.fn().mockReturnValue(chain);
+    chain.single = jest.fn().mockReturnValue(chain);
+    chain.not = jest.fn().mockReturnValue(chain);
+    chain.group = jest.fn().mockReturnValue(chain);
 
     // Method to set what the promise should resolve to
     chain.mockResolvedValue = (data: any, error: any = null) => {
@@ -45,15 +46,25 @@ chain.group = jest.fn().mockReturnValue(chain);
     };
 
     // Make the chain thenable so it can be awaited
-    chain.then = jest.fn().mockImplementation((callback: (value: any) => any) => {
-      const data = resolvedDataQueue.length > 0 ? resolvedDataQueue.shift() : resolvedData;
-      const error = resolvedErrorQueue.length > 0 ? resolvedErrorQueue.shift() : resolvedError;
-      return Promise.resolve(callback({ data, error }));
-    });
+    chain.then = jest
+      .fn()
+      .mockImplementation((callback: (value: any) => any) => {
+        const data =
+          resolvedDataQueue.length > 0
+            ? resolvedDataQueue.shift()
+            : resolvedData;
+        const error =
+          resolvedErrorQueue.length > 0
+            ? resolvedErrorQueue.shift()
+            : resolvedError;
+        return Promise.resolve(callback({ data, error }));
+      });
 
-    chain.catch = jest.fn().mockImplementation((callback: (error: any) => any) => {
-      return Promise.resolve().catch(callback);
-    });
+    chain.catch = jest
+      .fn()
+      .mockImplementation((callback: (error: any) => any) => {
+        return Promise.resolve().catch(callback);
+      });
 
     return chain;
   };
@@ -73,12 +84,11 @@ chain.group = jest.fn().mockReturnValue(chain);
 
     service = module.get<AnalyticsService>(AnalyticsService);
     supabaseService = module.get<SupabaseService>(SupabaseService);
-    console.log('CLIENT', supabaseService.getClient());
+    console.log("CLIENT", supabaseService.getClient());
   });
-  
 
-  describe('getSessionVolume', () => {
-    it('should return volume for a session with valid data', async () => {
+  describe("getSessionVolume", () => {
+    it("should return volume for a session with valid data", async () => {
       const mockSupabaseClient = supabaseService.getClient();
 
       // Mock session query
@@ -89,8 +99,8 @@ chain.group = jest.fn().mockReturnValue(chain);
       mockSupabaseClient.is.mockReturnValue(mockSupabaseClient);
       mockSupabaseClient.single.mockReturnValue(mockSupabaseClient);
       mockSupabaseClient.mockResolvedValue(
-        { id: 'session1', workout_id: 'workout1' },
-        null
+        { id: "session1", workout_id: "workout1" },
+        null,
       );
 
       // Mock exercises query
@@ -101,8 +111,8 @@ chain.group = jest.fn().mockReturnValue(chain);
       mockSupabaseClient.is.mockReturnValue(mockSupabaseClient);
       mockSupabaseClient.single.mockReturnValue(mockSupabaseClient);
       mockSupabaseClient.mockResolvedValue(
-        [{ id: 'ex1' }, { id: 'ex2' }],
-        null
+        [{ id: "ex1" }, { id: "ex2" }],
+        null,
       );
 
       // Mock sets query
@@ -118,19 +128,19 @@ chain.group = jest.fn().mockReturnValue(chain);
           { reps: 5, weight: 30 },
           { reps: 8, weight: null }, // weight null should not contribute to volume
         ],
-        null
+        null,
       );
 
-      const result = await service.getSessionVolume('session1', 'user1');
+      const result = await service.getSessionVolume("session1", "user1");
 
       expect(result).toEqual({
-        totalVolume: (10 * 20) + (5 * 30), // 200 + 150 = 350
+        totalVolume: 10 * 20 + 5 * 30, // 200 + 150 = 350
         totalSets: 3,
         totalReps: 10 + 5 + 8, // 23
       });
     });
 
-    it('should throw NotFoundException if session does not exist', async () => {
+    it("should throw NotFoundException if session does not exist", async () => {
       const mockSupabaseClient = supabaseService.getClient();
       mockSupabaseClient.from.mockReturnValue(mockSupabaseClient);
       mockSupabaseClient.select.mockReturnValue(mockSupabaseClient);
@@ -138,19 +148,19 @@ chain.group = jest.fn().mockReturnValue(chain);
       mockSupabaseClient.eq.mockReturnValue(mockSupabaseClient);
       mockSupabaseClient.is.mockReturnValue(mockSupabaseClient);
       mockSupabaseClient.single.mockReturnValue(mockSupabaseClient);
-      mockSupabaseClient.mockResolvedValue(null, { code: 'PGRST116' });
+      mockSupabaseClient.mockResolvedValue(null, { code: "PGRST116" });
 
-      await expect(service.getSessionVolume('invalid-session', 'user1'))
-        .rejects
-        .toMatchObject({
-          response: {
-            statusCode: 404,
-            message: 'Session with ID invalid-session not found',
-          },
-        });
+      await expect(
+        service.getSessionVolume("invalid-session", "user1"),
+      ).rejects.toMatchObject({
+        response: {
+          statusCode: 404,
+          message: "Session with ID invalid-session not found",
+        },
+      });
     });
 
-    it('should throw InternalServerErrorException on database error', async () => {
+    it("should throw InternalServerErrorException on database error", async () => {
       const mockSupabaseClient = supabaseService.getClient();
       mockSupabaseClient.from.mockReturnValue(mockSupabaseClient);
       mockSupabaseClient.select.mockReturnValue(mockSupabaseClient);
@@ -158,21 +168,23 @@ chain.group = jest.fn().mockReturnValue(chain);
       mockSupabaseClient.eq.mockReturnValue(mockSupabaseClient);
       mockSupabaseClient.is.mockReturnValue(mockSupabaseClient);
       mockSupabaseClient.single.mockReturnValue(mockSupabaseClient);
-      mockSupabaseClient.mockResolvedValue(null, { message: 'Database connection failed' });
+      mockSupabaseClient.mockResolvedValue(null, {
+        message: "Database connection failed",
+      });
 
-      await expect(service.getSessionVolume('session1', 'user1'))
-        .rejects
-        .toMatchObject({
-          response: {
-            statusCode: 500,
-            message: 'Failed to fetch session: Database connection failed',
-          },
-        });
+      await expect(
+        service.getSessionVolume("session1", "user1"),
+      ).rejects.toMatchObject({
+        response: {
+          statusCode: 500,
+          message: "Failed to fetch session: Database connection failed",
+        },
+      });
     });
   });
 
-  describe('getExerciseVolume', () => {
-    it('should return volume for an exercise belonging to the user', async () => {
+  describe("getExerciseVolume", () => {
+    it("should return volume for an exercise belonging to the user", async () => {
       const mockSupabaseClient = supabaseService.getClient();
 
       // Mock exercise query
@@ -181,8 +193,8 @@ chain.group = jest.fn().mockReturnValue(chain);
       mockSupabaseClient.eq.mockReturnValue(mockSupabaseClient);
       mockSupabaseClient.single.mockReturnValue(mockSupabaseClient);
       mockSupabaseClient.mockResolvedValue(
-        { id: 'ex1', workout_id: 'workout1' },
-        null
+        { id: "ex1", workout_id: "workout1" },
+        null,
       );
 
       // Mock workout ownership query
@@ -193,10 +205,7 @@ chain.group = jest.fn().mockReturnValue(chain);
       mockSupabaseClient.is.mockReturnValue(mockSupabaseClient);
       mockSupabaseClient.is.mockReturnValue(mockSupabaseClient);
       mockSupabaseClient.single.mockReturnValue(mockSupabaseClient);
-      mockSupabaseClient.mockResolvedValue(
-        [{ id: 'workout1' }],
-        null
-      );
+      mockSupabaseClient.mockResolvedValue([{ id: "workout1" }], null);
 
       // Mock user workouts query
       mockSupabaseClient.from.mockReturnValue(mockSupabaseClient);
@@ -206,10 +215,7 @@ chain.group = jest.fn().mockReturnValue(chain);
       mockSupabaseClient.is.mockReturnValue(mockSupabaseClient);
       mockSupabaseClient.is.mockReturnValue(mockSupabaseClient);
       mockSupabaseClient.single.mockReturnValue(mockSupabaseClient);
-      mockSupabaseClient.mockResolvedValue(
-        [{ id: 'workout1' }],
-        null
-      );
+      mockSupabaseClient.mockResolvedValue([{ id: "workout1" }], null);
 
       // Mock user exercises query
       mockSupabaseClient.from.mockReturnValue(mockSupabaseClient);
@@ -219,10 +225,7 @@ chain.group = jest.fn().mockReturnValue(chain);
       mockSupabaseClient.is.mockReturnValue(mockSupabaseClient);
       mockSupabaseClient.is.mockReturnValue(mockSupabaseClient);
       mockSupabaseClient.single.mockReturnValue(mockSupabaseClient);
-      mockSupabaseClient.mockResolvedValue(
-        [{ id: 'ex1' }],
-        null
-      );
+      mockSupabaseClient.mockResolvedValue([{ id: "ex1" }], null);
 
       // Mock sets query
       mockSupabaseClient.from.mockReturnValue(mockSupabaseClient);
@@ -236,39 +239,39 @@ chain.group = jest.fn().mockReturnValue(chain);
           { reps: 10, weight: 20 },
           { reps: 5, weight: 30 },
         ],
-        null
+        null,
       );
 
-      const result = await service.getExerciseVolume('user1', 'ex1');
+      const result = await service.getExerciseVolume("user1", "ex1");
 
       expect(result).toEqual({
-        totalVolume: (10 * 20) + (5 * 30), // 200 + 150 = 350
+        totalVolume: 10 * 20 + 5 * 30, // 200 + 150 = 350
         totalSets: 2,
         totalReps: 10 + 5, // 15
       });
     });
 
-    it('should throw NotFoundException if exercise does not exist', async () => {
+    it("should throw NotFoundException if exercise does not exist", async () => {
       const mockSupabaseClient = supabaseService.getClient();
       mockSupabaseClient.from.mockReturnValue(mockSupabaseClient);
       mockSupabaseClient.select.mockReturnValue(mockSupabaseClient);
       mockSupabaseClient.eq.mockReturnValue(mockSupabaseClient);
       mockSupabaseClient.single.mockReturnValue(mockSupabaseClient);
-      mockSupabaseClient.mockResolvedValue(null, { code: 'PGRST116' });
+      mockSupabaseClient.mockResolvedValue(null, { code: "PGRST116" });
 
-      await expect(service.getExerciseVolume('user1', 'invalid-exercise'))
-        .rejects
-        .toMatchObject({
-          response: {
-            statusCode: 404,
-            message: 'Exercise with ID invalid-exercise not found',
-          },
-        });
+      await expect(
+        service.getExerciseVolume("user1", "invalid-exercise"),
+      ).rejects.toMatchObject({
+        response: {
+          statusCode: 404,
+          message: "Exercise with ID invalid-exercise not found",
+        },
+      });
     });
   });
 
-  describe('getWeeklyVolume', () => {
-    it('should return volume for the last 7 days', async () => {
+  describe("getWeeklyVolume", () => {
+    it("should return volume for the last 7 days", async () => {
       const mockSupabaseClient = supabaseService.getClient();
 
       // Mock sessions query
@@ -280,8 +283,8 @@ chain.group = jest.fn().mockReturnValue(chain);
       mockSupabaseClient.is.mockReturnValue(mockSupabaseClient);
       mockSupabaseClient.single.mockReturnValue(mockSupabaseClient);
       mockSupabaseClient.mockResolvedValue(
-        [{ id: 'session1' }, { id: 'session2' }],
-        null
+        [{ id: "session1" }, { id: "session2" }],
+        null,
       );
 
       // Mock session workouts query
@@ -291,11 +294,8 @@ chain.group = jest.fn().mockReturnValue(chain);
       mockSupabaseClient.single.mockReturnValue(mockSupabaseClient);
       mockSupabaseClient.single.mockReturnValue(mockSupabaseClient);
       mockSupabaseClient.mockResolvedValue(
-        [
-          { workout_id: 'workout1' },
-          { workout_id: 'workout2' },
-        ],
-        null
+        [{ workout_id: "workout1" }, { workout_id: "workout2" }],
+        null,
       );
 
       // Mock workout exercises query
@@ -305,8 +305,8 @@ chain.group = jest.fn().mockReturnValue(chain);
       mockSupabaseClient.single.mockReturnValue(mockSupabaseClient);
       mockSupabaseClient.single.mockReturnValue(mockSupabaseClient);
       mockSupabaseClient.mockResolvedValue(
-        [{ id: 'ex1' }, { id: 'ex2' }],
-        null
+        [{ id: "ex1" }, { id: "ex2" }],
+        null,
       );
 
       // Mock sets query
@@ -322,19 +322,19 @@ chain.group = jest.fn().mockReturnValue(chain);
           { reps: 5, weight: 30 },
           { reps: 8, weight: 15 },
         ],
-        null
+        null,
       );
 
-      const result = await service.getWeeklyVolume('user1');
+      const result = await service.getWeeklyVolume("user1");
 
       expect(result).toEqual({
-        totalVolume: (10 * 20) + (5 * 30) + (8 * 15), // 200 + 150 + 120 = 470
+        totalVolume: 10 * 20 + 5 * 30 + 8 * 15, // 200 + 150 + 120 = 470
         totalSets: 3,
         totalReps: 10 + 5 + 8, // 23
       });
     });
 
-    it('should return zero when no sessions in the date range', async () => {
+    it("should return zero when no sessions in the date range", async () => {
       const mockSupabaseClient = supabaseService.getClient();
       mockSupabaseClient.from.mockReturnValue(mockSupabaseClient);
       mockSupabaseClient.select.mockReturnValue(mockSupabaseClient);
@@ -345,7 +345,7 @@ chain.group = jest.fn().mockReturnValue(chain);
       mockSupabaseClient.single.mockReturnValue(mockSupabaseClient);
       mockSupabaseClient.mockResolvedValue([], null);
 
-      const result = await service.getWeeklyVolume('user1');
+      const result = await service.getWeeklyVolume("user1");
 
       expect(result).toEqual({
         totalVolume: 0,
@@ -355,8 +355,8 @@ chain.group = jest.fn().mockReturnValue(chain);
     });
   });
 
-  describe('getMonthlyVolume', () => {
-    it('should return volume for the last 30 days', async () => {
+  describe("getMonthlyVolume", () => {
+    it("should return volume for the last 30 days", async () => {
       const mockSupabaseClient = supabaseService.getClient();
 
       // Mock sessions query
@@ -367,10 +367,7 @@ chain.group = jest.fn().mockReturnValue(chain);
       mockSupabaseClient.lte.mockReturnValue(mockSupabaseClient);
       mockSupabaseClient.is.mockReturnValue(mockSupabaseClient);
       mockSupabaseClient.single.mockReturnValue(mockSupabaseClient);
-      mockSupabaseClient.mockResolvedValue(
-        [{ id: 'session1' }],
-        null
-      );
+      mockSupabaseClient.mockResolvedValue([{ id: "session1" }], null);
 
       // Mock session workouts query
       mockSupabaseClient.from.mockReturnValue(mockSupabaseClient);
@@ -378,10 +375,7 @@ chain.group = jest.fn().mockReturnValue(chain);
       mockSupabaseClient.in.mockReturnValue(mockSupabaseClient);
       mockSupabaseClient.single.mockReturnValue(mockSupabaseClient);
       mockSupabaseClient.single.mockReturnValue(mockSupabaseClient);
-      mockSupabaseClient.mockResolvedValue(
-        [{ workout_id: 'workout1' }],
-        null
-      );
+      mockSupabaseClient.mockResolvedValue([{ workout_id: "workout1" }], null);
 
       // Mock workout exercises query
       mockSupabaseClient.from.mockReturnValue(mockSupabaseClient);
@@ -389,10 +383,7 @@ chain.group = jest.fn().mockReturnValue(chain);
       mockSupabaseClient.in.mockReturnValue(mockSupabaseClient);
       mockSupabaseClient.single.mockReturnValue(mockSupabaseClient);
       mockSupabaseClient.single.mockReturnValue(mockSupabaseClient);
-      mockSupabaseClient.mockResolvedValue(
-        [{ id: 'ex1' }],
-        null
-      );
+      mockSupabaseClient.mockResolvedValue([{ id: "ex1" }], null);
 
       // Mock sets query
       mockSupabaseClient.from.mockReturnValue(mockSupabaseClient);
@@ -406,13 +397,13 @@ chain.group = jest.fn().mockReturnValue(chain);
           { reps: 10, weight: 10 },
           { reps: 5, weight: 20 },
         ],
-        null
+        null,
       );
 
-      const result = await service.getMonthlyVolume('user1');
+      const result = await service.getMonthlyVolume("user1");
 
       expect(result).toEqual({
-        totalVolume: (10 * 10) + (5 * 20), // 100 + 100 = 200
+        totalVolume: 10 * 10 + 5 * 20, // 100 + 100 = 200
         totalSets: 2,
         totalReps: 10 + 5, // 15
       });
@@ -420,71 +411,65 @@ chain.group = jest.fn().mockReturnValue(chain);
   });
 
   // Tests for the placeholder methods to ensure they still exist and return expected types
-  describe('getDashboard', () => {
-    it('should return an object with expected properties', () => {
-      const result = service.getDashboard();
-      expect(result).toEqual({
-        totalWorkouts: 0,
-        totalVolume: 0,
-        weeklyVolume: 0,
-        monthlyVolume: 0,
-        personalRecords: [],
-      });
-    });
-  });
 
-  describe('getExerciseProgression', () => {
-    it('should return progression data when no sets found', async () => {
+  describe("getExerciseProgression", () => {
+    it("should return progression data when no sets found", async () => {
       const mockSupabaseClient = supabaseService.getClient();
       mockSupabaseClient.mockResolvedValue([], null);
 
-      const result = await service.getExerciseProgression('user-id', 'exercise-id');
+      const result = await service.getExerciseProgression(
+        "user-id",
+        "exercise-id",
+      );
       expect(result).toEqual({
-        exerciseId: 'exercise-id',
+        exerciseId: "exercise-id",
         currentOneRepMax: 0,
         bestOneRepMax: 0,
         improvementPercentage: 0,
-        trend: 'STABLE',
+        trend: "STABLE",
         totalWorkouts: 0,
       });
     });
 
-    it('should calculate progression correctly with valid data', async () => {
+    it("should calculate progression correctly with valid data", async () => {
       const mockSupabaseClient = supabaseService.getClient();
       // Mock two sets: one with weight 100 reps 5 (1RM 116.67) and another with weight 110 reps 5 (1RM 128.33)
       const mockData = [
         {
           weight: 100,
           reps: 5,
-          created_at: '2026-06-01T10:00:00Z',
+          created_at: "2026-06-01T10:00:00Z",
           workout_exercises: {
-            id: 'exercise-id',
-            exercise_id: 'exercise-id',
+            id: "exercise-id",
+            exercise_id: "exercise-id",
             workout_sessions: {
-              id: 'session-id',
-              user_id: 'user-id',
-              completed_at: '2026-06-01T11:00:00Z',
+              id: "session-id",
+              user_id: "user-id",
+              completed_at: "2026-06-01T11:00:00Z",
             },
           },
         },
         {
           weight: 110,
           reps: 5,
-          created_at: '2026-06-15T10:00:00Z',
+          created_at: "2026-06-15T10:00:00Z",
           workout_exercises: {
-            id: 'exercise-id-2',
-            exercise_id: 'exercise-id',
+            id: "exercise-id-2",
+            exercise_id: "exercise-id",
             workout_sessions: {
-              id: 'session-id-2',
-              user_id: 'user-id',
-              completed_at: '2026-06-15T11:00:00Z',
+              id: "session-id-2",
+              user_id: "user-id",
+              completed_at: "2026-06-15T11:00:00Z",
             },
           },
         },
       ];
       mockSupabaseClient.mockResolvedValue(mockData, null);
 
-      const result = await service.getExerciseProgression('user-id', 'exercise-id');
+      const result = await service.getExerciseProgression(
+        "user-id",
+        "exercise-id",
+      );
 
       // Expected calculations:
       // First set: 1RM = 100 * (1 + 5/30) = 100 * 1.16666... = 116.666... -> 116.67
@@ -496,126 +481,126 @@ chain.group = jest.fn().mockReturnValue(chain);
       // Since improvement > 5%, trend should be UPWARD
       // totalWorkouts: 2 (different dates)
 
-      expect(result.exerciseId).toBe('exercise-id');
+      expect(result.exerciseId).toBe("exercise-id");
       expect(result.currentOneRepMax).toBe(128.33);
       expect(result.bestOneRepMax).toBe(128.33);
       expect(result.improvementPercentage).toBeCloseTo(9.99, 2);
-      expect(result.trend).toBe('UPWARD');
+      expect(result.trend).toBe("UPWARD");
       expect(result.totalWorkouts).toBe(2);
     });
   });
 
-  describe('getPersonalRecords', () => {
-    it('should return an empty array', async () => {
-      const result = await service.getPersonalRecords('test-user-id');
+  describe("getPersonalRecords", () => {
+    it("should return an empty array", async () => {
+      const result = await service.getPersonalRecords("test-user-id");
       expect(result).toEqual([]);
     });
   });
 
-  describe('getBestOneRepMax', () => {
-    it('should return 0 when no sets found', async () => {
+  describe("getBestOneRepMax", () => {
+    it("should return 0 when no sets found", async () => {
       const mockSupabaseClient = supabaseService.getClient();
       mockSupabaseClient.mockResolvedValue([], null);
 
-      const result = await service.getBestOneRepMax('user-id', 'exercise-id');
+      const result = await service.getBestOneRepMax("user-id", "exercise-id");
       expect(result).toBe(0);
     });
 
-    it('should return the correct best one rep max', async () => {
+    it("should return the correct best one rep max", async () => {
       const mockSupabaseClient = supabaseService.getClient();
       const mockData = [
         {
           weight: 100,
           reps: 5, // 1RM 116.67
-          created_at: '2026-06-01T10:00:00Z',
+          created_at: "2026-06-01T10:00:00Z",
           workout_exercises: {
-            id: 'exercise-id',
-            exercise_id: 'exercise-id',
+            id: "exercise-id",
+            exercise_id: "exercise-id",
             workout_sessions: {
-              id: 'session-id',
-              user_id: 'user-id',
-              completed_at: '2026-06-01T11:00:00Z',
+              id: "session-id",
+              user_id: "user-id",
+              completed_at: "2026-06-01T11:00:00Z",
             },
           },
         },
         {
           weight: 120,
           reps: 5, // 1RM 139.99
-          created_at: '2026-06-15T10:00:00Z',
+          created_at: "2026-06-15T10:00:00Z",
           workout_exercises: {
-            id: 'exercise-id-2',
-            exercise_id: 'exercise-id',
+            id: "exercise-id-2",
+            exercise_id: "exercise-id",
             workout_sessions: {
-              id: 'session-id-2',
-              user_id: 'user-id',
-              completed_at: '2026-06-15T11:00:00Z',
+              id: "session-id-2",
+              user_id: "user-id",
+              completed_at: "2026-06-15T11:00:00Z",
             },
           },
         },
         {
           weight: 100,
           reps: 10, // 1RM 133.33
-          created_at: '2026-06-20T10:00:00Z',
+          created_at: "2026-06-20T10:00:00Z",
           workout_exercises: {
-            id: 'exercise-id-3',
-            exercise_id: 'exercise-id',
+            id: "exercise-id-3",
+            exercise_id: "exercise-id",
             workout_sessions: {
-              id: 'session-id-3',
-              user_id: 'user-id',
-              completed_at: '2026-06-20T11:00:00Z',
+              id: "session-id-3",
+              user_id: "user-id",
+              completed_at: "2026-06-20T11:00:00Z",
             },
           },
         },
       ];
       mockSupabaseClient.mockResolvedValue(mockData, null);
 
-      const result = await service.getBestOneRepMax('user-id', 'exercise-id');
+      const result = await service.getBestOneRepMax("user-id", "exercise-id");
       // Best should be 120 * (1 + 5/30) = 120 * 1.1666... = 139.999... -> 140.00
-      expect(result).toBeCloseTo(140.00, 2);
+      expect(result).toBeCloseTo(140.0, 2);
     });
   });
 
-  describe('getStrengthTrend', () => {
-    it('should return empty history when no sets found', async () => {
+  describe("getStrengthTrend", () => {
+    it("should return empty history when no sets found", async () => {
       const mockSupabaseClient = supabaseService.getClient();
       mockSupabaseClient.mockResolvedValue([], null);
 
-      const result = await service.getStrengthTrend('user-id', 'exercise-id');
+      const result = await service.getStrengthTrend("user-id", "exercise-id");
       expect(result).toEqual({
-        exerciseId: 'exercise-id',
+        exerciseId: "exercise-id",
         history: [],
       });
     });
 
-    it('should return trend history grouped by date', async () => {
+    it("should return trend history grouped by date", async () => {
       const mockSupabaseClient = supabaseService.getClient();
       const mockData = [
         // Two sets on the same day
         {
           weight: 100,
           reps: 5, // 1RM 116.67
-          created_at: '2026-06-01T10:00:00Z',
+          created_at: "2026-06-01T10:00:00Z",
           workout_exercises: {
-            id: 'exercise-id',
-            exercise_id: 'exercise-id',
+            id: "exercise-id",
+            exercise_id: "exercise-id",
             workout_sessions: {
-              id: 'session-id',
-              user_id: 'user-id',
-              completed_at: '2026-06-01T11:00:00Z',
+              id: "session-id",
+              user_id: "user-id",
+              completed_at: "2026-06-01T11:00:00Z",
             },
           },
         },
         {
           weight: 105,
           reps: 5, // 1RM 122.5
-          created_at: '2026-06-01T12:00:00Z',
+          created_at: "2026-06-01T12:00:00Z",
           workout_exercises: {
-            id: 'exercise-id-2',
-            exercise_id: 'exercise-id',
+            id: "exercise-id-2",
+            exercise_id: "exercise-id",
             workout_sessions: {
-              id: 'session-id-2',
-              user_id: 'user-id',
-              completed_at: '2026-06-01T13:00:00Z',
+              id: "session-id-2",
+              user_id: "user-id",
+              completed_at: "2026-06-01T13:00:00Z",
             },
           },
         },
@@ -623,39 +608,39 @@ chain.group = jest.fn().mockReturnValue(chain);
         {
           weight: 110,
           reps: 5, // 1RM 128.33
-          created_at: '2026-06-15T10:00:00Z',
+          created_at: "2026-06-15T10:00:00Z",
           workout_exercises: {
-            id: 'exercise-id-3',
-            exercise_id: 'exercise-id',
+            id: "exercise-id-3",
+            exercise_id: "exercise-id",
             workout_sessions: {
-              id: 'session-id-3',
-              user_id: 'user-id',
-              completed_at: '2026-06-15T11:00:00Z',
+              id: "session-id-3",
+              user_id: "user-id",
+              completed_at: "2026-06-15T11:00:00Z",
             },
           },
         },
       ];
       mockSupabaseClient.mockResolvedValue(mockData, null);
 
-      const result = await service.getStrengthTrend('user-id', 'exercise-id');
+      const result = await service.getStrengthTrend("user-id", "exercise-id");
       // Expect history:
       // 2026-06-01: max 1RM is 122.5
       // 2026-06-15: max 1RM is 128.33
-      expect(result.exerciseId).toBe('exercise-id');
+      expect(result.exerciseId).toBe("exercise-id");
       expect(result.history).toHaveLength(2);
       expect(result.history[0]).toEqual({
-        date: '2026-06-01',
+        date: "2026-06-01",
         oneRepMax: 122.5,
       });
       expect(result.history[1]).toEqual({
-        date: '2026-06-15',
+        date: "2026-06-15",
         oneRepMax: 128.33,
       });
     });
   });
 
-  describe('getWorkoutConsistency', () => {
-    const fixedDate = new Date('2026-06-15');
+  describe("getWorkoutConsistency", () => {
+    const fixedDate = new Date("2026-06-15");
 
     beforeEach(() => {
       jest.useFakeTimers();
@@ -666,7 +651,7 @@ chain.group = jest.fn().mockReturnValue(chain);
       jest.useRealTimers();
     });
 
-    it('should return empty consistency when no workouts', async () => {
+    it("should return empty consistency when no workouts", async () => {
       const mockSupabaseClient = supabaseService.getClient();
 
       // Mock all three queries to return empty arrays
@@ -674,7 +659,7 @@ chain.group = jest.fn().mockReturnValue(chain);
       mockSupabaseClient.mockResolvedValueOnce([], null);
       mockSupabaseClient.mockResolvedValueOnce([], null);
 
-      const result = await service.getWorkoutConsistency('user-id');
+      const result = await service.getWorkoutConsistency("user-id");
 
       expect(result).toEqual({
         currentStreak: 0,
@@ -687,26 +672,26 @@ chain.group = jest.fn().mockReturnValue(chain);
       });
     });
 
-    it('should handle single workout session', async () => {
+    it("should handle single workout session", async () => {
       const mockSupabaseClient = supabaseService.getClient();
 
       // Mock allSessionsRes: one session on 2026-06-10
       mockSupabaseClient.mockResolvedValueOnce(
-        [{ completed_at: '2026-06-10T10:00:00Z' }],
-        null
+        [{ completed_at: "2026-06-10T10:00:00Z" }],
+        null,
       );
       // Mock recentSessionsRes: one session (within last 7 days)
       mockSupabaseClient.mockResolvedValueOnce(
-        [{ completed_at: '2026-06-10T10:00:00Z' }],
-        null
+        [{ completed_at: "2026-06-10T10:00:00Z" }],
+        null,
       );
       // Mock monthlySessionsRes: one session (within last 30 days)
       mockSupabaseClient.mockResolvedValueOnce(
-        [{ completed_at: '2026-06-10T10:00:00Z' }],
-        null
+        [{ completed_at: "2026-06-10T10:00:00Z" }],
+        null,
       );
 
-      const result = await service.getWorkoutConsistency('user-id');
+      const result = await service.getWorkoutConsistency("user-id");
 
       expect(result).toEqual({
         currentStreak: 1,
@@ -719,21 +704,21 @@ chain.group = jest.fn().mockReturnValue(chain);
       });
     });
 
-    it('should calculate streaks correctly with consecutive days', async () => {
+    it("should calculate streaks correctly with consecutive days", async () => {
       const mockSupabaseClient = supabaseService.getClient();
 
       // Workouts on 2026-06-10, 2026-06-11, 2026-06-12 (three consecutive days)
       const allSessions = [
-        { completed_at: '2026-06-10T10:00:00Z' },
-        { completed_at: '2026-06-11T10:00:00Z' },
-        { completed_at: '2026-06-12T10:00:00Z' },
+        { completed_at: "2026-06-10T10:00:00Z" },
+        { completed_at: "2026-06-11T10:00:00Z" },
+        { completed_at: "2026-06-12T10:00:00Z" },
       ];
       // All are within the last 7 days and 30 days from 2026-06-15
       mockSupabaseClient.mockResolvedValueOnce(allSessions, null);
       mockSupabaseClient.mockResolvedValueOnce(allSessions, null);
       mockSupabaseClient.mockResolvedValueOnce(allSessions, null);
 
-      const result = await service.getWorkoutConsistency('user-id');
+      const result = await service.getWorkoutConsistency("user-id");
 
       expect(result).toEqual({
         currentStreak: 3,
@@ -746,14 +731,14 @@ chain.group = jest.fn().mockReturnValue(chain);
       });
     });
 
-    it('should calculate streaks with gaps', async () => {
+    it("should calculate streaks with gaps", async () => {
       const mockSupabaseClient = supabaseService.getClient();
 
       // Workouts on 2026-06-01, 2026-06-02, 2026-06-05 (so streak of 2, then a gap, then a single)
       const allSessions = [
-        { completed_at: '2026-06-01T10:00:00Z' },
-        { completed_at: '2026-06-02T10:00:00Z' },
-        { completed_at: '2026-06-05T10:00:00Z' },
+        { completed_at: "2026-06-01T10:00:00Z" },
+        { completed_at: "2026-06-02T10:00:00Z" },
+        { completed_at: "2026-06-05T10:00:00Z" },
       ];
       // Assume all are within the last 30 days but not necessarily in the last 7 days?
       // Let's set the fixed date to 2026-06-15, so:
@@ -771,7 +756,7 @@ chain.group = jest.fn().mockReturnValue(chain);
         .mockResolvedValueOnce([], null) // recentSessions: empty
         .mockResolvedValueOnce(allSessions, null); // monthlySessions
 
-      const result = await service.getWorkoutConsistency('user-id');
+      const result = await service.getWorkoutConsistency("user-id");
 
       expect(result).toEqual({
         currentStreak: 1,

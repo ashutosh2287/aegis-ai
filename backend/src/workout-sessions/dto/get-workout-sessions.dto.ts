@@ -1,10 +1,14 @@
-import { IsString, IsOptional, IsIn, IsInt, Min } from 'class-validator';
-import { Transform } from 'class-transformer';
-import { SessionStatus } from '../../common/enums/database.enums';
+import { IsString, IsOptional, IsIn, IsInt, Min } from "class-validator";
+import { Transform } from "class-transformer";
+import { SessionStatus } from "../../common/enums/database.enums";
 
 export class GetWorkoutSessionsDto {
   @IsOptional()
-  @IsIn([SessionStatus.ACTIVE, SessionStatus.COMPLETED, SessionStatus.ABANDONED])
+  @IsIn([
+    SessionStatus.ACTIVE,
+    SessionStatus.COMPLETED,
+    SessionStatus.ABANDONED,
+  ])
   status?: SessionStatus;
 
   @IsOptional()
@@ -33,9 +37,9 @@ export class GetWorkoutSessionsDto {
 
   @IsOptional()
   @IsString()
-  sortBy?: string = 'started_at';
+  sortBy?: string = "started_at";
 
   @IsOptional()
-  @IsIn(['ASC', 'DESC'])
-  sortOrder?: 'ASC' | 'DESC' = 'DESC';
+  @IsIn(["ASC", "DESC"])
+  sortOrder?: "ASC" | "DESC" = "DESC";
 }

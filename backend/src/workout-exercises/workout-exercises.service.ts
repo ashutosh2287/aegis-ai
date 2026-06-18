@@ -1,10 +1,21 @@
-import { Injectable, NotFoundException, BadRequestException, InternalServerErrorException } from '@nestjs/common';
-import { SupabaseService } from '../supabase/supabase.service';
-import { AddExerciseToWorkoutDto } from './dto/add-exercise-to-workout.dto';
-import { UpdateWorkoutExerciseDto } from './dto/update-workout-exercise.dto';
-import { ReorderWorkoutExercisesDto, ReorderItemDto } from './dto/reorder-workout-exercises.dto';
-import { WorkoutExercise, WorkoutExerciseWithExercise } from './interfaces/workout-exercise.interface';
-import { ExerciseService } from '../exercise/services/exercise.service';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+  InternalServerErrorException,
+} from "@nestjs/common";
+import { SupabaseService } from "../supabase/supabase.service";
+import { AddExerciseToWorkoutDto } from "./dto/add-exercise-to-workout.dto";
+import { UpdateWorkoutExerciseDto } from "./dto/update-workout-exercise.dto";
+import {
+  ReorderWorkoutExercisesDto,
+  ReorderItemDto,
+} from "./dto/reorder-workout-exercises.dto";
+import {
+  WorkoutExercise,
+  WorkoutExerciseWithExercise,
+} from "./interfaces/workout-exercise.interface";
+import { ExerciseService } from "../exercise/services/exercise.service";
 
 @Injectable()
 export class WorkoutExercisesService {
@@ -26,20 +37,24 @@ export class WorkoutExercisesService {
     dto: AddExerciseToWorkoutDto,
   ): Promise<WorkoutExerciseWithExercise> {
     // Validate that the workout exists and belongs to the user
-    const { data: workoutData, error: workoutError } = await this.supabaseService
-      .getClient()
-      .from('workouts')
-      .select('id')
-      .eq('id', workoutId)
-      .eq('user_id', userId)
-      .is('deleted_at', null)
-      .single();
+    const { data: workoutData, error: workoutError } =
+      await this.supabaseService
+        .getClient()
+        .from("workouts")
+        .select("id")
+        .eq("id", workoutId)
+        .eq("user_id", userId)
+        .is("deleted_at", null)
+        .single();
 
     if (workoutError) {
-      if (workoutError.code === 'PGRST116') { // No rows returned
+      if (workoutError.code === "PGRST116") {
+        // No rows returned
         throw new NotFoundException(`Workout with ID ${workoutId} not found`);
       }
-      throw new InternalServerErrorException(`Failed to fetch workout: ${workoutError.message}`);
+      throw new InternalServerErrorException(
+        `Failed to fetch workout: ${workoutError.message}`,
+      );
     }
 
     if (!workoutData) {
@@ -49,17 +64,19 @@ export class WorkoutExercisesService {
     // Validate that the exercise exists
     const exercise = await this.exerciseService.getExerciseById(dto.exerciseId);
     if (!exercise) {
-      throw new NotFoundException(`Exercise with ID ${dto.exerciseId} not found`);
+      throw new NotFoundException(
+        `Exercise with ID ${dto.exerciseId} not found`,
+      );
     }
 
     // Get the current maximum order_index for this workout to set the new exercise at the end
     const { data: orderData, error: orderError } = await this.supabaseService
       .getClient()
-      .from('workout_exercises')
-      .select('order_index')
-      .eq('workout_id', workoutId)
-      .is('deleted_at', null)
-      .order('order_index', { ascending: false })
+      .from("workout_exercises")
+      .select("order_index")
+      .eq("workout_id", workoutId)
+      .is("deleted_at", null)
+      .order("order_index", { ascending: false })
       .limit(1);
 
     let orderIndex = 0;
@@ -75,19 +92,24 @@ export class WorkoutExercisesService {
       notes: dto.notes ?? null,
     };
 
-    const { data: workoutExerciseDataResult, error: workoutExerciseError } = await this.supabaseService
-      .getClient()
-      .from('workout_exercises')
-      .insert(workoutExerciseData)
-      .select()
-      .single();
+    const { data: workoutExerciseDataResult, error: workoutExerciseError } =
+      await this.supabaseService
+        .getClient()
+        .from("workout_exercises")
+        .insert(workoutExerciseData)
+        .select()
+        .single();
 
     if (workoutExerciseError) {
-      throw new InternalServerErrorException(`Failed to add exercise to workout: ${workoutExerciseError.message}`);
+      throw new InternalServerErrorException(
+        `Failed to add exercise to workout: ${workoutExerciseError.message}`,
+      );
     }
 
     if (!workoutExerciseDataResult) {
-      throw new InternalServerErrorException('Workout exercise created but no data returned');
+      throw new InternalServerErrorException(
+        "Workout exercise created but no data returned",
+      );
     }
 
     // Return the workout exercise with exercise details
@@ -132,20 +154,24 @@ export class WorkoutExercisesService {
     userId: string,
   ): Promise<WorkoutExerciseWithExercise[]> {
     // Validate that the workout exists and belongs to the user
-    const { data: workoutData, error: workoutError } = await this.supabaseService
-      .getClient()
-      .from('workouts')
-      .select('id')
-      .eq('id', workoutId)
-      .eq('user_id', userId)
-      .is('deleted_at', null)
-      .single();
+    const { data: workoutData, error: workoutError } =
+      await this.supabaseService
+        .getClient()
+        .from("workouts")
+        .select("id")
+        .eq("id", workoutId)
+        .eq("user_id", userId)
+        .is("deleted_at", null)
+        .single();
 
     if (workoutError) {
-      if (workoutError.code === 'PGRST116') { // No rows returned
+      if (workoutError.code === "PGRST116") {
+        // No rows returned
         throw new NotFoundException(`Workout with ID ${workoutId} not found`);
       }
-      throw new InternalServerErrorException(`Failed to fetch workout: ${workoutError.message}`);
+      throw new InternalServerErrorException(
+        `Failed to fetch workout: ${workoutError.message}`,
+      );
     }
 
     if (!workoutData) {
@@ -153,23 +179,28 @@ export class WorkoutExercisesService {
     }
 
     // Get the workout exercises for this workout, ordered by order_index
-    const { data: exercisesData, error: exercisesError } = await this.supabaseService
-      .getClient()
-      .from('workout_exercises')
-      .select('*')
-      .eq('workout_id', workoutId)
-      .is('deleted_at', null)
-      .order('order_index', { ascending: true });
+    const { data: exercisesData, error: exercisesError } =
+      await this.supabaseService
+        .getClient()
+        .from("workout_exercises")
+        .select("*")
+        .eq("workout_id", workoutId)
+        .is("deleted_at", null)
+        .order("order_index", { ascending: true });
 
     if (exercisesError) {
-      throw new InternalServerErrorException(`Failed to fetch workout exercises: ${exercisesError.message}`);
+      throw new InternalServerErrorException(
+        `Failed to fetch workout exercises: ${exercisesError.message}`,
+      );
     }
 
     // For each exercise, fetch the exercise details and map to WorkoutExerciseWithExercise
     const workoutExercises: WorkoutExerciseWithExercise[] = [];
 
     for (const exercise of exercisesData) {
-      const exerciseDetails = await this.exerciseService.getExerciseById(exercise.exercise_id);
+      const exerciseDetails = await this.exerciseService.getExerciseById(
+        exercise.exercise_id,
+      );
       if (!exerciseDetails) {
         // If the exercise is not found, we can skip it or throw an error.
         // Since we have a foreign key constraint, it should exist, but we'll skip for safety.
@@ -224,20 +255,24 @@ export class WorkoutExercisesService {
     dto: UpdateWorkoutExerciseDto,
   ): Promise<WorkoutExercise> {
     // Validate that the workout exists and belongs to the user
-    const { data: workoutData, error: workoutError } = await this.supabaseService
-      .getClient()
-      .from('workouts')
-      .select('id')
-      .eq('id', workoutId)
-      .eq('user_id', userId)
-      .is('deleted_at', null)
-      .single();
+    const { data: workoutData, error: workoutError } =
+      await this.supabaseService
+        .getClient()
+        .from("workouts")
+        .select("id")
+        .eq("id", workoutId)
+        .eq("user_id", userId)
+        .is("deleted_at", null)
+        .single();
 
     if (workoutError) {
-      if (workoutError.code === 'PGRST116') { // No rows returned
+      if (workoutError.code === "PGRST116") {
+        // No rows returned
         throw new NotFoundException(`Workout with ID ${workoutId} not found`);
       }
-      throw new InternalServerErrorException(`Failed to fetch workout: ${workoutError.message}`);
+      throw new InternalServerErrorException(
+        `Failed to fetch workout: ${workoutError.message}`,
+      );
     }
 
     if (!workoutData) {
@@ -245,24 +280,32 @@ export class WorkoutExercisesService {
     }
 
     // Validate that the workout exercise exists and belongs to the workout
-    const { data: workoutExerciseData, error: workoutExerciseError } = await this.supabaseService
-      .getClient()
-      .from('workout_exercises')
-      .select('*')
-      .eq('id', workoutExerciseId)
-      .eq('workout_id', workoutId)
-      .is('deleted_at', null)
-      .single();
+    const { data: workoutExerciseData, error: workoutExerciseError } =
+      await this.supabaseService
+        .getClient()
+        .from("workout_exercises")
+        .select("*")
+        .eq("id", workoutExerciseId)
+        .eq("workout_id", workoutId)
+        .is("deleted_at", null)
+        .single();
 
     if (workoutExerciseError) {
-      if (workoutExerciseError.code === 'PGRST116') { // No rows returned
-        throw new NotFoundException(`Workout exercise with ID ${workoutExerciseId} not found`);
+      if (workoutExerciseError.code === "PGRST116") {
+        // No rows returned
+        throw new NotFoundException(
+          `Workout exercise with ID ${workoutExerciseId} not found`,
+        );
       }
-      throw new InternalServerErrorException(`Failed to fetch workout exercise: ${workoutExerciseError.message}`);
+      throw new InternalServerErrorException(
+        `Failed to fetch workout exercise: ${workoutExerciseError.message}`,
+      );
     }
 
     if (!workoutExerciseData) {
-      throw new NotFoundException(`Workout exercise with ID ${workoutExerciseId} not found`);
+      throw new NotFoundException(
+        `Workout exercise with ID ${workoutExerciseId} not found`,
+      );
     }
 
     // Update the workout exercise
@@ -285,20 +328,25 @@ export class WorkoutExercisesService {
       };
     }
 
-    const { data: updatedWorkoutExerciseData, error: updateError } = await this.supabaseService
-      .getClient()
-      .from('workout_exercises')
-      .update(updateData)
-      .eq('id', workoutExerciseId)
-      .select()
-      .single();
+    const { data: updatedWorkoutExerciseData, error: updateError } =
+      await this.supabaseService
+        .getClient()
+        .from("workout_exercises")
+        .update(updateData)
+        .eq("id", workoutExerciseId)
+        .select()
+        .single();
 
     if (updateError) {
-      throw new InternalServerErrorException(`Failed to update workout exercise: ${updateError.message}`);
+      throw new InternalServerErrorException(
+        `Failed to update workout exercise: ${updateError.message}`,
+      );
     }
 
     if (!updatedWorkoutExerciseData) {
-      throw new InternalServerErrorException('Workout exercise updated but no data returned');
+      throw new InternalServerErrorException(
+        "Workout exercise updated but no data returned",
+      );
     }
 
     // Return the updated workout exercise
@@ -326,20 +374,24 @@ export class WorkoutExercisesService {
     workoutExerciseId: string,
   ): Promise<void> {
     // Validate that the workout exists and belongs to the user
-    const { data: workoutData, error: workoutError } = await this.supabaseService
-      .getClient()
-      .from('workouts')
-      .select('id')
-      .eq('id', workoutId)
-      .eq('user_id', userId)
-      .is('deleted_at', null)
-      .single();
+    const { data: workoutData, error: workoutError } =
+      await this.supabaseService
+        .getClient()
+        .from("workouts")
+        .select("id")
+        .eq("id", workoutId)
+        .eq("user_id", userId)
+        .is("deleted_at", null)
+        .single();
 
     if (workoutError) {
-      if (workoutError.code === 'PGRST116') { // No rows returned
+      if (workoutError.code === "PGRST116") {
+        // No rows returned
         throw new NotFoundException(`Workout with ID ${workoutId} not found`);
       }
-      throw new InternalServerErrorException(`Failed to fetch workout: ${workoutError.message}`);
+      throw new InternalServerErrorException(
+        `Failed to fetch workout: ${workoutError.message}`,
+      );
     }
 
     if (!workoutData) {
@@ -347,35 +399,45 @@ export class WorkoutExercisesService {
     }
 
     // Validate that the workout exercise exists and belongs to the workout
-    const { data: workoutExerciseData, error: workoutExerciseError } = await this.supabaseService
-      .getClient()
-      .from('workout_exercises')
-      .select('id')
-      .eq('id', workoutExerciseId)
-      .eq('workout_id', workoutId)
-      .is('deleted_at', null)
-      .single();
+    const { data: workoutExerciseData, error: workoutExerciseError } =
+      await this.supabaseService
+        .getClient()
+        .from("workout_exercises")
+        .select("id")
+        .eq("id", workoutExerciseId)
+        .eq("workout_id", workoutId)
+        .is("deleted_at", null)
+        .single();
 
     if (workoutExerciseError) {
-      if (workoutExerciseError.code === 'PGRST116') { // No rows returned
-        throw new NotFoundException(`Workout exercise with ID ${workoutExerciseId} not found`);
+      if (workoutExerciseError.code === "PGRST116") {
+        // No rows returned
+        throw new NotFoundException(
+          `Workout exercise with ID ${workoutExerciseId} not found`,
+        );
       }
-      throw new InternalServerErrorException(`Failed to fetch workout exercise: ${workoutExerciseError.message}`);
+      throw new InternalServerErrorException(
+        `Failed to fetch workout exercise: ${workoutExerciseError.message}`,
+      );
     }
 
     if (!workoutExerciseData) {
-      throw new NotFoundException(`Workout exercise with ID ${workoutExerciseId} not found`);
+      throw new NotFoundException(
+        `Workout exercise with ID ${workoutExerciseId} not found`,
+      );
     }
 
     // Soft delete by setting deleted_at to current timestamp
     const { error: deleteError } = await this.supabaseService
       .getClient()
-      .from('workout_exercises')
+      .from("workout_exercises")
       .update({ deleted_at: new Date().toISOString() })
-      .eq('id', workoutExerciseId);
+      .eq("id", workoutExerciseId);
 
     if (deleteError) {
-      throw new InternalServerErrorException(`Failed to delete workout exercise: ${deleteError.message}`);
+      throw new InternalServerErrorException(
+        `Failed to delete workout exercise: ${deleteError.message}`,
+      );
     }
   }
 
@@ -391,20 +453,24 @@ export class WorkoutExercisesService {
     dto: ReorderWorkoutExercisesDto,
   ): Promise<void> {
     // Validate that the workout exists and belongs to the user
-    const { data: workoutData, error: workoutError } = await this.supabaseService
-      .getClient()
-      .from('workouts')
-      .select('id')
-      .eq('id', workoutId)
-      .eq('user_id', userId)
-      .is('deleted_at', null)
-      .single();
+    const { data: workoutData, error: workoutError } =
+      await this.supabaseService
+        .getClient()
+        .from("workouts")
+        .select("id")
+        .eq("id", workoutId)
+        .eq("user_id", userId)
+        .is("deleted_at", null)
+        .single();
 
     if (workoutError) {
-      if (workoutError.code === 'PGRST116') { // No rows returned
+      if (workoutError.code === "PGRST116") {
+        // No rows returned
         throw new NotFoundException(`Workout with ID ${workoutId} not found`);
       }
-      throw new InternalServerErrorException(`Failed to fetch workout: ${workoutError.message}`);
+      throw new InternalServerErrorException(
+        `Failed to fetch workout: ${workoutError.message}`,
+      );
     }
 
     if (!workoutData) {
@@ -412,28 +478,37 @@ export class WorkoutExercisesService {
     }
 
     // Validate that all workout exercise IDs in the dto belong to the workout and are not deleted
-    const { data: existingExercises, error: exError } = await this.supabaseService
-      .getClient()
-      .from('workout_exercises')
-      .select('id')
-      .eq('workout_id', workoutId)
-      .is('deleted_at', null);
+    const { data: existingExercises, error: exError } =
+      await this.supabaseService
+        .getClient()
+        .from("workout_exercises")
+        .select("id")
+        .eq("workout_id", workoutId)
+        .is("deleted_at", null);
 
     if (exError) {
-      throw new InternalServerErrorException(`Failed to fetch workout exercises: ${exError.message}`);
+      throw new InternalServerErrorException(
+        `Failed to fetch workout exercises: ${exError.message}`,
+      );
     }
 
     const existingExerciseIds = existingExercises.map((e: any) => e.id);
 
     // Check that every ID in dto.items exists in existingExerciseIds
-    const invalidIds = dto.items.map(item => item.id).filter(id => !existingExerciseIds.includes(id));
+    const invalidIds = dto.items
+      .map((item) => item.id)
+      .filter((id) => !existingExerciseIds.includes(id));
     if (invalidIds.length > 0) {
-      throw new NotFoundException(`One or more workout exercise IDs not found: ${invalidIds.join(', ')}`);
+      throw new NotFoundException(
+        `One or more workout exercise IDs not found: ${invalidIds.join(", ")}`,
+      );
     }
 
     // Check that the number of IDs matches (we are reordering all exercises in the workout)
     if (dto.items.length !== existingExerciseIds.length) {
-      throw new BadRequestException('The number of workout exercise IDs provided does not match the number of exercises in the workout');
+      throw new BadRequestException(
+        "The number of workout exercise IDs provided does not match the number of exercises in the workout",
+      );
     }
 
     // Update the order_index for each workout exercise in the dto
@@ -442,12 +517,14 @@ export class WorkoutExercisesService {
     for (const item of dto.items) {
       const { error: updateError } = await this.supabaseService
         .getClient()
-        .from('workout_exercises')
+        .from("workout_exercises")
         .update({ order_index: item.orderIndex })
-        .eq('id', item.id);
+        .eq("id", item.id);
 
       if (updateError) {
-        throw new InternalServerErrorException(`Failed to reorder workout exercise: ${updateError.message}`);
+        throw new InternalServerErrorException(
+          `Failed to reorder workout exercise: ${updateError.message}`,
+        );
       }
     }
   }

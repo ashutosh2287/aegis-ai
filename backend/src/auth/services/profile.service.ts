@@ -1,6 +1,6 @@
-import { Injectable, InternalServerErrorException } from '@nestjs/common';
-import { SupabaseService } from '../../supabase/supabase.service';
-import { UserProfile } from '../interfaces/auth.interface';
+import { Injectable, InternalServerErrorException } from "@nestjs/common";
+import { SupabaseService } from "../../supabase/supabase.service";
+import { UserProfile } from "../interfaces/auth.interface";
 
 @Injectable()
 export class ProfileService {
@@ -13,17 +13,19 @@ export class ProfileService {
   async createProfile(profileData: Partial<UserProfile>): Promise<UserProfile> {
     const { data, error } = await this.supabaseService
       .getClient()
-      .from('profiles')
+      .from("profiles")
       .insert(profileData)
       .select()
       .single();
 
     if (error) {
-      throw new InternalServerErrorException(`Failed to create profile: ${error.message}`);
+      throw new InternalServerErrorException(
+        `Failed to create profile: ${error.message}`,
+      );
     }
 
     if (!data) {
-      throw new InternalServerErrorException('Profile not created');
+      throw new InternalServerErrorException("Profile not created");
     }
 
     return data;
@@ -37,17 +39,19 @@ export class ProfileService {
   async getProfile(userId: string): Promise<UserProfile> {
     const { data, error } = await this.supabaseService
       .getClient()
-      .from('profiles')
-      .select('*')
-      .eq('id', userId)
+      .from("profiles")
+      .select("*")
+      .eq("id", userId)
       .single();
 
     if (error) {
-      throw new InternalServerErrorException(`Failed to fetch profile: ${error.message}`);
+      throw new InternalServerErrorException(
+        `Failed to fetch profile: ${error.message}`,
+      );
     }
 
     if (!data) {
-      throw new InternalServerErrorException('Profile not found');
+      throw new InternalServerErrorException("Profile not found");
     }
 
     return data;
@@ -59,21 +63,28 @@ export class ProfileService {
    * @param updateData - The data to update
    * @returns The updated profile
    */
-  async updateProfile(userId: string, updateData: Partial<UserProfile>): Promise<UserProfile> {
+  async updateProfile(
+    userId: string,
+    updateData: Partial<UserProfile>,
+  ): Promise<UserProfile> {
     const { data, error } = await this.supabaseService
       .getClient()
-      .from('profiles')
+      .from("profiles")
       .update(updateData)
-      .eq('id', userId)
+      .eq("id", userId)
       .select()
       .single();
 
     if (error) {
-      throw new InternalServerErrorException(`Failed to update profile: ${error.message}`);
+      throw new InternalServerErrorException(
+        `Failed to update profile: ${error.message}`,
+      );
     }
 
     if (!data) {
-      throw new InternalServerErrorException('Profile not found or not updated');
+      throw new InternalServerErrorException(
+        "Profile not found or not updated",
+      );
     }
 
     return data;

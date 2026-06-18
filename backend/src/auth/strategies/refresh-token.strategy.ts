@@ -1,12 +1,15 @@
-import { Injectable } from '@nestjs/common';
-import { PassportStrategy } from '@nestjs/passport';
-import { Strategy } from 'passport-custom';
-import { ConfigService } from '@nestjs/config';
-import { SupabaseService } from '../../supabase/supabase.service';
-import * as bcrypt from 'bcrypt';
+import { Injectable } from "@nestjs/common";
+import { PassportStrategy } from "@nestjs/passport";
+import { Strategy } from "passport-custom";
+import { ConfigService } from "@nestjs/config";
+import { SupabaseService } from "../../supabase/supabase.service";
+import * as bcrypt from "bcrypt";
 
 @Injectable()
-export class RefreshTokenStrategy extends PassportStrategy(Strategy, 'refresh-token') {
+export class RefreshTokenStrategy extends PassportStrategy(
+  Strategy,
+  "refresh-token",
+) {
   constructor(
     private readonly configService: ConfigService,
     private readonly supabaseService: SupabaseService,
@@ -27,10 +30,10 @@ export class RefreshTokenStrategy extends PassportStrategy(Strategy, 'refresh-to
     // Look for a matching token hash in the database that is not expired
     const { data, error } = await this.supabaseService
       .getClient()
-      .from('refresh_tokens')
-      .select('user_id, expires_at')
-      .eq('token_hash', tokenHash)
-      .gt('expires_at', new Date().toISOString())
+      .from("refresh_tokens")
+      .select("user_id, expires_at")
+      .eq("token_hash", tokenHash)
+      .gt("expires_at", new Date().toISOString())
       .single();
 
     if (error || !data) {
