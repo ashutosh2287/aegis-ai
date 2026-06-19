@@ -2,6 +2,8 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { AnalyticsController } from '../analytics.controller';
 import { AnalyticsService } from '../analytics.service';
 import { DashboardService } from '../dashboard.service';
+import { RecommendationService } from '../recommendation.service';
+import { RecommendationResponseDto } from '../dto/recommendation-response.dto';
 import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
 
 describe('AnalyticsController', () => {
@@ -27,6 +29,10 @@ describe('AnalyticsController', () => {
     getDashboardData: jest.fn(),
   };
 
+  let mockRecommendationService = {
+    generateRecommendations: jest.fn(),
+  };
+
   const mockJwtAuthGuard = {
     canActivate: jest.fn(() => true),
   };
@@ -37,14 +43,14 @@ describe('AnalyticsController', () => {
       providers: [
         { provide: AnalyticsService, useValue: mockAnalyticsService },
         { provide: DashboardService, useValue: mockDashboardService },
+        { provide: RecommendationService, useValue: mockRecommendationService },
         { provide: JwtAuthGuard, useValue: mockJwtAuthGuard },
       ],
     }).compile();
 
     controller = module.get<AnalyticsController>(AnalyticsController);
     analyticsService = module.get<AnalyticsService>(AnalyticsService);
-    dashboardService = module.get<DashboardService>(DashboardService);
-  });
+    dashboardService = module.get<DashboardService>(DashboardService);  });
 
   describe('getWorkoutConsistency', () => {
     it('should return workout consistency data', async () => {
@@ -282,6 +288,36 @@ describe('AnalyticsController', () => {
 
       expect(analyticsService.getWorkoutConsistency).toHaveBeenCalledWith('user-id');
       expect(result).toEqual(mockConsistency);
+    });
+  });
+
+  describe('getRecommendations', () => {
+    it('should return recommendations', async () => {
+      const mockUser = { id: 'user-id' };
+      const mockRequest = {
+        user: mockUser,
+      } as any;
+
+      const mockRecommendations = [
+        {
+          category: 'progressive overload',
+          priority: 'high',
+          recommendation: 'Increase weight',
+          rationale: 'Strength improvement is modest',
+        },
+        {
+          category: 'recovery',
+          priority: 'low',
+          recommendation: 'Take a rest day',
+          rationale: 'Current frequency allows ample recovery',
+        },
+      ];
+      mockRecommendationService.generateRecommendations.mockResolvedValue(mockRecommendations);
+
+      const result = await controller.getRecommendations(mockRequest);
+
+      expect(mockRecommendationService.generateRecommendations).toHaveBeenCalledWith('user-id');
+      expect(result).toEqual(mockRecommendations);
     });
   });
 });

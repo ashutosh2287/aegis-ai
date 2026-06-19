@@ -12,6 +12,7 @@ import {
 } from '@nestjs/common';
 import { AnalyticsService } from './analytics.service';
 import { DashboardService } from './dashboard.service';
+import { RecommendationService } from './recommendation.service';
 import { JwtAuthGuard } from '@/auth/guards/jwt-auth.guard';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
 import { AuthenticatedRequest } from '@/common/interfaces/authenticated-request.interface';
@@ -19,6 +20,7 @@ import { OverviewQueryDto } from './dto/overview-query.dto';
 import { ComparativeQueryDto } from './dto/comparative-query.dto';
 import { ComparativeAnalyticsResponseDto } from './dto/comparative-analytics-response.dto';
 import { PlateauDetectionResponseDto } from './dto/plateau-detection-response.dto';
+import { RecommendationResponseDto } from './dto/recommendation-response.dto';
 
 @Controller('analytics')
 @ApiTags('Analytics')
@@ -26,6 +28,7 @@ export class AnalyticsController {
   constructor(
     private readonly analyticsService: AnalyticsService,
     private readonly dashboardService: DashboardService,
+    private readonly recommendationService: RecommendationService,
   ) {}
 
   @Get('dashboard')
@@ -212,18 +215,34 @@ export class AnalyticsController {
     }
     return this.analyticsService.getComparativeAnalytics(user.id);
   }
-	  @Get('plateau-detection')
-	  @UseGuards(JwtAuthGuard)
-	  @ApiOperation({ summary: 'Get plateau detection analytics' })
-	  @ApiResponse({ status: 200, description: 'Return plateau detection data', type: PlateauDetectionResponseDto })
-	  @ApiResponse({ status: 401, description: 'Unauthorized' })
-	  @ApiResponse({ status: 500, description: 'Internal server error' })
-	  @ApiBearerAuth()
-	  async getPlateauDetection(@Req() req: AuthenticatedRequest, @Query('periodDays') periodDays?: number) {
-	    const user = req.user;
-	    if (!user) {
-	      throw new UnauthorizedException('User not found');
-	    }
-	    return this.analyticsService.getPlateauDetection(user.id, periodDays);
-	  }
-	}
+
+  @Get('plateau-detection')
+  @UseGuards(JwtAuthGuard)
+  @ApiOperation({ summary: 'Get plateau detection analytics' })
+  @ApiResponse({ status: 200, description: 'Return plateau detection data', type: PlateauDetectionResponseDto })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  @ApiResponse({ status: 500, description: 'Internal server error' })
+  @ApiBearerAuth()
+  async getPlateauDetection(@Req() req: AuthenticatedRequest, @Query('periodDays') periodDays?: number) {
+    const user = req.user;
+    if (!user) {
+      throw new UnauthorizedException('User not found');
+    }
+    return this.analyticsService.getPlateauDetection(user.id, periodDays);
+  }
+
+  @Get('recommendations')
+  @UseGuards(JwtAuthGuard)
+  @ApiOperation({ summary: 'Get personalized recommendations' })
+  @ApiResponse({ status: 200, description: 'Return personalized recommendations', type: [RecommendationResponseDto] })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  @ApiResponse({ status: 500, description: 'Internal server error' })
+  @ApiBearerAuth()
+  async getRecommendations(@Req() req: AuthenticatedRequest): Promise<RecommendationResponseDto[]> {
+    const user = req.user;
+    if (!user) {
+      throw new UnauthorizedException('User not found');
+    }
+    return this.recommendationService.generateRecommendations(user.id);
+  };
+}
