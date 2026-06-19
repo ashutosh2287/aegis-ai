@@ -20,6 +20,7 @@ describe('AnalyticsController', () => {
     getPersonalRecords: jest.fn(),
     getExercisePersonalRecords: jest.fn(),
     getWorkoutConsistency: jest.fn(),
+    getPlateauDetection: jest.fn(),
   };
 
   const mockDashboardService = {

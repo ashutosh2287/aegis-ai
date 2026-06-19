@@ -25,8 +25,10 @@ export class ResponseInterceptor<T> implements NestInterceptor<T, any> {
         // But note: our exception filter returns a response directly, so it won't reach here.
         // We'll wrap everything else.
         return {
-          statusCode: 200,
+          success: true,
+          timestamp: new Date().toISOString(),
           data,
+          metadata: {},
         };
       }),
     );

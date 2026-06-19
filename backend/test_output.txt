@@ -1,0 +1,98 @@
+FAIL src/analytics/tests/analytics.service.spec.ts (5.784 s)
+  AnalyticsService
+    getSessionVolume
+      √ should return volume for a session with valid data (83 ms)
+      √ should throw NotFoundException if session does not exist (14 ms)
+      √ should throw InternalServerErrorException on database error (9 ms)
+    getExerciseVolume
+      √ should return volume for an exercise belonging to the user (6 ms)
+      √ should throw NotFoundException if exercise does not exist (7 ms)
+    getWeeklyVolume
+      √ should return volume for the last 7 days (12 ms)
+      √ should return zero when no sessions in the date range (6 ms)
+    getMonthlyVolume
+      √ should return volume for the last 30 days (9 ms)
+    getDashboard
+      √ should return an object with expected properties (7 ms)
+    getExerciseProgression
+      √ should return progression data when no sets found (6 ms)
+      √ should calculate progression correctly with valid data (6 ms)
+    getPersonalRecords
+      √ should return an empty array (5 ms)
+    getBestOneRepMax
+      √ should return 0 when no sets found (6 ms)
+      √ should return the correct best one rep max (7 ms)
+    getStrengthTrend
+      √ should return empty history when no sets found (5 ms)
+      √ should return trend history grouped by date (5 ms)
+    getWorkoutConsistency
+      √ should return empty consistency when no workouts (8 ms)
+      √ should handle single workout session (4 ms)
+      √ should calculate streaks correctly with consecutive days (4 ms)
+      √ should calculate streaks with gaps (5 ms)
+    getComparativeAnalytics
+      √ should return comparative analytics data (14 ms)
+      √ should handle no workout data (8 ms)
+    getPlateauDetection
+      √ should return strength plateau when strength trend shows <1% improvement (9 ms)
+      × should return volume plateau when strength is ok but volume shows <1% increase (8 ms)
+      × should return consistency plateau when strength and volume are ok but consistency shows <1% increase (16 ms)
+      × should return no plateau when all metrics show sufficient improvement (7 ms)
+      √ should allow custom periodDays (8 ms)
+
+  ● AnalyticsService › getPlateauDetection › should return volume plateau when strength is ok but volume shows <1% increase
+
+    expect(received).toContain(expected) // indexOf
+
+    Expected substring: "No meaningful volume increase (<1%) over the last 21 days"
+    Received string:    "No volume change (0%) over the last 42 days"
+
+    [0m [90m 1041 |[39m       expect(result[33m.[39mplateauType)[33m.[39mtoBe([32m'volume'[39m)[33m;[39m
+     [90m 1042 |[39m       expect(result[33m.[39mconfidence)[33m.[39mtoBe([35m100[39m)[33m;[39m [90m// 0% change -> 100% confidence[39m
+    [31m[1m>[22m[39m[90m 1043 |[39m       expect(result[33m.[39mexplanation)[33m.[39mtoContain([32m'No meaningful volume increase (<1%) over the last 21 days'[39m)[33m;[39m
+     [90m      |[39m                                  [31m[1m^[22m[39m
+     [90m 1044 |[39m     })[33m;[39m
+     [90m 1045 |[39m
+     [90m 1046 |[39m     it([32m'should return consistency plateau when strength and volume are ok but consistency shows <1% increase'[39m[33m,[39m [36masync[39m () [33m=>[39m {[0m
+
+      at Object.<anonymous> (src/analytics/tests/analytics.service.spec.ts:1043:34)
+
+  ● AnalyticsService › getPlateauDetection › should return consistency plateau when strength and volume are ok but consistency shows <1% increase
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: "consistency"
+    Received: "volume"
+
+    [0m [90m 1078 |[39m       expect(result)[33m.[39mtoBeDefined()[33m;[39m
+     [90m 1079 |[39m       expect(result[33m.[39mplateauDetected)[33m.[39mtoBe([36mtrue[39m)[33m;[39m
+    [31m[1m>[22m[39m[90m 1080 |[39m       expect(result[33m.[39mplateauType)[33m.[39mtoBe([32m'consistency'[39m)[33m;[39m
+     [90m      |[39m                                  [31m[1m^[22m[39m
+     [90m 1081 |[39m       expect(result[33m.[39mconfidence)[33m.[39mtoBe([35m100[39m)[33m;[39m
+     [90m 1082 |[39m       expect(result[33m.[39mexplanation)[33m.[39mtoContain([32m'No meaningful workout frequency increase (<1%) over the last 21 days'[39m)[33m;[39m
+     [90m 1083 |[39m     })[33m;[39m[0m
+
+      at Object.<anonymous> (src/analytics/tests/analytics.service.spec.ts:1080:34)
+
+  ● AnalyticsService › getPlateauDetection › should return no plateau when all metrics show sufficient improvement
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: false
+    Received: true
+
+    [0m [90m 1114 |[39m
+     [90m 1115 |[39m       expect(result)[33m.[39mtoBeDefined()[33m;[39m
+    [31m[1m>[22m[39m[90m 1116 |[39m       expect(result[33m.[39mplateauDetected)[33m.[39mtoBe([36mfalse[39m)[33m;[39m
+     [90m      |[39m                                      [31m[1m^[22m[39m
+     [90m 1117 |[39m       expect(result[33m.[39mplateauType)[33m.[39mtoBeUndefined()[33m;[39m
+     [90m 1118 |[39m       expect(result[33m.[39mconfidence)[33m.[39mtoBeUndefined()[33m;[39m
+     [90m 1119 |[39m       expect(result[33m.[39mexplanation)[33m.[39mtoBeUndefined()[33m;[39m[0m
+
+      at Object.<anonymous> (src/analytics/tests/analytics.service.spec.ts:1116:38)
+
+Test Suites: 1 failed, 1 total
+Tests:       3 failed, 24 passed, 27 total
+Snapshots:   0 total
+Time:        6.456 s
+Ran all test suites matching /src\\analytics\\tests\\analytics.service.spec.ts/i.

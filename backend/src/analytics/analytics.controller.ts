@@ -8,12 +8,17 @@ import {
   BadRequestException,
   InternalServerErrorException,
   UnauthorizedException,
+  Query,
 } from '@nestjs/common';
 import { AnalyticsService } from './analytics.service';
 import { DashboardService } from './dashboard.service';
 import { JwtAuthGuard } from '@/auth/guards/jwt-auth.guard';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
 import { AuthenticatedRequest } from '@/common/interfaces/authenticated-request.interface';
+import { OverviewQueryDto } from './dto/overview-query.dto';
+import { ComparativeQueryDto } from './dto/comparative-query.dto';
+import { ComparativeAnalyticsResponseDto } from './dto/comparative-analytics-response.dto';
+import { PlateauDetectionResponseDto } from './dto/plateau-detection-response.dto';
 
 @Controller('analytics')
 @ApiTags('Analytics')
@@ -36,6 +41,21 @@ export class AnalyticsController {
       throw new UnauthorizedException('User not found');
     }
     return this.dashboardService.getDashboardData(user.id);
+  }
+
+  @Get('overview')
+  @UseGuards(JwtAuthGuard)
+  @ApiOperation({ summary: 'Get analytics overview' })
+  @ApiResponse({ status: 200, description: 'Return analytics overview data' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  @ApiResponse({ status: 500, description: 'Internal server error' })
+  @ApiBearerAuth()
+  async getOverview(@Req() req: AuthenticatedRequest, @Query() query: OverviewQueryDto) {
+    const user = req.user;
+    if (!user) {
+      throw new UnauthorizedException('User not found');
+    }
+    return this.analyticsService.getOverview(user.id, query);
   }
 
   @Get('volume/week')
@@ -177,4 +197,33 @@ export class AnalyticsController {
     }
     return this.analyticsService.getWorkoutConsistency(user.id);
   }
-}
+
+  @Get('comparative')
+  @UseGuards(JwtAuthGuard)
+  @ApiOperation({ summary: 'Get comparative analytics' })
+  @ApiResponse({ status: 200, description: 'Return comparative analytics data', type: ComparativeAnalyticsResponseDto })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  @ApiResponse({ status: 500, description: 'Internal server error' })
+  @ApiBearerAuth()
+  async getComparativeAnalytics(@Req() req: AuthenticatedRequest): Promise<ComparativeAnalyticsResponseDto> {
+    const user = req.user;
+    if (!user) {
+      throw new UnauthorizedException('User not found');
+    }
+    return this.analyticsService.getComparativeAnalytics(user.id);
+  }
+	  @Get('plateau-detection')
+	  @UseGuards(JwtAuthGuard)
+	  @ApiOperation({ summary: 'Get plateau detection analytics' })
+	  @ApiResponse({ status: 200, description: 'Return plateau detection data', type: PlateauDetectionResponseDto })
+	  @ApiResponse({ status: 401, description: 'Unauthorized' })
+	  @ApiResponse({ status: 500, description: 'Internal server error' })
+	  @ApiBearerAuth()
+	  async getPlateauDetection(@Req() req: AuthenticatedRequest, @Query('periodDays') periodDays?: number) {
+	    const user = req.user;
+	    if (!user) {
+	      throw new UnauthorizedException('User not found');
+	    }
+	    return this.analyticsService.getPlateauDetection(user.id, periodDays);
+	  }
+	}

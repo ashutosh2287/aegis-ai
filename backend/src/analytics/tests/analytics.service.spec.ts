@@ -1,6 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { AnalyticsService } from '../analytics.service';
 import { SupabaseService } from '../../supabase/supabase.service';
+import { PersonalRecordType } from '../../../src/analytics/enums/personal-record-type.enum';
 
 describe('AnalyticsService', () => {
   let service: AnalyticsService;
@@ -782,6 +783,367 @@ chain.group = jest.fn().mockReturnValue(chain);
         adherencePercentage: 14.0,
         totalWorkoutDays: 3,
       });
+    });
+  });
+
+  describe('getComparativeAnalytics', () => {
+    const fixedDate = new Date('2026-06-15');
+
+    beforeEach(() => {
+      jest.useFakeTimers();
+      jest.setSystemTime(fixedDate);
+    });
+
+    afterEach(() => {
+      jest.useRealTimers();
+    });
+
+    it('should return comparative analytics data', async () => {
+      // Mock all sessions for consistency calculation (workouts on 2026-06-10, 2026-06-11, 2026-06-12)
+      const allSessions = [
+        { completed_at: '2026-06-10T10:00:00Z' },
+        { completed_at: '2026-06-11T10:00:00Z' },
+        { completed_at: '2026-06-12T10:00:00Z' },
+      ];
+
+      // Mock current week sessions (last 7 days from 2026-06-15: 2026-06-09 to 2026-06-15)
+      // All three workouts are in current week
+      const currentWeekSessions = [...allSessions];
+
+      // Mock previous week sessions (7 days before current week: 2026-06-02 to 2026-06-08)
+      // No workouts in previous week
+      const previousWeekSessions = [];
+
+      // Mock current month sessions (last 30 days from 2026-06-15: 2026-05-16 to 2026-06-15)
+      // All three workouts are in current month
+      const currentMonthSessions = [...allSessions];
+
+      // Mock previous month sessions (30 days before current month: 2026-04-17 to 2026-05-15)
+      // No workouts in previous month
+      const previousMonthSessions = [];
+
+      // Mock volume data
+      const currentWeekVolume = { totalVolume: 1000, totalSets: 50, totalReps: 200 };
+      const previousWeekVolume = { totalVolume: 0, totalSets: 0, totalReps: 0 };
+      const currentMonthVolume = { totalVolume: 1000, totalSets: 50, totalReps: 200 };
+      const previousMonthVolume = { totalVolume: 0, totalSets: 0, totalReps: 0 };
+
+      // Mock personal records
+      const mockPersonalRecords = [
+        {
+          type: PersonalRecordType.HEAVIEST_WEIGHT,
+          value: 100,
+          achievedAt: '2026-06-11T10:00:00Z',
+          exerciseId: 'ex1',
+          sessionId: 'sess1'
+        },
+        {
+          type: PersonalRecordType.MOST_REPS,
+          value: 20,
+          achievedAt: '2026-06-12T10:00:00Z',
+          exerciseId: 'ex2',
+          sessionId: 'sess2'
+        }
+      ];
+
+      // Mock the helper methods directly
+      // Mock getTotalVolumeInDateRange for the 4 calls
+      jest.spyOn(service as any, 'getTotalVolumeInDateRange')
+        .mockImplementationOnce(() => Promise.resolve(currentWeekVolume)) // current week
+        .mockImplementationOnce(() => Promise.resolve(previousWeekVolume)) // previous week
+        .mockImplementationOnce(() => Promise.resolve(currentMonthVolume)) // current month
+        .mockImplementationOnce(() => Promise.resolve(previousMonthVolume)); // previous month
+
+      // Mock getTotalWorkoutsInDateRange for the 4 calls
+      jest.spyOn(service as any, 'getTotalWorkoutsInDateRange')
+        .mockImplementationOnce(() => Promise.resolve(currentWeekSessions.length)) // current week
+        .mockImplementationOnce(() => Promise.resolve(previousWeekSessions.length)) // previous week
+        .mockImplementationOnce(() => Promise.resolve(currentMonthSessions.length)) // current month
+        .mockImplementationOnce(() => Promise.resolve(previousMonthSessions.length)); // previous month
+
+      // Mock getWorkoutConsistency
+      jest.spyOn(service as any, 'getWorkoutConsistency')
+        .mockImplementationOnce(() => Promise.resolve({
+          currentStreak: 3,
+          longestStreak: 3,
+          workoutsThisWeek: 3,
+          workoutsThisMonth: 3,
+          averageWorkoutsPerWeek: 3.0,
+          adherencePercentage: 14.0,
+          totalWorkoutDays: 3
+        }));
+
+      // Mock getPersonalRecords
+      jest.spyOn(service as any, 'getPersonalRecords')
+        .mockImplementationOnce(() => Promise.resolve(mockPersonalRecords));
+
+      const result = await service.getComparativeAnalytics('user-id');
+
+      // Assertions
+      expect(result).toBeDefined();
+      expect(result.workoutVolume).toBeDefined();
+      expect(result.workoutVolume.currentWeek).toEqual(currentWeekVolume);
+      expect(result.workoutVolume.previousWeek).toEqual(previousWeekVolume);
+      expect(result.workoutVolume.changePercentage).toBeCloseTo(100.0); // (1000-0)/0 -> 100% (handled as special case)
+
+      expect(result.monthlyVolume).toBeDefined();
+      expect(result.monthlyVolume.currentMonth).toEqual(currentMonthVolume);
+      expect(result.monthlyVolume.previousMonth).toEqual(previousMonthVolume);
+      expect(result.monthlyVolume.changePercentage).toBeCloseTo(100.0); // (1000-0)/0 -> 100%
+
+      expect(result.workoutFrequencyWeekly).toBeDefined();
+      expect(result.workoutFrequencyWeekly.currentWeek).toBe(3);
+      expect(result.workoutFrequencyWeekly.previousWeek).toBe(0);
+      expect(result.workoutFrequencyWeekly.changePercentage).toBeCloseTo(100.0); // (3-0)/0 -> 100%
+
+      expect(result.workoutFrequencyMonthly).toBeDefined();
+      expect(result.workoutFrequencyMonthly.currentMonth).toBe(3);
+      expect(result.workoutFrequencyMonthly.previousMonth).toBe(0);
+      expect(result.workoutFrequencyMonthly.changePercentage).toBeCloseTo(100.0); // (3-0)/0 -> 100%
+
+      expect(result.personalRecordsWeekly).toBeDefined();
+      // Only one PR in current week (2026-06-11 is in current week, 2026-06-12 is also in current week)
+      // Actually both are in current week (2026-06-09 to 2026-06-15)
+      expect(result.personalRecordsWeekly.currentWeek).toBe(2);
+      expect(result.personalRecordsWeekly.previousWeek).toBe(0);
+      expect(result.personalRecordsWeekly.changePercentage).toBeCloseTo(100.0); // (2-0)/0 -> 100%
+
+      expect(result.personalRecordsMonthly).toBeDefined();
+      // Both PRs are in current month (2026-05-16 to 2026-06-15)
+      expect(result.personalRecordsMonthly.currentMonth).toBe(2);
+      expect(result.personalRecordsMonthly.previousMonth).toBe(0);
+      expect(result.personalRecordsMonthly.changePercentage).toBeCloseTo(100.0); // (2-0)/0 -> 100%
+
+      expect(result.currentConsistency).toBeDefined();
+      expect(result.currentConsistency.currentStreak).toBe(3);
+      expect(result.currentConsistency.longestStreak).toBe(3);
+
+      expect(result.recentPersonalRecords).toBeDefined();
+      expect(result.recentPersonalRecords.length).toBe(2); // Limited to 10, we have 2
+    });
+
+    it('should handle no workout data', async () => {
+      // Mock the helper methods directly for the no data case
+      // Mock getTotalVolumeInDateRange for the 4 calls
+      jest.spyOn(service as any, 'getTotalVolumeInDateRange')
+        .mockImplementationOnce(() => Promise.resolve({ totalVolume: 0, totalSets: 0, totalReps: 0 })) // current week
+        .mockImplementationOnce(() => Promise.resolve({ totalVolume: 0, totalSets: 0, totalReps: 0 })) // previous week
+        .mockImplementationOnce(() => Promise.resolve({ totalVolume: 0, totalSets: 0, totalReps: 0 })) // current month
+        .mockImplementationOnce(() => Promise.resolve({ totalVolume: 0, totalSets: 0, totalReps: 0 })); // previous month
+
+      // Mock getTotalWorkoutsInDateRange for the 4 calls
+      jest.spyOn(service as any, 'getTotalWorkoutsInDateRange')
+        .mockImplementationOnce(() => Promise.resolve(0)) // current week
+        .mockImplementationOnce(() => Promise.resolve(0)) // previous week
+        .mockImplementationOnce(() => Promise.resolve(0)) // current month
+        .mockImplementationOnce(() => Promise.resolve(0)); // previous month
+
+      // Mock getWorkoutConsistency
+      jest.spyOn(service as any, 'getWorkoutConsistency')
+        .mockImplementationOnce(() => Promise.resolve({
+          currentStreak: 0,
+          longestStreak: 0,
+          workoutsThisWeek: 0,
+          workoutsThisMonth: 0,
+          averageWorkoutsPerWeek: 0,
+          adherencePercentage: 0,
+          totalWorkoutDays: 0
+        }));
+
+      // Mock getPersonalRecords
+      jest.spyOn(service as any, 'getPersonalRecords')
+        .mockImplementationOnce(() => Promise.resolve([]));
+
+      const result = await service.getComparativeAnalytics('user-id');
+
+      expect(result).toBeDefined();
+      expect(result.workoutVolume.changePercentage).toBe(0); // 0 vs 0
+      expect(result.monthlyVolume.changePercentage).toBe(0); // 0 vs 0
+      expect(result.workoutFrequencyWeekly.changePercentage).toBe(0); // 0 vs 0
+      expect(result.workoutFrequencyMonthly.changePercentage).toBe(0); // 0 vs 0
+      expect(result.personalRecordsWeekly.changePercentage).toBe(0); // 0 vs 0
+      expect(result.personalRecordsMonthly.changePercentage).toBe(0); // 0 vs 0
+      expect(result.recentPersonalRecords.length).toBe(0);
+    });
+  });
+  describe('getPlateauDetection', () => {
+    const fixedDate = new Date('2026-06-15');
+
+    beforeEach(() => {
+      jest.useFakeTimers();
+      jest.setSystemTime(fixedDate);
+    });
+
+    afterEach(() => {
+      jest.useRealTimers();
+    });
+
+    it('should return strength plateau when strength trend shows <1% improvement', async () => {
+      const mockSupabaseClient = supabaseService.getClient();
+
+      // Mock getOverallStrengthTrend to return a strength trend with 0.5% improvement
+      jest.spyOn(service as any, 'getOverallStrengthTrend')
+        .mockResolvedValueOnce({
+          exerciseId: 'overall',
+          currentOneRepMax: 100.5,
+          bestOneRepMax: 100,
+          improvementPercentage: 0.5, // < 1% threshold
+          trend: 'UPWARD',
+          period: {
+            startDate: '2026-05-25',
+            endDate: '2026-06-15'
+          },
+          totalWorkouts: 10
+        });
+
+      // We don't need to mock the other detectors because we return on the first plateau (strength)
+      const result = await service.getPlateauDetection('user-id');
+
+      expect(result).toBeDefined();
+      expect(result.plateauDetected).toBe(true);
+      expect(result.plateauType).toBe('strength');
+      // Confidence: 100 - (0.5 * 100) = 50
+      expect(result.confidence).toBe(50);
+      expect(result.explanation).toContain('No meaningful 1RM improvement (<1%) over the last 21 days');
+    });
+
+    it('should return volume plateau when strength is ok but volume shows <1% increase', async () => {
+      const mockSupabaseClient = supabaseService.getClient();
+
+      // Mock getOverallStrengthTrend to return >1% improvement (so no strength plateau)
+      jest.spyOn(service as any, 'getOverallStrengthTrend')
+        .mockResolvedValueOnce({
+          exerciseId: 'overall',
+          currentOneRepMax: 105,
+          bestOneRepMax: 100,
+          improvementPercentage: 5, // > 1% -> no plateau
+          trend: 'UPWARD',
+          period: {
+            startDate: '2026-05-25',
+            endDate: '2026-06-15'
+          },
+          totalWorkouts: 10
+        });
+
+      // Mock getTotalVolume for the two periods (recent and previous)
+      // We need to mock getTotalVolumeInDateRange because the private method uses it? Actually, detectVolumePlateau uses getTotalVolume.
+      // But getTotalVolume is a public method that calls getTotalVolumeInDateRange.
+      // We'll mock getTotalVolumeInDateRange to avoid hitting the database.
+      jest.spyOn(service as any, 'getTotalVolumeInDateRange')
+        .mockImplementationOnce(() => Promise.resolve({ totalVolume: 1000, totalSets: 50, totalReps: 200 })) // recent period (last 21 days)
+        .mockImplementationOnce(() => Promise.resolve({ totalVolume: 1000, totalSets: 50, totalReps: 200 })); // previous period (21-42 days ago)
+
+      // With same volume, changePercentage = 0% -> plateau
+      const result = await service.getPlateauDetection('user-id');
+
+      expect(result).toBeDefined();
+      expect(result.plateauDetected).toBe(true);
+      expect(result.plateauType).toBe('volume');
+      expect(result.confidence).toBe(100); // 0% change -> 100% confidence
+      expect(result.explanation).toContain('No meaningful volume increase (<1%) over the last 21 days');
+    });
+
+    it('should return consistency plateau when strength and volume are ok but consistency shows <1% increase', async () => {
+      const mockSupabaseClient = supabaseService.getClient();
+
+      // Mock getOverallStrengthTrend to return >1% improvement
+      jest.spyOn(service as any, 'getOverallStrengthTrend')
+        .mockResolvedValueOnce({
+          exerciseId: 'overall',
+          currentOneRepMax: 105,
+          bestOneRepMax: 100,
+          improvementPercentage: 5,
+          trend: 'UPWARD',
+          period: {
+            startDate: '2026-05-25',
+            endDate: '2026-06-15'
+          },
+          totalWorkouts: 10
+        });
+
+      // Mock getTotalVolume to return a significant increase (so no volume plateau)
+      jest.spyOn(service as any, 'getTotalVolumeInDateRange')
+        .mockImplementationOnce(() => Promise.resolve({ totalVolume: 2000, totalSets: 100, totalReps: 400 })) // recent
+        .mockImplementationOnce(() => Promise.resolve({ totalVolume: 1000, totalSets: 50, totalReps: 200 })); // previous
+
+      // Now mock getTotalWorkoutsInDateRange for the consistency check
+      // We need to mock getTotalWorkoutsInDateRange (used by detectConsistencyPlateau)
+      jest.spyOn(service as any, 'getTotalWorkoutsInDateRange')
+        .mockImplementationOnce(() => Promise.resolve(10)) // recent workouts (last 21 days)
+        .mockImplementationOnce(() => Promise.resolve(10)); // previous workouts (21-42 days ago)
+
+      // With same workout count, changePercentage = 0% -> plateau
+      const result = await service.getPlateauDetection('user-id');
+
+      expect(result).toBeDefined();
+      expect(result.plateauDetected).toBe(true);
+      expect(result.plateauType).toBe('consistency');
+      expect(result.confidence).toBe(100);
+      expect(result.explanation).toContain('No meaningful workout frequency increase (<1%) over the last 21 days');
+    });
+
+    it('should return no plateau when all metrics show sufficient improvement', async () => {
+      const mockSupabaseClient = supabaseService.getClient();
+
+      // Strength: >1% improvement
+      jest.spyOn(service as any, 'getOverallStrengthTrend')
+        .mockResolvedValueOnce({
+          exerciseId: 'overall',
+          currentOneRepMax: 105,
+          bestOneRepMax: 100,
+          improvementPercentage: 5,
+          trend: 'UPWARD',
+          period: {
+            startDate: '2026-05-25',
+            endDate: '2026-06-15'
+          },
+          totalWorkouts: 10
+        });
+
+      // Volume: >1% increase
+      jest.spyOn(service as any, 'getTotalVolumeInDateRange')
+        .mockImplementationOnce(() => Promise.resolve({ totalVolume: 2000, totalSets: 100, totalReps: 400 })) // recent
+        .mockImplementationOnce(() => Promise.resolve({ totalVolume: 1000, totalSets: 50, totalReps: 200 })); // previous
+
+      // Consistency: >1% increase
+      jest.spyOn(service as any, 'getTotalWorkoutsInDateRange')
+        .mockImplementationOnce(() => Promise.resolve(20)) // recent
+        .mockImplementationOnce(() => Promise.resolve(10)); // previous
+
+      const result = await service.getPlateauDetection('user-id');
+
+      expect(result).toBeDefined();
+      expect(result.plateauDetected).toBe(false);
+      expect(result.plateauType).toBeUndefined();
+      expect(result.confidence).toBeUndefined();
+      expect(result.explanation).toBeUndefined();
+    });
+
+    it('should allow custom periodDays', async () => {
+      const mockSupabaseClient = supabaseService.getClient();
+
+      // We'll test with 7 days period
+      jest.spyOn(service as any, 'getOverallStrengthTrend')
+        .mockResolvedValueOnce({
+          exerciseId: 'overall',
+          currentOneRepMax: 100.5,
+          bestOneRepMax: 100,
+          improvementPercentage: 0.5,
+          trend: 'UPWARD',
+          period: {
+            startDate: '2026-06-08', // 7 days before 2026-06-15
+            endDate: '2026-06-15'
+          },
+          totalWorkouts: 10
+        });
+
+      // The other methods should not be called because we return on strength plateau
+      const result = await service.getPlateauDetection('user-id', 7);
+
+      expect(result).toBeDefined();
+      expect(result.plateauDetected).toBe(true);
+      expect(result.plateauType).toBe('strength');
+      expect(result.explanation).toContain('No meaningful 1RM improvement (<1%) over the last 7 days');
     });
   });
 });
