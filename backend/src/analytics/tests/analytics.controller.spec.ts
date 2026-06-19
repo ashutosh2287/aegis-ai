@@ -5,6 +5,8 @@ import { DashboardService } from '../dashboard.service';
 import { RecommendationService } from '../recommendation.service';
 import { RecommendationResponseDto } from '../dto/recommendation-response.dto';
 import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
+import { GoalProjectionService } from '../services/goal-projection.service';
+import { GoalRecommendationEngine } from '../services/goal-recommendation-engine';
 
 describe('AnalyticsController', () => {
   let controller: AnalyticsController;
@@ -38,6 +40,17 @@ describe('AnalyticsController', () => {
   };
 
   beforeEach(async () => {
+    const mockGoalProjectionService = {
+      getStrengthProjection: jest.fn(),
+      getVolumeProjection: jest.fn(),
+      getFrequencyProjection: jest.fn(),
+      estimateGoalAchievement: jest.fn(),
+    };
+
+    const mockGoalRecommendationEngine = {
+      generateRecommendations: jest.fn(),
+    };
+
     const module: TestingModule = await Test.createTestingModule({
       controllers: [AnalyticsController],
       providers: [
@@ -45,12 +58,15 @@ describe('AnalyticsController', () => {
         { provide: DashboardService, useValue: mockDashboardService },
         { provide: RecommendationService, useValue: mockRecommendationService },
         { provide: JwtAuthGuard, useValue: mockJwtAuthGuard },
+        { provide: GoalProjectionService, useValue: mockGoalProjectionService },
+        { provide: GoalRecommendationEngine, useValue: mockGoalRecommendationEngine },
       ],
     }).compile();
 
     controller = module.get<AnalyticsController>(AnalyticsController);
     analyticsService = module.get<AnalyticsService>(AnalyticsService);
-    dashboardService = module.get<DashboardService>(DashboardService);  });
+    dashboardService = module.get<DashboardService>(DashboardService);
+  });
 
   describe('getWorkoutConsistency', () => {
     it('should return workout consistency data', async () => {

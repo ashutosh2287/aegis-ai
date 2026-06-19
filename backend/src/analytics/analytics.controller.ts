@@ -20,6 +20,13 @@ import { OverviewQueryDto } from './dto/overview-query.dto';
 import { ComparativeQueryDto } from './dto/comparative-query.dto';
 import { ComparativeAnalyticsResponseDto } from './dto/comparative-analytics-response.dto';
 import { PlateauDetectionResponseDto } from './dto/plateau-detection-response.dto';
+import { GoalProjectionService } from './services/goal-projection.service';
+import { GoalRecommendationEngine } from './services/goal-recommendation-engine';
+import { StrengthProjectionDto } from './dto/strength-projection.dto';
+import { VolumeProjectionDto } from './dto/volume-projection.dto';
+import { FrequencyProjectionDto } from './dto/frequency-projection.dto';
+import { GoalAchievementEstimateDto } from './dto/goal-achievement-estimate.dto';
+import { ForecastRecommendationDto } from './dto/forecast-recommendation.dto';
 import { RecommendationResponseDto } from './dto/recommendation-response.dto';
 
 @Controller('analytics')
@@ -29,6 +36,8 @@ export class AnalyticsController {
     private readonly analyticsService: AnalyticsService,
     private readonly dashboardService: DashboardService,
     private readonly recommendationService: RecommendationService,
+    private readonly goalProjectionService: GoalProjectionService,
+    private readonly goalRecommendationEngine: GoalRecommendationEngine,
   ) {}
 
   @Get('dashboard')
@@ -245,4 +254,105 @@ export class AnalyticsController {
     }
     return this.recommendationService.generateRecommendations(user.id);
   };
+
+  // NEW METHODS START
+  @Get('projection/strength')
+  @UseGuards(JwtAuthGuard)
+  @ApiOperation({ summary: 'Get strength projection' })
+  @ApiResponse({ status: 200, description: 'Return strength projection', type: StrengthProjectionDto })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  @ApiResponse({ status: 500, description: 'Internal server error' })
+  @ApiBearerAuth()
+  async getStrengthProjection(@Req() req: AuthenticatedRequest): Promise<StrengthProjectionDto> {
+    const user = req.user;
+    if (!user) {
+      throw new UnauthorizedException('User not found');
+    }
+    return this.goalProjectionService.getStrengthProjection(user.id);
+  }
+
+  @Get('projection/volume')
+  @UseGuards(JwtAuthGuard)
+  @ApiOperation({ summary: 'Get volume projection' })
+  @ApiResponse({ status: 200, description: 'Return volume projection', type: VolumeProjectionDto })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  @ApiResponse({ status: 500, description: 'Internal server error' })
+  @ApiBearerAuth()
+  async getVolumeProjection(@Req() req: AuthenticatedRequest): Promise<VolumeProjectionDto> {
+    const user = req.user;
+    if (!user) {
+      throw new UnauthorizedException('User not found');
+    }
+    return this.goalProjectionService.getVolumeProjection(user.id);
+  }
+
+  @Get('projection/frequency')
+  @UseGuards(JwtAuthGuard)
+  @ApiOperation({ summary: 'Get frequency projection' })
+  @ApiResponse({ status: 200, description: 'Return frequency projection', type: FrequencyProjectionDto })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  @ApiResponse({ status: 500, description: 'Internal server error' })
+  @ApiBearerAuth()
+  async getFrequencyProjection(@Req() req: AuthenticatedRequest): Promise<FrequencyProjectionDto> {
+    const user = req.user;
+    if (!user) {
+      throw new UnauthorizedException('User not found');
+    }
+    return this.goalProjectionService.getFrequencyProjection(user.id);
+  }
+
+  @Get('projection/goal-achievement')
+  @UseGuards(JwtAuthGuard)
+  @ApiOperation({ summary: 'Estimate goal achievement date' })
+  @ApiResponse({ status: 200, description: 'Return goal achievement estimate', type: GoalAchievementEstimateDto })
+  @ApiResponse({ status: 400, description: 'Bad request - missing or invalid parameters' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  @ApiResponse({ status: 500, description: 'Internal server error' })
+  @ApiBearerAuth()
+  async getGoalAchievementEstimate(
+    @Req() req: AuthenticatedRequest,
+    @Query('goalType') goalType: 'strength' | 'volume' | 'frequency',
+    @Query('targetValue') targetValue: number,
+    @Query('currentValue') currentValue: number,
+    @Query('weeklyProgress') weeklyProgress: number,
+  ): Promise<GoalAchievementEstimateDto> {
+    const user = req.user;
+    if (!user) {
+      throw new UnauthorizedException('User not found');
+    }
+
+    // Validate parameters
+    if (!goalType || targetValue === undefined || currentValue === undefined || weeklyProgress === undefined) {
+      throw new BadRequestException('Missing required parameters: goalType, targetValue, currentValue, weeklyProgress');
+    }
+
+    // Validate goalType
+    if (!['strength', 'volume', 'frequency'].includes(goalType)) {
+      throw new BadRequestException('Invalid goalType. Must be one of: strength, volume, frequency');
+    }
+
+    return this.goalProjectionService.estimateGoalAchievement(
+      user.id,
+      goalType,
+      targetValue,
+      currentValue,
+      weeklyProgress,
+    );
+  }
+
+  @Get('projection/recommendations')
+  @UseGuards(JwtAuthGuard)
+  @ApiOperation({ summary: 'Get goal-based recommendations' })
+  @ApiResponse({ status: 200, description: 'Return goal-based recommendations', type: [ForecastRecommendationDto] })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  @ApiResponse({ status: 500, description: 'Internal server error' })
+  @ApiBearerAuth()
+  async getProjectionRecommendations(@Req() req: AuthenticatedRequest): Promise<ForecastRecommendationDto[]> {
+    const user = req.user;
+    if (!user) {
+      throw new UnauthorizedException('User not found');
+    }
+    return this.goalRecommendationEngine.generateRecommendations(user.id);
+  }
+  // NEW METHODS END
 }
