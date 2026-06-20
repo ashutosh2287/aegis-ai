@@ -12,6 +12,8 @@ import HistoryPage from '../pages/HistoryPage';
 import InsightsPage from '../pages/InsightsPage';
 import GoalsPage from '../pages/GoalsPage';
 import ProfilePage from '../pages/ProfilePage';
+import WorkoutBuilderPage from '../pages/WorkoutBuilderPage';
+import ActiveSessionPage from '../pages/ActiveSessionPage';
 
 const router = createBrowserRouter([
   {
@@ -42,6 +44,8 @@ const router = createBrowserRouter([
       { path: 'insights', element: <InsightsPage /> },
       { path: 'goals', element: <GoalsPage /> },
       { path: 'profile', element: <ProfilePage /> },
+      { path: 'workout-builder', element: <WorkoutBuilderPage /> },
+      { path: 'session/:sessionId', element: <ActiveSessionPage /> },
     ],
   },
 ]);
