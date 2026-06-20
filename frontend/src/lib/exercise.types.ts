@@ -16,6 +16,7 @@ export interface SessionSummary {
   endTime?: string;
   durationMinutes?: number;
   totalVolume: number; // total weight * reps across all sets
+  totalSets: number;
   status: 'completed' | 'active' | 'cancelled';
   createdAt: string;
 }

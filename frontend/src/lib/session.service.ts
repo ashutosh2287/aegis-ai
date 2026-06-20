@@ -64,6 +64,18 @@ export const sessionService = {
     if (offset !== undefined) params.offset = offset.toString();
     const response = await api.get('/sessions/history', { params });
     return response.data;
+  },
+
+  /**
+   * Get paginated workout sessions
+   * @param limit - Number of sessions per page
+   * @param offset - Offset for pagination
+   */
+  async getWorkoutSessions(limit: number, offset: number): Promise<SessionSummary[]> {
+    const response = await api.get('/workout-sessions', {
+      params: { limit: limit.toString(), offset: offset.toString() },
+    });
+    return response.data;
   }
 };
 

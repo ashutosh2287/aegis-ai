@@ -1,7 +1,125 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
+import {
+  DndContext,
+  closestCenter,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  type DragEndEvent,
+} from '@dnd-kit/core';
+import {
+  SortableContext,
+  useSortable,
+  verticalListSortingStrategy,
+  arrayMove,
+} from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
+import { exerciseService } from '../lib/exercise.service';
+import { useWorkouts } from '../hooks/useWorkouts';
+import type { Exercise } from '../lib/exercise.types';
+
+const DEBOUNCE_MS = 300;
+
+function useDebouncedValue(value: string, delay: number) {
+  const [debounced, setDebounced] = useState(value);
+  const timer = useRef<ReturnType<typeof setTimeout>>(null);
+
+  useEffect(() => {
+    timer.current = setTimeout(() => setDebounced(value), delay);
+    return () => { if (timer.current) clearTimeout(timer.current); };
+  }, [value, delay]);
+
+  return debounced;
+}
+
+interface SortableExercise {
+  id: string;
+  name: string;
+  muscleGroup: string;
+  setCount: number;
+}
+
+function SortableExerciseItem({
+  exercise,
+  onIncrement,
+  onDecrement,
+  onRemove,
+}: {
+  exercise: SortableExercise;
+  onIncrement: (id: string) => void;
+  onDecrement: (id: string) => void;
+  onRemove: (id: string) => void;
+}) {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
+    useSortable({ id: exercise.id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+  };
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      className="border rounded-lg p-4 mb-4 flex justify-between items-center bg-white"
+    >
+      <div className="flex items-center gap-3">
+        <button
+          {...attributes}
+          {...listeners}
+          className="cursor-grab active:cursor-grabbing text-gray-400 hover:text-gray-600 touch-none"
+          aria-label="Drag to reorder"
+        >
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+            <circle cx="7" cy="4" r="1.5" />
+            <circle cx="13" cy="4" r="1.5" />
+            <circle cx="7" cy="10" r="1.5" />
+            <circle cx="13" cy="10" r="1.5" />
+            <circle cx="7" cy="16" r="1.5" />
+            <circle cx="13" cy="16" r="1.5" />
+          </svg>
+        </button>
+        <div>
+          <h3 className="font-semibold">{exercise.name}</h3>
+          <p className="text-sm text-gray-600">{exercise.muscleGroup}</p>
+        </div>
+      </div>
+      <div className="flex items-center space-x-3">
+        <button
+          onClick={() => onDecrement(exercise.id)}
+          disabled={exercise.setCount === 1}
+          className="px-3 py-1 bg-gray-200 rounded hover:bg-gray-300 disabled:opacity-50"
+        >
+          -
+        </button>
+        <span className="w-8 text-center">{exercise.setCount}</span>
+        <button
+          onClick={() => onIncrement(exercise.id)}
+          disabled={exercise.setCount === 20}
+          className="px-3 py-1 bg-gray-200 rounded hover:bg-gray-300 disabled:opacity-50"
+        >
+          +
+        </button>
+        <button
+          onClick={() => onRemove(exercise.id)}
+          className="text-red-500 hover:text-red-700"
+        >
+          Remove
+        </button>
+      </div>
+    </div>
+  );
+}
 
 const WorkoutBuilderPage = () => {
+  const navigate = useNavigate();
+  const { createWorkout, addWorkoutExercise } = useWorkouts();
+
   const [workoutName, setWorkoutName] = useState('');
   const [exercises, setExercises] = useState<Array<{
     id: string;
@@ -9,6 +127,22 @@ const WorkoutBuilderPage = () => {
     muscleGroup: string;
     setCount: number;
   }>>([]);
+
+  const [searchQuery, setSearchQuery] = useState('');
+  const debouncedQuery = useDebouncedValue(searchQuery, DEBOUNCE_MS);
+
+  const { data: searchResults = [], isLoading: searchLoading, error: searchError, isFetched } = useQuery<Exercise[], Error>({
+    queryKey: ['exerciseSearch', debouncedQuery],
+    queryFn: () => exerciseService.searchExercises(debouncedQuery),
+    enabled: debouncedQuery.trim().length > 0,
+  });
+
+  const [isSaving, setIsSaving] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 5 } })
+  );
 
   const isWorkoutNameValid = workoutName.length >= 3;
 
@@ -46,12 +180,60 @@ const WorkoutBuilderPage = () => {
     setExercises(prev => prev.filter(exercise => exercise.id !== id));
   };
 
-  const handleSaveWorkout = () => {
-    console.log({
-      workoutName,
-      exercises,
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+    if (!over || active.id === over.id) return;
+
+    setExercises(prev => {
+      const oldIndex = prev.findIndex(e => e.id === active.id);
+      const newIndex = prev.findIndex(e => e.id === over.id);
+      return arrayMove(prev, oldIndex, newIndex);
     });
   };
+
+  const handleSaveWorkout = async () => {
+    if (!isWorkoutNameValid || exercises.length === 0) return;
+
+    setIsSaving(true);
+    setSaveError(null);
+
+    try {
+      const workout = await createWorkout({ name: workoutName });
+
+      for (let i = 0; i < exercises.length; i++) {
+        await addWorkoutExercise({
+          workoutId: workout.id,
+          exerciseData: {
+            exerciseId: exercises[i].id,
+            order: i + 1,
+            defaultSets: exercises[i].setCount,
+          },
+        });
+      }
+
+      navigate('/app/workouts');
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Failed to save workout';
+      setSaveError(message);
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleAddExercise = (exercise: Exercise) => {
+    if (exercises.some((e) => e.id === exercise.id)) return;
+    setExercises((prev) => [
+      ...prev,
+      {
+        id: exercise.id,
+        name: exercise.name,
+        muscleGroup: exercise.muscleGroup ?? 'Unknown',
+        setCount: 3,
+      },
+    ]);
+  };
+
+  const isAlreadyAdded = (id: string) => exercises.some((e) => e.id === id);
 
   return (
     <div className="p-6 max-w-2xl mx-auto">
@@ -83,47 +265,73 @@ const WorkoutBuilderPage = () => {
         {exercises.length === 0 ? (
           <p className="text-gray-500">No exercises added yet</p>
         ) : (
-          <AnimatePresence>
-            {exercises.map((exercise) => (
-              <motion.div
+          <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+            <SortableContext items={exercises.map(e => e.id)} strategy={verticalListSortingStrategy}>
+              <AnimatePresence>
+                {exercises.map(exercise => (
+                  <motion.div
+                    key={exercise.id}
+                    initial={{ y: 10, opacity: 0 }}
+                    animate={{ y: 0, opacity: 1 }}
+                    exit={{ y: -10, opacity: 0 }}
+                  >
+                    <SortableExerciseItem
+                      exercise={exercise}
+                      onIncrement={handleIncrementSet}
+                      onDecrement={handleDecrementSet}
+                      onRemove={handleRemoveExercise}
+                    />
+                  </motion.div>
+                ))}
+              </AnimatePresence>
+            </SortableContext>
+          </DndContext>
+        )}
+      </div>
+
+      {/* Exercise Search Panel */}
+      <div className="mb-6">
+        <h2 className="text-lg font-bold mb-4">Search Exercises</h2>
+        <input
+          type="text"
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          className="block w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+          placeholder="Search exercises by name..."
+        />
+        {searchQuery.trim() && (
+          <div className="mt-3 border rounded-lg divide-y max-h-64 overflow-y-auto">
+            {searchLoading && (
+              <p className="p-4 text-gray-500 text-sm">Loading...</p>
+            )}
+            {!searchLoading && searchError && (
+              <p className="p-4 text-red-500 text-sm">{searchError.message}</p>
+            )}
+            {!searchLoading && !searchError && isFetched && searchResults.length === 0 && (
+              <p className="p-4 text-gray-500 text-sm">No exercises found</p>
+            )}
+            {!searchLoading && !searchError && isFetched && searchResults.map((exercise) => (
+              <div
                 key={exercise.id}
-                initial={{ y: 10, opacity: 0 }}
-                animate={{ y: 0, opacity: 1 }}
-                exit={{ y: -10, opacity: 0 }}
-                className="border rounded-lg p-4 mb-4 flex justify-between items-center"
+                className="p-4 flex justify-between items-center hover:bg-gray-50"
               >
                 <div>
-                  <h3 className="font-semibold">{exercise.name}</h3>
+                  <p className="font-medium">{exercise.name}</p>
                   <p className="text-sm text-gray-600">
                     {exercise.muscleGroup}
+                    {exercise.equipment && ` · ${exercise.equipment}`}
                   </p>
                 </div>
-                <div className="flex items-center space-x-3">
-                  <button
-                    onClick={() => handleDecrementSet(exercise.id)}
-                    disabled={exercise.setCount === 1}
-                    className="px-3 py-1 bg-gray-200 rounded hover:bg-gray-300 disabled:opacity-50"
-                  >
-                    -
-                  </button>
-                  <span className="w-8 text-center">{exercise.setCount}</span>
-                  <button
-                    onClick={() => handleIncrementSet(exercise.id)}
-                    disabled={exercise.setCount === 20}
-                    className="px-3 py-1 bg-gray-200 rounded hover:bg-gray-300 disabled:opacity-50"
-                  >
-                    +
-                  </button>
-                  <button
-                    onClick={() => handleRemoveExercise(exercise.id)}
-                    className="text-red-500 hover:text-red-700"
-                  >
-                    Remove
-                  </button>
-                </div>
-              </motion.div>
+                <button
+                  onClick={() => handleAddExercise(exercise)}
+                  disabled={isAlreadyAdded(exercise.id)}
+                  className="px-3 py-1 bg-blue-500 text-white text-sm rounded hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {isAlreadyAdded(exercise.id) ? 'Added' : 'Add'}
+                </button>
+              </div>
             ))}
-          </AnimatePresence>
+          </div>
         )}
       </div>
 
@@ -138,14 +346,17 @@ const WorkoutBuilderPage = () => {
       </div>
 
       {/* Save Button */}
+      {saveError && (
+        <p className="text-red-500 text-sm mb-3">{saveError}</p>
+      )}
       <button
         onClick={handleSaveWorkout}
-        disabled={!isWorkoutNameValid || exercises.length === 0}
+        disabled={!isWorkoutNameValid || exercises.length === 0 || isSaving}
         className={`bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded ${
-          !isWorkoutNameValid || exercises.length === 0 ? 'opacity-50 cursor-not-allowed' : ''
+          !isWorkoutNameValid || exercises.length === 0 || isSaving ? 'opacity-50 cursor-not-allowed' : ''
         }`}
       >
-        Save Workout
+        {isSaving ? 'Saving...' : 'Save Workout'}
       </button>
     </div>
   );

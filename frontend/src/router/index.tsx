@@ -3,17 +3,21 @@ import LoginPage from '../pages/auth/LoginPage';
 import RegisterPage from '../pages/auth/RegisterPage';
 import { AppShell } from '../layouts/AppShell';
 import AuthProtectedRoute from '../components/AuthProtectedRoute';
-// Placeholder pages - we'll create them later
-import DashboardPage from '../pages/DashboardPage';
-import AnalyticsPage from '../pages/AnalyticsPage';
-import RecordsPage from '../pages/RecordsPage';
-import WorkoutsPage from '../pages/WorkoutsPage';
-import HistoryPage from '../pages/HistoryPage';
-import InsightsPage from '../pages/InsightsPage';
-import GoalsPage from '../pages/GoalsPage';
-import ProfilePage from '../pages/ProfilePage';
-import WorkoutBuilderPage from '../pages/WorkoutBuilderPage';
-import ActiveSessionPage from '../pages/ActiveSessionPage';
+import { SuspenseWrapper } from '../components/ui/SuspenseWrapper';
+import {
+  DashboardPage,
+  AnalyticsPage,
+  RecordsPage,
+  WorkoutsPage,
+  HistoryPage,
+  InsightsPage,
+  GoalsPage,
+  ProfilePage,
+  WorkoutBuilderPage,
+  ActiveSessionPage,
+  SessionSummaryPage,
+  ExerciseCatalogPage,
+} from './lazyRoutes';
 
 const router = createBrowserRouter([
   {
@@ -36,16 +40,18 @@ const router = createBrowserRouter([
       </AuthProtectedRoute>
     ),
     children: [
-      { path: 'dashboard', element: <DashboardPage /> },
-      { path: 'analytics', element: <AnalyticsPage /> },
-      { path: 'records', element: <RecordsPage /> },
-      { path: 'workouts', element: <WorkoutsPage /> },
-      { path: 'history', element: <HistoryPage /> },
-      { path: 'insights', element: <InsightsPage /> },
-      { path: 'goals', element: <GoalsPage /> },
-      { path: 'profile', element: <ProfilePage /> },
-      { path: 'workout-builder', element: <WorkoutBuilderPage /> },
-      { path: 'session/:sessionId', element: <ActiveSessionPage /> },
+      { path: 'dashboard', element: <SuspenseWrapper><DashboardPage /></SuspenseWrapper> },
+      { path: 'analytics', element: <SuspenseWrapper><AnalyticsPage /></SuspenseWrapper> },
+      { path: 'records', element: <SuspenseWrapper><RecordsPage /></SuspenseWrapper> },
+      { path: 'workouts', element: <SuspenseWrapper><WorkoutsPage /></SuspenseWrapper> },
+      { path: 'history', element: <SuspenseWrapper><HistoryPage /></SuspenseWrapper> },
+      { path: 'insights', element: <SuspenseWrapper><InsightsPage /></SuspenseWrapper> },
+      { path: 'goals', element: <SuspenseWrapper><GoalsPage /></SuspenseWrapper> },
+      { path: 'profile', element: <SuspenseWrapper><ProfilePage /></SuspenseWrapper> },
+      { path: 'workout-builder', element: <SuspenseWrapper><WorkoutBuilderPage /></SuspenseWrapper> },
+      { path: 'exercises', element: <SuspenseWrapper><ExerciseCatalogPage /></SuspenseWrapper> },
+      { path: 'session/:sessionId', element: <SuspenseWrapper><ActiveSessionPage /></SuspenseWrapper> },
+      { path: 'session-summary/:sessionId', element: <SuspenseWrapper><SessionSummaryPage /></SuspenseWrapper> },
     ],
   },
 ]);

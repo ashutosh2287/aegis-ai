@@ -10,6 +10,7 @@ import {
   TrendingUp,
   Target,
   LogOut,
+  Dumbbell,
 } from 'lucide-react';
 
 export const Sidebar = () => {
@@ -109,6 +110,18 @@ export const Sidebar = () => {
         >
           <Battery className="mr-3 h-4 w-4" />
           History
+        </NavLink>
+
+        <NavLink
+          to="/exercises"
+          end
+          className={({ isActive }) => `
+            flex items-center px-3 py-2 text-sm font-medium rounded-md
+            ${isActive ? 'bg-indigo-50 text-indigo-600' : 'text-gray-700 hover:bg-gray-50'}
+          `}
+        >
+          <Dumbbell className="mr-3 h-4 w-4" />
+          Exercises
         </NavLink>
 
         {/* AI */}
