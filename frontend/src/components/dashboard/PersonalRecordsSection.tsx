@@ -4,7 +4,7 @@ import { useLocation } from 'react-router-dom';
 import { Trophy, Weight, Repeat, Clock, Hash } from 'lucide-react';
 import { usePersonalRecords } from '../../hooks/useAnalytics';
 import { useExercises } from '../../hooks/useExercises';
-import { DashboardSectionError } from './DashboardSectionError';
+import { ErrorCard } from '../ui/ErrorCard';
 import type { PersonalRecord, PersonalRecordType } from '../../lib/analytics.types';
 
 const PR_CONFIG: Record<
@@ -189,9 +189,9 @@ export function PersonalRecordsSection() {
 
   if (isError) {
     return (
-      <DashboardSectionError
-        title="Personal Records"
-        message={error?.message}
+      <ErrorCard
+        title="Failed to load personal records"
+        message={error?.message || 'Could not fetch personal records.'}
         onRetry={() => refetch()}
       />
     );
@@ -199,8 +199,6 @@ export function PersonalRecordsSection() {
 
   return (
     <div className="space-y-4">
-      <h2 className="text-lg font-semibold text-gray-900">Personal Records</h2>
-
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {isLoading
           ? Array.from({ length: 5 }).map((_, i) => <CardSkeleton key={i} />)
@@ -224,7 +222,8 @@ export function PersonalRecordsSection() {
       {!isLoading && sortedRecords.length === 0 && (
         <div className="bg-white rounded-xl border border-gray-200 p-8 text-center">
           <Trophy className="h-10 w-10 text-gray-300 mx-auto mb-3" />
-          <p className="text-sm text-gray-500">No personal records yet. Start training!</p>
+          <p className="text-sm font-medium text-gray-900 mb-1">No personal records yet</p>
+          <p className="text-xs text-gray-500">Keep training to set new personal records!</p>
         </div>
       )}
     </div>

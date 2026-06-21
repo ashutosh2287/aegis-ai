@@ -46,6 +46,7 @@ export const useWorkouts = () => {
     workouts,
     isLoading,
     error,
+    refetch: () => queryClient.invalidateQueries({ queryKey: ['workouts'] }),
     createWorkout: createWorkoutMutation.mutateAsync,
     addWorkoutExercise: addWorkoutExerciseMutation.mutateAsync,
     // For backward compatibility or if you prefer the mutation objects

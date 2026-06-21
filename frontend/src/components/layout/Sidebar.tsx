@@ -43,13 +43,13 @@ export const Sidebar = () => {
         )}
       </div>
 
-      <nav className="mt-6 space-y-1 px-3">
+      <nav className="mt-6 space-y-1 px-3" aria-label="Main navigation">
         {/* Overview */}
         <div className="px-3 pt-2">
           <p className="text-xs font-semibold text-gray-500 uppercase">OVERVIEW</p>
         </div>
         <NavLink
-          to="/dashboard"
+          to="/app/dashboard"
           end
           className={({ isActive }) => `
             flex items-center px-3 py-2 text-sm font-medium rounded-md
@@ -61,7 +61,7 @@ export const Sidebar = () => {
         </NavLink>
 
         <NavLink
-          to="/analytics"
+          to="/app/analytics"
           end
           className={({ isActive }) => `
             flex items-center px-3 py-2 text-sm font-medium rounded-md
@@ -73,7 +73,7 @@ export const Sidebar = () => {
         </NavLink>
 
         <NavLink
-          to="/records"
+          to="/app/records"
           end
           className={({ isActive }) => `
             flex items-center px-3 py-2 text-sm font-medium rounded-md
@@ -89,7 +89,7 @@ export const Sidebar = () => {
           <p className="text-xs font-semibold text-gray-500 uppercase">TRAINING</p>
         </div>
         <NavLink
-          to="/workouts"
+          to="/app/workouts"
           end
           className={({ isActive }) => `
             flex items-center px-3 py-2 text-sm font-medium rounded-md
@@ -101,7 +101,7 @@ export const Sidebar = () => {
         </NavLink>
 
         <NavLink
-          to="/history"
+          to="/app/history"
           end
           className={({ isActive }) => `
             flex items-center px-3 py-2 text-sm font-medium rounded-md
@@ -113,7 +113,7 @@ export const Sidebar = () => {
         </NavLink>
 
         <NavLink
-          to="/exercises"
+          to="/app/exercises"
           end
           className={({ isActive }) => `
             flex items-center px-3 py-2 text-sm font-medium rounded-md
@@ -129,7 +129,7 @@ export const Sidebar = () => {
           <p className="text-xs font-semibold text-gray-500 uppercase">AI</p>
         </div>
         <NavLink
-          to="/insights"
+          to="/app/insights"
           end
           className={({ isActive }) => `
             flex items-center px-3 py-2 text-sm font-medium rounded-md
@@ -141,7 +141,7 @@ export const Sidebar = () => {
         </NavLink>
 
         <NavLink
-          to="/goals"
+          to="/app/goals"
           end
           className={({ isActive }) => `
             flex items-center px-3 py-2 text-sm font-medium rounded-md
@@ -157,7 +157,8 @@ export const Sidebar = () => {
         <div className="mt-auto pb-4 px-3 border-t border-gray-200">
           <button
             onClick={handleLogout}
-            className="flex w-items-center px-3 py-2 text-sm font-medium rounded-md text-gray-700 hover:bg-gray-50"
+            className="flex w-items-center px-3 py-2 text-sm font-medium rounded-md text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+            aria-label="Sign out of your account"
           >
             <LogOut className="mr-3 h-4 w-4" />
             Sign out

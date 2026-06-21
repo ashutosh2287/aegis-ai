@@ -14,12 +14,11 @@ export const useLogin = () => {
       // Assuming the response contains token, refreshToken, and user
       const { token, refreshToken, user } = response.data;
       setAuth(token, refreshToken, user);
-      navigate('/dashboard'); // Redirect to dashboard after login
+      navigate('/app/dashboard'); // Redirect to dashboard after login
     } catch (error: unknown) {
-      setLoading(false);
       throw error; // Re-throw for the component to handle
     } finally {
-      // setLoading(false); // We'll set in finally if we want to always set loading false
+      setLoading(false);
     }
   };
 

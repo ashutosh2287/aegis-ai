@@ -2,7 +2,7 @@ import axios from 'axios';
 import { useAuthStore } from '../store/authStore';
 
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:3000',
+  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:3000/api',
 });
 
 // Request interceptor to attach token
@@ -17,24 +17,57 @@ api.interceptors.request.use((config) => {
 // Response interceptor to unwrap data
 api.interceptors.response.use(
   (response) => {
-    // Assuming the backend returns { success: true, data: {}, message: '' }
-    if (response.data?.success) {
-      // Unwrap the data and set it as the response data
+    // If the backend wraps in { success, data }, unwrap it
+    if (response.data?.success && response.data?.data !== undefined) {
       response.data = response.data.data;
-      return response;
     }
-    // If the response doesn't match the expected format, reject with an error
-    return Promise.reject(new Error('Unexpected response format'));
+    return response;
   },
   (error) => {
     // Handle 401 Unauthorized globally
     if (error.response?.status === 401) {
-      // Clear auth state and redirect to login
       const authStore = useAuthStore.getState();
-      authStore.clearAuth();
-      // Set session expired message
-      authStore.setSessionExpired('Session expired. Please sign in again.');
+      // Only clear if we actually have a token (not on login page)
+      if (authStore.token) {
+        authStore.clearAuth();
+        authStore.setSessionExpired('Session expired. Please sign in again.');
+      }
+      return Promise.reject(error);
     }
+
+    // Surface friendly error messages for common HTTP errors
+    if (error.response) {
+      const status = error.response.status;
+      const serverMessage = error.response.data?.message;
+
+      if (status === 403) {
+        return Promise.reject(new Error(serverMessage || 'You do not have permission to perform this action.'));
+      }
+      if (status === 404) {
+        return Promise.reject(new Error(serverMessage || 'The requested resource was not found.'));
+      }
+      if (status === 409) {
+        return Promise.reject(new Error(serverMessage || 'A conflict occurred. The resource may already exist.'));
+      }
+      if (status === 422) {
+        return Promise.reject(new Error(serverMessage || 'Invalid data provided. Please check your input.'));
+      }
+      if (status === 429) {
+        return Promise.reject(new Error(serverMessage || 'Too many requests. Please wait a moment and try again.'));
+      }
+      if (status >= 500) {
+        return Promise.reject(new Error(serverMessage || 'A server error occurred. Please try again later.'));
+      }
+
+      // For other HTTP errors, use server message or generic fallback
+      return Promise.reject(new Error(serverMessage || `Request failed with status ${status}`));
+    }
+
+    // Network errors
+    if (error.request && !error.response) {
+      return Promise.reject(new Error('Network error. Please check your connection and try again.'));
+    }
+
     return Promise.reject(error);
   }
 );

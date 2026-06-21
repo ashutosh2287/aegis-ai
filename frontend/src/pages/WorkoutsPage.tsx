@@ -1,58 +1,87 @@
+import { useState } from 'react';
 import { useWorkouts } from '../hooks/useWorkouts';
 import { sessionService } from '../lib/session.service';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import { Dumbbell, Plus, Play } from 'lucide-react';
+import { ErrorCard } from '../components/ui/ErrorCard';
 import type { Workout } from '../lib/workout.types';
 
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: { staggerChildren: 0.05 },
+  },
+};
+
+const cardVariants = {
+  hidden: { opacity: 0, y: 12 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.25, ease: [0.16, 1, 0.3, 1] },
+  },
+};
+
+const getRecencyBadge = (updatedAt: string) => {
+  const daysSince = Math.floor(
+    (Date.now() - new Date(updatedAt).getTime()) / (1000 * 60 * 60 * 24)
+  );
+  if (daysSince <= 3) {
+    return { label: 'Recent', className: 'bg-emerald-100 text-emerald-700' };
+  }
+  if (daysSince <= 7) {
+    return { label: `${daysSince}d ago`, className: 'bg-amber-100 text-amber-700' };
+  }
+  return { label: `${daysSince}d ago`, className: 'bg-gray-100 text-gray-500' };
+};
+
+const getMuscleGroupTags = (workout: Workout): string[] => {
+  const muscleGroups = workout.workoutExercises
+    ?.map((we) => we.exercise?.muscleGroup)
+    .filter((mg): mg is string => !!mg) || [];
+  return [...new Set(muscleGroups)];
+};
+
 export const WorkoutsPage = () => {
-  const { workouts, isLoading, error } = useWorkouts();
+  const { workouts, isLoading, error, refetch } = useWorkouts();
   const navigate = useNavigate();
+  const [startingWorkoutId, setStartingWorkoutId] = useState<string | null>(null);
 
   const handleStartWorkout = async (workoutId: string) => {
+    if (startingWorkoutId) return;
+    setStartingWorkoutId(workoutId);
     try {
       const session = await sessionService.createSession(workoutId);
-      // Navigate to active session screen, passing sessionId and workoutId via state
       navigate(`/app/session/${session.id}`, { state: { workoutId } });
     } catch (err) {
       console.error('Failed to start workout session:', err);
-      // TODO: Show error toast or notification
+      setStartingWorkoutId(null);
     }
   };
 
   if (isLoading) {
     return (
-      <div className="p-6">
-        <div className="flex justify-between items-center mb-6">
-          <h1 className="text-2xl font-bold">My Workouts</h1>
-          <button
-            onClick={() => navigate('/app/workout-builder')}
-            className="bg-blue-500 hover:bg-blue-600 text-white font-medium py-2 px-4 rounded-md transition-colors"
-          >
-            New Workout
-          </button>
+      <div className="p-4 sm:p-6 max-w-7xl mx-auto">
+        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 mb-6">
+          <h1 className="text-[11px] font-medium uppercase tracking-wider text-gray-500">My Workouts</h1>
+          <div className="h-9 w-32 bg-gray-200 rounded-lg animate-pulse" />
         </div>
-        {/* Loading skeletons */}
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {[1, 2, 3, 4, 5, 6].map((_, index) => (
-            <motion.div
+            <div
               key={index}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.05 }}
-              className="bg-white rounded-lg p-4 shadow-md"
+              className="bg-white rounded-xl border border-gray-200 p-5"
             >
-              <div className="h-4 bg-gray-200 rounded w-32 mb-2"></div>
-              <div className="flex items-center gap-2 mb-2">
-                <div className="h-2 w-2 bg-gray-300 rounded-full"></div>
-                <div className="h-2 w-2 bg-gray-300 rounded-full"></div>
-                <div className="h-2 w-2 bg-gray-300 rounded-full"></div>
-                <span className="text-xs text-gray-500">Muscle groups</span>
+              <div className="h-5 bg-gray-200 rounded w-40 mb-3 animate-pulse" />
+              <div className="h-3 bg-gray-100 rounded w-full mb-4 animate-pulse" />
+              <div className="flex gap-2 mb-4">
+                <div className="h-5 bg-gray-100 rounded-full w-20 animate-pulse" />
+                <div className="h-5 bg-gray-100 rounded-full w-16 animate-pulse" />
               </div>
-              <div className="flex items-center gap-2">
-                <div className="h-2 w-2 bg-gray-300 rounded-full"></div>
-                <span className="text-xs text-gray-500">Last performed</span>
-              </div>
-            </motion.div>
+              <div className="h-9 bg-gray-100 rounded-lg w-full animate-pulse" />
+            </div>
           ))}
         </div>
       </div>
@@ -61,42 +90,51 @@ export const WorkoutsPage = () => {
 
   if (error) {
     return (
-      <div className="p-6">
-        <div className="flex justify-between items-center mb-6">
-          <h1 className="text-2xl font-bold">My Workouts</h1>
+      <div className="p-4 sm:p-6 max-w-7xl mx-auto">
+        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 mb-6">
+          <h1 className="text-[11px] font-medium uppercase tracking-wider text-gray-500">My Workouts</h1>
           <button
             onClick={() => navigate('/app/workout-builder')}
-            className="bg-blue-500 hover:bg-blue-600 text-white font-medium py-2 px-4 rounded-md transition-colors"
+            className="inline-flex items-center gap-1.5 border border-gray-300 text-gray-700 hover:bg-gray-50 font-medium text-[11px] uppercase tracking-wider py-2 px-3 rounded-lg transition-colors self-start"
           >
+            <Plus className="h-3.5 w-3.5" />
             New Workout
           </button>
         </div>
-        <div className="bg-red-50 border-l-4 border-red-500 text-red-700 p-4 mb-6">
-          <p className="font-medium">Error loading workouts</p>
-          <p className="mt-1 text-sm">{error.message}</p>
-        </div>
+        <ErrorCard
+          title="Failed to load workouts"
+          message={error.message || 'Could not fetch your workouts. Please check your connection and try again.'}
+          onRetry={() => refetch()}
+        />
       </div>
     );
   }
 
   if (workouts.length === 0) {
     return (
-      <div className="p-6">
-        <div className="flex justify-between items-center mb-6">
-          <h1 className="text-2xl font-bold">My Workouts</h1>
+      <div className="p-4 sm:p-6 max-w-7xl mx-auto">
+        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 mb-6">
+          <h1 className="text-[11px] font-medium uppercase tracking-wider text-gray-500">My Workouts</h1>
           <button
             onClick={() => navigate('/app/workout-builder')}
-            className="bg-blue-500 hover:bg-blue-600 text-white font-medium py-2 px-4 rounded-md transition-colors"
+            className="inline-flex items-center gap-1.5 border border-gray-300 text-gray-700 hover:bg-gray-50 font-medium text-[11px] uppercase tracking-wider py-2 px-3 rounded-lg transition-colors self-start"
           >
+            <Plus className="h-3.5 w-3.5" />
             New Workout
           </button>
         </div>
-        <div className="text-center py-12">
-          <p className="text-gray-500 mb-4">You haven't created any workouts yet.</p>
+        <div className="flex flex-col items-center justify-center py-20">
+          <div className="h-16 w-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
+            <Dumbbell className="h-7 w-7 text-gray-400" />
+          </div>
+          <p className="text-[11px] font-medium uppercase tracking-wider text-gray-500 mb-4">
+            No workouts yet
+          </p>
           <button
             onClick={() => navigate('/app/workout-builder')}
-            className="bg-blue-500 hover:bg-blue-600 text-white font-medium py-2 px-4 rounded-md transition-colors"
+            className="inline-flex items-center gap-1.5 bg-gray-900 text-white hover:bg-gray-800 font-medium text-[11px] uppercase tracking-wider py-2.5 px-5 rounded-lg transition-colors"
           >
+            <Plus className="h-3.5 w-3.5" />
             Create Your First Workout
           </button>
         </div>
@@ -105,75 +143,93 @@ export const WorkoutsPage = () => {
   }
 
   return (
-    <div className="p-6">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">My Workouts</h1>
+    <div className="p-4 sm:p-6 max-w-7xl mx-auto">
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 mb-6">
+        <h1 className="text-[11px] font-medium uppercase tracking-wider text-gray-500">My Workouts</h1>
         <button
           onClick={() => navigate('/app/workout-builder')}
-          className="bg-blue-500 hover:bg-blue-600 text-white font-medium py-2 px-4 rounded-md transition-colors"
+          className="inline-flex items-center gap-1.5 border border-gray-300 text-gray-700 hover:bg-gray-50 font-medium text-[11px] uppercase tracking-wider py-2 px-3 rounded-lg transition-colors self-start"
         >
+          <Plus className="h-3.5 w-3.5" />
           New Workout
         </button>
       </div>
       <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.1 }}
-        className="space-y-4"
+        variants={containerVariants}
+        initial="hidden"
+        animate="visible"
+        className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"
       >
-        {workouts.map((workout) => (
-          <motion.div
-            key={workout.id}
-            initial={{ opacity: 0, y: 20, scale: 0.95 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            transition={{ delay: workouts.indexOf(workout) * 0.05 }}
-            className="bg-white rounded-lg p-4 shadow-md hover:shadow-lg transition-shadow cursor-pointer"
-            onClick={() => handleStartWorkout(workout.id)}
-          >
-            <div className="mb-2">
-              <h2 className="text-xl font-medium">{workout.name}</h2>
-              {workout.description && (
-                <p className="text-sm text-gray-500 mt-1 line-clamp-2">{workout.description}</p>
-              )}
-            </div>
-            <div className="flex flex-wrap gap-2 mb-3">
-              {/* Exercise Count Badge */}
-              <span
-                className="text-xs font-medium bg-blue-100 text-blue-800 px-2.5 py-0.5 rounded"
-              >
-                {workout.workoutExercises?.length || 0} exercises
-              </span>
-              {/* Muscle Group Tags */}
-              {getMuscleGroupTags(workout).map((muscleGroup, index) => (
-                <span
-                  key={index}
-                  className="text-xs font-medium bg-green-100 text-green-800 px-2 py-0.5 rounded"
-                >
-                  {muscleGroup}
+        {workouts.map((workout) => {
+          const recency = getRecencyBadge(workout.updatedAt);
+          const isStarting = startingWorkoutId === workout.id;
+
+          return (
+            <motion.div
+              key={workout.id}
+              variants={cardVariants}
+              className={`bg-white rounded-xl border border-gray-200 p-5 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 ${
+                isStarting ? 'opacity-60 cursor-wait' : 'cursor-pointer'
+              }`}
+              onClick={() => handleStartWorkout(workout.id)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  handleStartWorkout(workout.id);
+                }
+              }}
+              role="button"
+              tabIndex={0}
+              aria-label={`Start workout: ${workout.name}`}
+              aria-busy={isStarting}
+            >
+              <div className="mb-1">
+                <h2 className="text-[16px] font-semibold text-gray-900 truncate">{workout.name}</h2>
+                {workout.description && (
+                  <p className="text-[11px] text-gray-400 mt-1 line-clamp-2">{workout.description}</p>
+                )}
+              </div>
+
+              <div className="flex flex-wrap items-center gap-1.5 mb-4">
+                <span className="text-[10px] font-semibold bg-blue-50 text-blue-700 px-2 py-0.5 rounded-full">
+                  {workout.workoutExercises?.length || 0} exercises
                 </span>
-              ))}
-            </div>
-            <div className="flex items-center justify-between">
-              {/* Last Performed Badge - Placeholder until backend provides lastPerformed field */}
-              <span className="text-xs font-medium bg-gray-100 text-gray-800 px-2 py-0.5 rounded">
-                Backend dependency: lastPerformed field required
-              </span>
-              {/* Start Workout button is the entire card clickable */}
-            </div>
-          </motion.div>
-        ))}
+                {getMuscleGroupTags(workout).map((muscleGroup, index) => (
+                  <span
+                    key={index}
+                    className="text-[10px] font-semibold bg-green-50 text-green-700 px-2 py-0.5 rounded-full"
+                  >
+                    {muscleGroup}
+                  </span>
+                ))}
+                <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${recency.className}`}>
+                  {recency.label}
+                </span>
+              </div>
+
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleStartWorkout(workout.id);
+                }}
+                disabled={isStarting}
+                className="w-full inline-flex items-center justify-center gap-1.5 bg-gray-900 text-white hover:bg-gray-800 font-medium text-[11px] uppercase tracking-wider py-2.5 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-wait"
+              >
+                {isStarting ? (
+                  <span>Starting...</span>
+                ) : (
+                  <>
+                    <Play className="h-3.5 w-3.5" />
+                    Start
+                  </>
+                )}
+              </button>
+            </motion.div>
+          );
+        })}
       </motion.div>
     </div>
   );
-};
-
-// Helper function to extract and deduplicate muscle group tags from workout
-const getMuscleGroupTags = (workout: Workout): string[] => {
-  const muscleGroups = workout.workoutExercises
-    ?.map((we) => we.exercise?.muscleGroup)
-    .filter((mg): mg is string => !!mg) || [];
-  // Deduplicate while preserving order
-  return [...new Set(muscleGroups)];
 };
 
 export default WorkoutsPage;

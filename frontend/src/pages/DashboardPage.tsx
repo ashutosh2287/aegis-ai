@@ -21,14 +21,14 @@ const sectionVariants = {
   visible: {
     opacity: 1,
     y: 0,
-    transition: { duration: 0.3, ease: 'easeOut' as const },
+    transition: { duration: 0.25, ease: [0.16, 1, 0.3, 1] },
   },
 };
 
 export const DashboardPage = () => {
   return (
     <motion.div
-      className="p-6 space-y-6 max-w-7xl mx-auto"
+      className="p-4 sm:p-6 space-y-6 max-w-7xl mx-auto"
       variants={containerVariants}
       initial="hidden"
       animate="visible"

@@ -61,6 +61,7 @@ export const useSession = (sessionId: string) => {
     session,
     isLoading,
     error,
+    refetch: () => queryClient.invalidateQueries({ queryKey: ['session', sessionId] }),
     completeSession: completeSessionMutation.mutateAsync,
     updateWorkoutSet: updateWorkoutSetMutation.mutateAsync,
     // For backward compatibility

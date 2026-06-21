@@ -69,17 +69,17 @@ export const WeeklyPerformanceChart = () => {
 
   if (performance.isLoading) {
     return (
-      <div className="bg-white rounded-xl border border-gray-200 p-6">
-        <div className="h-4 bg-gray-200 rounded w-32 mb-4 animate-pulse" />
+      <div className="bg-white rounded-xl border border-gray-200 p-4 sm:p-6 hover:shadow-sm transition-shadow">
+        <div className="h-3 bg-gray-200 rounded w-32 mb-4 animate-pulse" />
         <div className="h-[160px] bg-gray-100 rounded-lg animate-pulse" />
       </div>
     );
   }
 
   return (
-    <div className="bg-white rounded-xl border border-gray-200 p-6">
-      <h3 className="text-sm font-semibold text-gray-900 mb-4">Weekly Volume</h3>
-      <div className="h-[160px] w-full">
+    <div className="bg-white rounded-xl border border-gray-200 p-4 sm:p-6 hover:shadow-sm transition-shadow">
+      <h3 className="text-[11px] font-medium uppercase tracking-wider text-gray-500 mb-4">Weekly Volume</h3>
+      <div className="h-[160px] w-full" role="img" aria-label="Weekly volume bar chart showing training volume for the last 7 days">
         <ResponsiveContainer width="100%" height="100%">
           <BarChart data={chartData} barCategoryGap="20%">
             <XAxis

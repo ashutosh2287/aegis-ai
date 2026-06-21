@@ -23,7 +23,7 @@ export const CountUp = ({
   useEffect(() => {
     const controls = animate(motionValue, to, {
       duration,
-      ease: 'easeOut',
+      ease: [0.16, 1, 0.3, 1],
     });
     return controls.stop;
   }, [from, to, duration, motionValue]);

@@ -2,7 +2,7 @@ import { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { AlertTriangle, X, Dumbbell, BarChart3, Target } from 'lucide-react';
 import { usePlateauDetection } from '../../hooks/useAnalytics';
-import { DashboardSectionError } from './DashboardSectionError';
+import { ErrorCard } from '../ui/ErrorCard';
 import type { PlateauType } from '../../lib/analytics.types';
 
 type CardType = 'strength' | 'volume' | 'consistency';
@@ -98,9 +98,9 @@ export const PlateauDetectionSection = () => {
 
   if (isError) {
     return (
-      <DashboardSectionError
-        title="Plateau Detection"
-        message={error?.message}
+      <ErrorCard
+        title="Failed to load plateau detection"
+        message={error?.message || 'Could not fetch plateau data.'}
         onRetry={() => refetch()}
       />
     );
@@ -108,16 +108,14 @@ export const PlateauDetectionSection = () => {
 
   return (
     <div className="space-y-4">
-      <h2 className="text-lg font-semibold text-gray-900">Plateau Detection</h2>
-
       <AnimatePresence>
         {showBanner && (
           <motion.div
-            initial={{ opacity: 0, y: -16 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -16 }}
+            initial={{ opacity: 0, y: -16, height: 0 }}
+            animate={{ opacity: 1, y: 0, height: 'auto' }}
+            exit={{ opacity: 0, height: 0, marginBottom: 0 }}
             transition={{ duration: 0.25, ease: 'easeOut' }}
-            className="bg-amber-50 border border-amber-200 rounded-xl p-4 flex items-start gap-3"
+            className="bg-amber-50 border border-amber-200 rounded-xl p-4 flex items-start gap-3 overflow-hidden"
           >
             <AlertTriangle className="h-5 w-5 text-amber-600 mt-0.5 shrink-0" />
             <div className="flex-1 min-w-0">
@@ -128,8 +126,8 @@ export const PlateauDetectionSection = () => {
             </div>
             <button
               onClick={handleDismiss}
-              className="shrink-0 p-1 rounded-lg text-amber-600 hover:bg-amber-100 transition-colors"
-              aria-label="Dismiss"
+              className="shrink-0 p-1 rounded-lg text-amber-600 hover:bg-amber-100 transition-colors focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2"
+              aria-label="Dismiss plateau notification"
             >
               <X className="h-4 w-4" />
             </button>

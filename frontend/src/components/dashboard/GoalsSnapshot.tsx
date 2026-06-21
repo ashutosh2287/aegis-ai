@@ -1,4 +1,5 @@
 import { useNavigate } from 'react-router-dom';
+import { Target } from 'lucide-react';
 import { useDashboard } from '../../hooks/useDashboard';
 import { DashboardSectionError } from './DashboardSectionError';
 import type { GoalSnapshot } from '../../lib/dashboard.types';
@@ -16,8 +17,8 @@ const GoalCard = ({ goal }: GoalCardProps) => {
   return (
     <div className="space-y-2">
       <div className="flex items-center justify-between">
-        <p className="text-sm font-medium text-gray-900 truncate">{goal.name}</p>
-        <span className="text-xs text-gray-500 shrink-0 ml-2">
+        <p className="text-[11px] font-medium uppercase tracking-wider text-gray-900 truncate">{goal.name}</p>
+        <span className="text-[11px] font-medium uppercase tracking-wider text-gray-400 shrink-0 ml-2">
           {estimatedDate}
         </span>
       </div>
@@ -30,7 +31,7 @@ const GoalCard = ({ goal }: GoalCardProps) => {
           }}
         />
       </div>
-      <p className="text-xs text-gray-500 text-right">
+      <p className="text-[11px] font-semibold text-gray-500 text-right">
         {goal.progressPercent.toFixed(0)}%
       </p>
     </div>
@@ -53,13 +54,13 @@ export const GoalsSnapshot = () => {
 
   if (kpis.isLoading) {
     return (
-      <div className="bg-white rounded-xl border border-gray-200 p-6">
-        <div className="h-4 bg-gray-200 rounded w-28 mb-4 animate-pulse" />
+      <div className="bg-white rounded-xl border border-gray-200 p-6 hover:shadow-sm transition-shadow">
+        <div className="h-3 bg-gray-200 rounded w-28 mb-4 animate-pulse" />
         <div className="space-y-4">
           {Array.from({ length: 3 }).map((_, i) => (
             <div key={i} className="space-y-2">
               <div className="flex items-center justify-between">
-                <div className="h-4 bg-gray-200 rounded w-32 animate-pulse" />
+                <div className="h-3 bg-gray-200 rounded w-32 animate-pulse" />
                 <div className="h-3 bg-gray-200 rounded w-20 animate-pulse" />
               </div>
               <div className="h-2 bg-gray-200 rounded-full animate-pulse" />
@@ -74,13 +75,15 @@ export const GoalsSnapshot = () => {
   const goals = (kpis.data?.goals ?? []).slice(0, 3);
 
   return (
-    <div className="bg-white rounded-xl border border-gray-200 p-6">
-      <h3 className="text-sm font-semibold text-gray-900 mb-4">Goals</h3>
+    <div className="bg-white rounded-xl border border-gray-200 p-6 hover:shadow-sm transition-shadow">
+      <h3 className="text-[11px] font-medium uppercase tracking-wider text-gray-500 mb-4">Goals</h3>
 
       {goals.length === 0 ? (
-        <p className="text-sm text-gray-500 py-4 text-center">
-          No active goals yet.
-        </p>
+        <div className="text-center py-6">
+          <Target className="h-8 w-8 text-gray-300 mx-auto mb-2" />
+          <p className="text-[11px] font-medium uppercase tracking-wider text-gray-500 mb-1">No active goals yet</p>
+          <p className="text-[11px] text-gray-400">Complete workouts to see your goals here.</p>
+        </div>
       ) : (
         <div className="space-y-4">
           {goals.map((goal) => (
@@ -91,7 +94,7 @@ export const GoalsSnapshot = () => {
 
       <button
         onClick={() => navigate('/app/goals')}
-        className="mt-4 w-full text-center text-sm font-medium text-indigo-600 hover:text-indigo-700 transition-colors"
+        className="mt-4 w-full text-center text-[11px] font-semibold uppercase tracking-wider text-indigo-600 hover:text-indigo-700 transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 rounded-lg py-2"
       >
         View All Goals
       </button>

@@ -1,9 +1,11 @@
+import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
 import { useSession } from '../hooks/useSession';
 import { sessionService } from '../lib/session.service';
 import { CountUp } from '../components/ui/CountUp';
+import { ErrorCard } from '../components/ui/ErrorCard';
 
 function formatDuration(startTime: string, endTime?: string): string {
   const start = new Date(startTime).getTime();
@@ -40,25 +42,29 @@ export const SessionSummaryPage = () => {
   const { sessionId } = useParams<{ sessionId: string }>();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const { session: sessionData, isLoading, error } = useSession(sessionId ?? '');
+  const { session: sessionData, isLoading, error, refetch } = useSession(sessionId ?? '');
+
+  const [isStartingAgain, setIsStartingAgain] = useState(false);
 
   const handleDoItAgain = async () => {
-    if (!sessionData?.workoutId) return;
+    if (!sessionData?.workoutId || isStartingAgain) return;
+    setIsStartingAgain(true);
     try {
       const newSession = await sessionService.createSession(sessionData.workoutId);
       queryClient.invalidateQueries({ queryKey: ['sessions'] });
       navigate(`/app/session/${newSession.id}`);
     } catch (err) {
       console.error('Failed to start new session:', err);
+      setIsStartingAgain(false);
     }
   };
 
   if (isLoading) {
     return (
-      <div className="p-6 max-w-2xl mx-auto">
+      <div className="p-4 sm:p-6 max-w-2xl mx-auto">
         <div className="animate-pulse space-y-6">
           <div className="h-8 bg-gray-200 rounded w-48" />
-          <div className="grid grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
             {[1, 2, 3, 4].map((i) => (
               <div key={i} className="h-24 bg-gray-200 rounded-lg" />
             ))}
@@ -75,11 +81,12 @@ export const SessionSummaryPage = () => {
 
   if (error || !sessionData) {
     return (
-      <div className="p-6 max-w-2xl mx-auto">
-        <div className="bg-red-50 border-l-4 border-red-500 text-red-700 p-4">
-          <p className="font-medium">Failed to load session</p>
-          <p className="text-sm mt-1">{error?.message ?? 'Session not found'}</p>
-        </div>
+      <div className="p-4 sm:p-6 max-w-2xl mx-auto">
+        <ErrorCard
+          title="Failed to load session"
+          message={error?.message || 'Session not found. Please try again.'}
+          onRetry={() => refetch()}
+        />
       </div>
     );
   }
@@ -106,13 +113,13 @@ export const SessionSummaryPage = () => {
   );
 
   return (
-    <div className="p-6 max-w-2xl mx-auto">
+    <div className="p-4 sm:p-6 max-w-2xl mx-auto">
       <motion.div
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4 }}
       >
-        <h1 className="text-2xl font-bold mb-2">Session Complete</h1>
+        <h1 className="text-xl sm:text-2xl font-bold mb-2">Session Complete</h1>
         <p className="text-gray-500 mb-6">{sessionData.workout?.name ?? 'Workout'}</p>
       </motion.div>
 
@@ -123,7 +130,7 @@ export const SessionSummaryPage = () => {
           transition={{ delay: 0.1 }}
           className="bg-blue-50 rounded-lg p-4 text-center"
         >
-          <p className="text-3xl font-bold text-blue-600">
+          <p className="text-2xl sm:text-3xl font-bold text-blue-600">
             <CountUp to={stats.totalSets} duration={1.2} />
           </p>
           <p className="text-sm text-gray-500 mt-1">Sets</p>
@@ -135,7 +142,7 @@ export const SessionSummaryPage = () => {
           transition={{ delay: 0.2 }}
           className="bg-green-50 rounded-lg p-4 text-center"
         >
-          <p className="text-3xl font-bold text-green-600">
+          <p className="text-2xl sm:text-3xl font-bold text-green-600">
             <CountUp to={stats.totalVolume} duration={1.5} />
           </p>
           <p className="text-sm text-gray-500 mt-1">Volume (kg)</p>
@@ -147,7 +154,7 @@ export const SessionSummaryPage = () => {
           transition={{ delay: 0.3 }}
           className="bg-purple-50 rounded-lg p-4 text-center"
         >
-          <p className="text-3xl font-bold text-purple-600">
+          <p className="text-2xl sm:text-3xl font-bold text-purple-600">
             <CountUp to={stats.exerciseCount} duration={1} />
           </p>
           <p className="text-sm text-gray-500 mt-1">Exercises</p>
@@ -159,7 +166,7 @@ export const SessionSummaryPage = () => {
           transition={{ delay: 0.4 }}
           className="bg-orange-50 rounded-lg p-4 text-center"
         >
-          <p className="text-3xl font-bold text-orange-600">{duration}</p>
+          <p className="text-xl sm:text-3xl font-bold text-orange-600">{duration}</p>
           <p className="text-sm text-gray-500 mt-1">Duration</p>
         </motion.div>
       </div>
@@ -184,9 +191,9 @@ export const SessionSummaryPage = () => {
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: 0.6 + idx * 0.08 }}
-                  className="bg-white border border-gray-200 rounded-lg p-4 flex items-center justify-between"
+                  className="bg-white border border-gray-200 rounded-lg p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2"
                 >
-                  <div className="flex-1">
+                  <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
                       <h3 className="font-medium">
                         Exercise {exercise.order}
@@ -201,9 +208,9 @@ export const SessionSummaryPage = () => {
                       {sets.length} sets &middot; {exerciseVolume.toLocaleString()} kg volume
                     </p>
                   </div>
-                  <div className="text-right text-sm text-gray-500">
+                  <div className="text-right text-sm text-gray-500 sm:ml-4">
                     {sets.map((set) => (
-                      <span key={set.id} className="block">
+                      <span key={set.id} className="inline sm:block mr-2 sm:mr-0">
                         {set.weight}kg &times; {set.reps}
                       </span>
                     ))}
@@ -222,15 +229,16 @@ export const SessionSummaryPage = () => {
       >
         <button
           onClick={() => navigate('/app/analytics')}
-          className="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium py-3 px-4 rounded-lg transition-colors"
+          className="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium py-3 px-4 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2"
         >
           View Analytics
         </button>
         <button
           onClick={handleDoItAgain}
-          className="flex-1 bg-blue-500 hover:bg-blue-600 text-white font-medium py-3 px-4 rounded-lg transition-colors"
+          disabled={isStartingAgain}
+          className="flex-1 bg-blue-500 hover:bg-blue-600 text-white font-medium py-3 px-4 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          Do It Again
+          {isStartingAgain ? 'Starting...' : 'Do It Again'}
         </button>
       </motion.div>
     </div>

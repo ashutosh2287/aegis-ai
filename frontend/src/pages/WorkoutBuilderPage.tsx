@@ -19,6 +19,7 @@ import {
 import { CSS } from '@dnd-kit/utilities';
 import { exerciseService } from '../lib/exercise.service';
 import { useWorkouts } from '../hooks/useWorkouts';
+import { useToast } from '../hooks/useToast';
 import type { Exercise } from '../lib/exercise.types';
 
 const DEBOUNCE_MS = 300;
@@ -66,13 +67,13 @@ function SortableExerciseItem({
     <div
       ref={setNodeRef}
       style={style}
-      className="border rounded-lg p-4 mb-4 flex justify-between items-center bg-white"
+      className="border rounded-lg p-3 sm:p-4 mb-4 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 bg-white"
     >
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-3 min-w-0">
         <button
           {...attributes}
           {...listeners}
-          className="cursor-grab active:cursor-grabbing text-gray-400 hover:text-gray-600 touch-none"
+          className="cursor-grab active:cursor-grabbing text-gray-400 hover:text-gray-600 touch-none shrink-0"
           aria-label="Drag to reorder"
         >
           <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
@@ -84,30 +85,33 @@ function SortableExerciseItem({
             <circle cx="13" cy="16" r="1.5" />
           </svg>
         </button>
-        <div>
-          <h3 className="font-semibold">{exercise.name}</h3>
+        <div className="min-w-0">
+          <h3 className="font-semibold truncate">{exercise.name}</h3>
           <p className="text-sm text-gray-600">{exercise.muscleGroup}</p>
         </div>
       </div>
-      <div className="flex items-center space-x-3">
+      <div className="flex items-center space-x-2 sm:space-x-3 shrink-0">
         <button
           onClick={() => onDecrement(exercise.id)}
           disabled={exercise.setCount === 1}
           className="px-3 py-1 bg-gray-200 rounded hover:bg-gray-300 disabled:opacity-50"
+          aria-label={`Decrease sets for ${exercise.name}`}
         >
           -
         </button>
-        <span className="w-8 text-center">{exercise.setCount}</span>
+        <span className="w-8 text-center" aria-label={`${exercise.setCount} sets`}>{exercise.setCount}</span>
         <button
           onClick={() => onIncrement(exercise.id)}
           disabled={exercise.setCount === 20}
           className="px-3 py-1 bg-gray-200 rounded hover:bg-gray-300 disabled:opacity-50"
+          aria-label={`Increase sets for ${exercise.name}`}
         >
           +
         </button>
         <button
           onClick={() => onRemove(exercise.id)}
-          className="text-red-500 hover:text-red-700"
+          className="text-red-500 hover:text-red-700 text-sm"
+          aria-label={`Remove ${exercise.name} from workout`}
         >
           Remove
         </button>
@@ -119,6 +123,7 @@ function SortableExerciseItem({
 const WorkoutBuilderPage = () => {
   const navigate = useNavigate();
   const { createWorkout, addWorkoutExercise } = useWorkouts();
+  const { showToast } = useToast();
 
   const [workoutName, setWorkoutName] = useState('');
   const [exercises, setExercises] = useState<Array<{
@@ -145,16 +150,6 @@ const WorkoutBuilderPage = () => {
   );
 
   const isWorkoutNameValid = workoutName.length >= 3;
-
-  const handleAddTestExercise = () => {
-    const newExercise = {
-      id: crypto.randomUUID(),
-      name: 'Test Exercise',
-      muscleGroup: 'Chest',
-      setCount: 3,
-    };
-    setExercises(prev => [...prev, newExercise]);
-  };
 
   const handleIncrementSet = (id: string) => {
     setExercises(prev =>
@@ -212,6 +207,7 @@ const WorkoutBuilderPage = () => {
       }
 
       navigate('/app/workouts');
+      showToast('Workout saved successfully!');
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Failed to save workout';
       setSaveError(message);
@@ -236,8 +232,8 @@ const WorkoutBuilderPage = () => {
   const isAlreadyAdded = (id: string) => exercises.some((e) => e.id === id);
 
   return (
-    <div className="p-6 max-w-2xl mx-auto">
-      <h1 className="text-2xl font-bold mb-4">Workout Builder</h1>
+    <div className="p-4 sm:p-6 max-w-2xl mx-auto">
+      <h1 className="text-xl sm:text-2xl font-bold mb-4">Workout Builder</h1>
 
       {/* Workout Name Field */}
       <div className="mb-6">
@@ -302,10 +298,23 @@ const WorkoutBuilderPage = () => {
         {searchQuery.trim() && (
           <div className="mt-3 border rounded-lg divide-y max-h-64 overflow-y-auto">
             {searchLoading && (
-              <p className="p-4 text-gray-500 text-sm">Loading...</p>
+              <div className="p-4 space-y-3">
+                {[1, 2, 3].map((i) => (
+                  <div key={i} className="flex items-center justify-between">
+                    <div className="space-y-1.5">
+                      <div className="h-4 bg-gray-200 rounded w-32 animate-pulse" />
+                      <div className="h-3 bg-gray-100 rounded w-24 animate-pulse" />
+                    </div>
+                    <div className="h-7 bg-gray-200 rounded w-12 animate-pulse" />
+                  </div>
+                ))}
+              </div>
             )}
             {!searchLoading && searchError && (
-              <p className="p-4 text-red-500 text-sm">{searchError.message}</p>
+              <div className="p-4 text-center">
+                <p className="text-red-500 text-sm mb-2">Failed to search exercises</p>
+                <p className="text-gray-500 text-xs">{searchError.message || 'Please try again.'}</p>
+              </div>
             )}
             {!searchLoading && !searchError && isFetched && searchResults.length === 0 && (
               <p className="p-4 text-gray-500 text-sm">No exercises found</p>
@@ -325,7 +334,8 @@ const WorkoutBuilderPage = () => {
                 <button
                   onClick={() => handleAddExercise(exercise)}
                   disabled={isAlreadyAdded(exercise.id)}
-                  className="px-3 py-1 bg-blue-500 text-white text-sm rounded hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="px-3 py-1 bg-blue-500 text-white text-sm rounded hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1"
+                  aria-label={isAlreadyAdded(exercise.id) ? `${exercise.name} already added` : `Add ${exercise.name} to workout`}
                 >
                   {isAlreadyAdded(exercise.id) ? 'Added' : 'Add'}
                 </button>
@@ -335,16 +345,6 @@ const WorkoutBuilderPage = () => {
         )}
       </div>
 
-      {/* Temporary Testing Button */}
-      <div className="mb-6">
-        <button
-          onClick={handleAddTestExercise}
-          className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-        >
-          Add Test Exercise
-        </button>
-      </div>
-
       {/* Save Button */}
       {saveError && (
         <p className="text-red-500 text-sm mb-3">{saveError}</p>
@@ -352,7 +352,7 @@ const WorkoutBuilderPage = () => {
       <button
         onClick={handleSaveWorkout}
         disabled={!isWorkoutNameValid || exercises.length === 0 || isSaving}
-        className={`bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded ${
+        className={`bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 ${
           !isWorkoutNameValid || exercises.length === 0 || isSaving ? 'opacity-50 cursor-not-allowed' : ''
         }`}
       >

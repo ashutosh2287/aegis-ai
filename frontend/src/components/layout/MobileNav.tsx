@@ -9,9 +9,9 @@ import {
 
 export const MobileNav = () => {
   return (
-    <nav className="fixed bottom-0 left-0 right-0 h-16 flex items-center justify-around bg-white border-t border-gray-200">
+    <nav className="fixed bottom-0 left-0 right-0 h-16 flex items-center justify-around bg-white border-t border-gray-200" aria-label="Mobile navigation">
       <NavLink
-        to="/dashboard"
+        to="/app/dashboard"
         end
         className={({ isActive }) => `
           flex flex-col items-center px-2 py-1 text-sm font-medium
@@ -23,7 +23,7 @@ export const MobileNav = () => {
       </NavLink>
 
       <NavLink
-        to="/workouts"
+        to="/app/workouts"
         end
         className={({ isActive }) => `
           flex flex-col items-center px-2 py-1 text-sm font-medium
@@ -35,7 +35,7 @@ export const MobileNav = () => {
       </NavLink>
 
       <NavLink
-        to="/analytics"
+        to="/app/analytics"
         end
         className={({ isActive }) => `
           flex flex-col items-center px-2 py-1 text-sm font-medium
@@ -47,7 +47,7 @@ export const MobileNav = () => {
       </NavLink>
 
       <NavLink
-        to="/insights"
+        to="/app/insights"
         end
         className={({ isActive }) => `
           flex flex-col items-center px-2 py-1 text-sm font-medium
@@ -59,7 +59,7 @@ export const MobileNav = () => {
       </NavLink>
 
       <NavLink
-        to="/profile"
+        to="/app/profile"
         end
         className={({ isActive }) => `
           flex flex-col items-center px-2 py-1 text-sm font-medium

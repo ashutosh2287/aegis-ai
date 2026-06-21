@@ -8,13 +8,13 @@ export const AppShell = () => {
   const location = useLocation();
 
   return (
-    <div className="relative min-h-screen bg-gray-50">
+    <div className="flex flex-col md:flex-row min-h-screen bg-gray-50">
       {/* Desktop Sidebar */}
-      <aside className="hidden md:block w-64 bg-white border-r border-gray-200">
+      <aside className="hidden md:block w-64 shrink-0 sticky top-0 h-screen bg-white border-r border-gray-200">
         <Sidebar />
       </aside>
       {/* Main content */}
-      <div className="flex-1 p-6 md:ml-64">
+      <div className="flex-1 p-4 sm:p-6 pb-20 md:pb-6">
         <SessionExpiredBanner />
         <AnimatePresence mode="wait">
           <Outlet key={location.key} />

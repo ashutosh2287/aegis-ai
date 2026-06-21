@@ -49,8 +49,13 @@ export const useAuthStore = create<AuthState>()(
       },
     }),
     {
-      name: 'aegis-auth', // name of the item in localStorage (or sessionStorage)
-      // getStorage: () => sessionStorage, // (optional) by default, 'localStorage' is used
+      name: 'aegis-auth',
+      partialize: (state) => ({
+        token: state.token,
+        refreshToken: state.refreshToken,
+        user: state.user,
+        isAuthenticated: state.isAuthenticated,
+      }),
     }
   )
 );

@@ -1,5 +1,5 @@
 import { Component, type ReactNode } from 'react';
-import { DashboardSectionError } from './DashboardSectionError';
+import { ErrorCard } from '../ui/ErrorCard';
 
 interface SectionErrorBoundaryProps {
   children: ReactNode;
@@ -30,8 +30,8 @@ export class SectionErrorBoundary extends Component<
   render() {
     if (this.state.hasError) {
       return (
-        <DashboardSectionError
-          title={this.props.title}
+        <ErrorCard
+          title={`${this.props.title} failed to render`}
           onRetry={this.handleRetry}
         />
       );

@@ -11,7 +11,7 @@ import {
 } from 'recharts';
 import { BarChart3, Dumbbell, Trophy, Target } from 'lucide-react';
 import { useComparativeAnalytics } from '../../hooks/useAnalytics';
-import { DashboardSectionError } from './DashboardSectionError';
+import { ErrorCard } from '../ui/ErrorCard';
 import type { ComparativePeriod, ComparativeAnalytics } from '../../lib/analytics.types';
 
 type StatKey = 'volume' | 'workouts' | 'prs' | 'consistency';
@@ -130,7 +130,7 @@ const DeltaBadge = ({ current, previous, period }: DeltaBadgeProps) => {
           {isPositive ? '+' : ''}
           {change.toFixed(1)}%
         </span>
-        <span className="text-[11px] text-gray-400">{label}</span>
+        <span className="text-[11px] text-gray-500">{label}</span>
       </motion.div>
     </AnimatePresence>
   );
@@ -195,9 +195,9 @@ export const ComparativeAnalyticsSection = () => {
 
   if (isError) {
     return (
-      <DashboardSectionError
-        title="Comparative Analytics"
-        message={error?.message}
+      <ErrorCard
+        title="Failed to load comparative analytics"
+        message={error?.message || 'Could not fetch analytics data.'}
         onRetry={() => refetch()}
       />
     );
@@ -205,16 +205,15 @@ export const ComparativeAnalyticsSection = () => {
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <h2 className="text-lg font-semibold text-gray-900">Comparative Analytics</h2>
-        <div className="flex bg-gray-100 rounded-lg p-0.5" role="tablist" aria-label="Time period">
+      <div className="flex items-center justify-end">
+        <div className="flex bg-gray-100 rounded-lg p-0.5 shrink-0" role="tablist" aria-label="Time period">
           {(['week', 'month'] as const).map((p) => (
             <button
               key={p}
               role="tab"
               aria-selected={period === p}
               onClick={() => setPeriod(p)}
-              className={`px-3 py-1.5 text-sm font-medium rounded-md transition-all ${
+              className={`px-3 py-1.5 text-sm font-medium rounded-md transition-all focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1 ${
                 period === p
                   ? 'bg-white text-gray-900 shadow-sm'
                   : 'text-gray-500 hover:text-gray-700'
@@ -304,6 +303,7 @@ export const ComparativeAnalyticsSection = () => {
                   height={36}
                   iconType="circle"
                   iconSize={8}
+                  wrapperStyle={{ fontSize: '12px', lineHeight: '18px' }}
                   formatter={(value: string) => (
                     <span className="text-xs text-gray-600">{value}</span>
                   )}

@@ -1,21 +1,25 @@
 import { useAuthStore } from '../store/authStore';
 import { useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 export const SessionExpiredBanner = () => {
   const { sessionExpired, clearSessionExpired } = useAuthStore();
   const navigate = useNavigate();
+  const location = useLocation();
 
   useEffect(() => {
-    if (sessionExpired) {
-      // Redirect to login after 3 seconds
+    if (sessionExpired && location.pathname !== '/login') {
       const timer = setTimeout(() => {
         clearSessionExpired();
         navigate('/login', { replace: true });
       }, 3000);
       return () => clearTimeout(timer);
     }
-  }, [sessionExpired, clearSessionExpired, navigate]);
+    // If on login page, just clear the message silently
+    if (sessionExpired && location.pathname === '/login') {
+      clearSessionExpired();
+    }
+  }, [sessionExpired, clearSessionExpired, navigate, location.pathname]);
 
   if (!sessionExpired) return null;
 

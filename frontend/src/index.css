@@ -1,5 +1,31 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
 
-/* Custom styles can be added here */
+@theme {
+  --color-aegis-black: #0a0a0a;
+  --color-aegis-charcoal: #1a1a1a;
+  --color-aegis-dark: #111111;
+  --color-aegis-gold: #d4a843;
+  --color-aegis-gold-dark: #c9a227;
+  --color-aegis-gold-light: #e8c96a;
+  --color-aegis-border: #2a2a2a;
+  --color-aegis-muted: #888888;
+}
+
+:focus-visible {
+  outline: 2px solid #6366f1;
+  outline-offset: 2px;
+}
+
+button:focus-visible,
+a:focus-visible,
+[role="tab"]:focus-visible {
+  outline: 2px solid #6366f1;
+  outline-offset: 2px;
+}
+
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: 2px solid #6366f1;
+  outline-offset: 0;
+}

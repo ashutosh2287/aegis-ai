@@ -78,12 +78,12 @@ export const ConsistencyGrid = () => {
 
   if (overview.isLoading) {
     return (
-      <div className="bg-white rounded-xl border border-gray-200 p-6">
-        <div className="h-4 bg-gray-200 rounded w-32 mb-4 animate-pulse" />
+      <div className="bg-white rounded-xl border border-gray-200 p-6 hover:shadow-sm transition-shadow">
+        <div className="h-3 bg-gray-200 rounded w-32 mb-4 animate-pulse" />
         <div className="h-[200px] bg-gray-100 rounded-lg animate-pulse" />
         <div className="mt-4 flex gap-8">
-          <div className="h-4 bg-gray-200 rounded w-24 animate-pulse" />
-          <div className="h-4 bg-gray-200 rounded w-24 animate-pulse" />
+          <div className="h-3 bg-gray-200 rounded w-24 animate-pulse" />
+          <div className="h-3 bg-gray-200 rounded w-24 animate-pulse" />
         </div>
       </div>
     );
@@ -93,18 +93,21 @@ export const ConsistencyGrid = () => {
   const bestStreak = overview.data?.longestStreak ?? 0;
 
   return (
-    <div className="bg-white rounded-xl border border-gray-200 p-6">
-      <h3 className="text-sm font-semibold text-gray-900 mb-4">Consistency</h3>
+    <div className="bg-white rounded-xl border border-gray-200 p-6 hover:shadow-sm transition-shadow">
+      <h3 className="text-[11px] font-medium uppercase tracking-wider text-gray-500 mb-4">Consistency</h3>
 
-      <div
-        className="w-fit"
-        style={{
-          display: 'grid',
-          gridTemplateColumns: `repeat(7, ${CELL_SIZE}px)`,
-          gridAutoRows: `${CELL_SIZE}px`,
-          gap: GAP,
-        }}
-      >
+      <div className="overflow-x-auto -mx-2 px-2">
+        <div
+          className="w-fit"
+          role="img"
+          aria-label={`Training consistency heatmap showing ${adherencePercentage.toFixed(0)}% adherence`}
+          style={{
+            display: 'grid',
+            gridTemplateColumns: `repeat(7, ${CELL_SIZE}px)`,
+            gridAutoRows: `${CELL_SIZE}px`,
+            gap: GAP,
+          }}
+        >
         {weeks.map((week, weekIdx) =>
           week.map((day, dayIdx) =>
             day ? (
@@ -128,18 +131,19 @@ export const ConsistencyGrid = () => {
             )
           )
         )}
+        </div>
       </div>
 
-      <div className="mt-4 flex items-center gap-8 text-sm">
+      <div className="mt-4 flex flex-wrap items-center gap-4 sm:gap-8">
         <div>
-          <span className="text-gray-500">Adherence: </span>
-          <span className="font-semibold text-gray-900">
+          <span className="text-[11px] font-medium uppercase tracking-wider text-gray-500">Adherence: </span>
+          <span className="text-[24px] font-semibold text-gray-900">
             {adherencePercentage.toFixed(0)}%
           </span>
         </div>
         <div>
-          <span className="text-gray-500">Best Streak: </span>
-          <span className="font-semibold text-gray-900">
+          <span className="text-[11px] font-medium uppercase tracking-wider text-gray-500">Best Streak: </span>
+          <span className="text-[24px] font-semibold text-gray-900">
             {bestStreak} days
           </span>
         </div>
@@ -153,7 +157,7 @@ export const ConsistencyGrid = () => {
               border: `1px solid ${BORDER_COLOR}`,
             }}
           />
-          <span className="text-xs text-gray-500">Rest</span>
+          <span className="text-xs text-gray-600">Rest</span>
           <div
             className="rounded-sm"
             style={{
@@ -162,7 +166,7 @@ export const ConsistencyGrid = () => {
               backgroundColor: TRAINED_COLOR,
             }}
           />
-          <span className="text-xs text-gray-500">Trained</span>
+          <span className="text-xs text-gray-600">Trained</span>
         </div>
       </div>
     </div>

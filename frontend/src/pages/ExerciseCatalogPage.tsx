@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useMemo, useCallback, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -6,11 +6,11 @@ import {
   X,
   Dumbbell,
   ChevronRight,
-  Loader2,
   AlertCircle,
 } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 import { exerciseService } from '../lib/exercise.service';
+import { ErrorCard } from '../components/ui/ErrorCard';
 import type { Exercise, StrengthTrend } from '../lib/exercise.types';
 
 export const ExerciseCatalogPage = () => {
@@ -21,6 +21,7 @@ export const ExerciseCatalogPage = () => {
     data: exercises = [],
     isLoading,
     error,
+    refetch,
   } = useQuery<Exercise[], Error>({
     queryKey: ['exercises'],
     queryFn: () => exerciseService.getExercises(),
@@ -58,8 +59,8 @@ export const ExerciseCatalogPage = () => {
 
   if (isLoading) {
     return (
-      <div className="p-6">
-        <h1 className="text-2xl font-bold mb-6">Exercise Catalog</h1>
+      <div className="p-4 sm:p-6">
+        <h1 className="text-xl sm:text-2xl font-bold mb-6">Exercise Catalog</h1>
         <div className="space-y-3">
           {Array.from({ length: 6 }).map((_, i) => (
             <div key={i} className="h-20 bg-gray-100 rounded-lg animate-pulse" />
@@ -71,19 +72,20 @@ export const ExerciseCatalogPage = () => {
 
   if (error) {
     return (
-      <div className="p-6">
-        <h1 className="text-2xl font-bold mb-6">Exercise Catalog</h1>
-        <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-red-700">
-          <p className="font-medium">Failed to load exercises</p>
-          <p className="text-sm mt-1">{error.message}</p>
-        </div>
+      <div className="p-4 sm:p-6">
+        <h1 className="text-xl sm:text-2xl font-bold mb-6">Exercise Catalog</h1>
+        <ErrorCard
+          title="Failed to load exercises"
+          message={error.message || 'Could not fetch the exercise catalog. Please try again.'}
+          onRetry={() => refetch()}
+        />
       </div>
     );
   }
 
   return (
-    <div className="p-6">
-      <h1 className="text-2xl font-bold mb-6">Exercise Catalog</h1>
+    <div className="p-4 sm:p-6">
+      <h1 className="text-xl sm:text-2xl font-bold mb-6">Exercise Catalog</h1>
 
       <div className="relative mb-6">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
@@ -98,6 +100,7 @@ export const ExerciseCatalogPage = () => {
           <button
             onClick={() => setSearch('')}
             className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+            aria-label="Clear search"
           >
             <X className="h-4 w-4" />
           </button>
@@ -128,7 +131,8 @@ export const ExerciseCatalogPage = () => {
                 <button
                   key={exercise.id}
                   onClick={() => handleSelect(exercise)}
-                  className="w-full flex items-center justify-between p-4 bg-white rounded-lg border border-gray-200 hover:border-indigo-300 hover:shadow-sm transition-all text-left"
+                  className="w-full flex items-center justify-between p-4 bg-white rounded-lg border border-gray-200 hover:border-indigo-300 hover:shadow-sm transition-all text-left focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1"
+                  aria-label={`View details for ${exercise.name}`}
                 >
                   <div className="min-w-0">
                     <p className="font-medium text-gray-900 truncate">{exercise.name}</p>
@@ -190,6 +194,16 @@ function DetailDrawer({
     }));
   }, [trend]);
 
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+    };
+    if (exercise) {
+      document.addEventListener('keydown', handleKeyDown);
+      return () => document.removeEventListener('keydown', handleKeyDown);
+    }
+  }, [exercise, onClose]);
+
   return (
     <>
       <motion.div
@@ -198,6 +212,7 @@ function DetailDrawer({
         exit={{ opacity: 0 }}
         className="fixed inset-0 bg-black/40 z-40"
         onClick={onClose}
+        aria-hidden="true"
       />
       <motion.div
         initial={{ x: '100%' }}
@@ -205,6 +220,9 @@ function DetailDrawer({
         exit={{ x: '100%' }}
         transition={{ type: 'spring', damping: 30, stiffness: 300 }}
         className="fixed right-0 top-0 bottom-0 w-full max-w-md bg-white shadow-xl z-50 overflow-y-auto"
+        role="dialog"
+        aria-modal="true"
+        aria-label={`Exercise details: ${exercise.name}`}
       >
         <div className="p-6">
           <div className="flex items-start justify-between mb-6">
@@ -225,6 +243,7 @@ function DetailDrawer({
             <button
               onClick={onClose}
               className="p-1 text-gray-400 hover:text-gray-600 rounded-lg"
+              aria-label="Close exercise details"
             >
               <X className="h-5 w-5" />
             </button>
@@ -239,8 +258,9 @@ function DetailDrawer({
           </h3>
 
           {trendLoading && (
-            <div className="flex items-center justify-center py-12">
-              <Loader2 className="h-6 w-6 text-indigo-500 animate-spin" />
+            <div className="space-y-3 py-4">
+              <div className="h-4 bg-gray-200 rounded w-24 animate-pulse" />
+              <div className="h-48 bg-gray-100 rounded-lg animate-pulse" />
             </div>
           )}
 

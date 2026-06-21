@@ -32,5 +32,6 @@ export const useInfiniteSessionHistory = () => {
     hasNextPage: query.hasNextPage,
     fetchNextPage: query.fetchNextPage,
     error: query.error,
+    refetch: query.refetch,
   };
 };

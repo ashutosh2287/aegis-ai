@@ -68,12 +68,12 @@ export const StrengthProgressWidget = () => {
 
   if (historical.isLoading) {
     return (
-      <div className="bg-white rounded-xl border border-gray-200 p-6">
-        <div className="h-4 bg-gray-200 rounded w-40 mb-4 animate-pulse" />
+      <div className="bg-white rounded-xl border border-gray-200 p-4 sm:p-6 hover:shadow-sm transition-shadow">
+        <div className="h-3 bg-gray-200 rounded w-40 mb-4 animate-pulse" />
         <div className="h-[160px] bg-gray-100 rounded-lg animate-pulse" />
         <div className="mt-4 space-y-2">
-          <div className="h-4 bg-gray-200 rounded w-24 animate-pulse" />
-          <div className="h-6 bg-gray-200 rounded w-16 animate-pulse" />
+          <div className="h-3 bg-gray-200 rounded w-24 animate-pulse" />
+          <div className="h-5 bg-gray-200 rounded w-16 animate-pulse" />
         </div>
       </div>
     );
@@ -83,8 +83,8 @@ export const StrengthProgressWidget = () => {
   const changePercent = historical.data?.oneRepMaxChangePercent ?? 0;
 
   return (
-    <div className="bg-white rounded-xl border border-gray-200 p-6">
-      <h3 className="text-sm font-semibold text-gray-900 mb-4">
+    <div className="bg-white rounded-xl border border-gray-200 p-4 sm:p-6 hover:shadow-sm transition-shadow">
+      <h3 className="text-[11px] font-medium uppercase tracking-wider text-gray-500 mb-4">
         {historical.data?.exerciseName ?? 'Strength'} — 1RM Trend
       </h3>
 
@@ -93,7 +93,7 @@ export const StrengthProgressWidget = () => {
           No strength data available yet.
         </div>
       ) : (
-        <div className="h-[160px] w-full">
+        <div className="h-[160px] w-full" role="img" aria-label="Strength progress area chart showing one rep max trend over the last 8 weeks">
           <ResponsiveContainer width="100%" height="100%">
             <AreaChart data={chartData}>
               <defs>
@@ -129,19 +129,19 @@ export const StrengthProgressWidget = () => {
 
       <div className="mt-4 flex items-baseline gap-3">
         <div>
-          <p className="text-xs text-gray-500">Current 1RM</p>
+          <p className="text-[11px] font-medium uppercase tracking-wider text-gray-500">Current 1RM</p>
           <div className="flex items-baseline gap-1">
             <CountUp
               to={current1RM}
               decimals={1}
-              className="text-2xl font-bold text-gray-900"
+              className="text-[24px] font-semibold text-gray-900"
             />
-            <span className="text-sm text-gray-500">kg</span>
+            <span className="text-[11px] font-medium uppercase tracking-wider text-gray-500">kg</span>
           </div>
         </div>
         {changePercent !== 0 && (
           <span
-            className={`text-sm font-medium px-2 py-0.5 rounded-full ${
+            className={`text-[11px] font-semibold px-2 py-0.5 rounded-full ${
               changePercent >= 0
                 ? 'bg-green-50 text-green-700'
                 : 'bg-red-50 text-red-700'

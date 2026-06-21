@@ -1,9 +1,9 @@
 import { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Check } from 'lucide-react';
+import { Check, CheckCircle } from 'lucide-react';
 import { useRecommendations } from '../../hooks/useAnalytics';
 import { CATEGORY_CONFIG, PRIORITY_CONFIG } from '../../lib/analytics.constants';
-import { DashboardSectionError } from './DashboardSectionError';
+import { ErrorCard } from '../ui/ErrorCard';
 import type { Recommendation } from '../../lib/analytics.types';
 
 const CardSkeleton = () => (
@@ -34,13 +34,21 @@ const RecommendationCard = ({ recommendation, onDone, index }: RecommendationCar
   const priConfig = PRIORITY_CONFIG[recommendation.priority];
   const Icon = catConfig.icon;
 
+  const borderColors: Record<string, string> = {
+    'progressive overload': 'border-l-indigo-500',
+    recovery: 'border-l-emerald-500',
+    consistency: 'border-l-blue-500',
+    'plateau-based': 'border-l-amber-500',
+  };
+  const borderColor = borderColors[recommendation.category] ?? 'border-l-gray-300';
+
   return (
     <motion.div
       layout
       initial={{ opacity: 1, height: 'auto' }}
       exit={{ opacity: 0, height: 0, marginBottom: 0 }}
       transition={{ duration: 0.25, ease: 'easeInOut' }}
-      className="bg-white rounded-xl border border-gray-200 p-5 overflow-hidden"
+      className={`bg-white rounded-xl border border-gray-200 border-l-4 ${borderColor} p-5 overflow-hidden`}
     >
       <div className="flex items-center gap-3 mb-3">
         {Icon && (
@@ -82,9 +90,9 @@ export const RecommendationsSection = () => {
 
   if (isError) {
     return (
-      <DashboardSectionError
-        title="Recommendations"
-        message={error?.message}
+      <ErrorCard
+        title="Failed to load recommendations"
+        message={error?.message || 'Could not fetch recommendations.'}
         onRetry={() => refetch()}
       />
     );
@@ -92,8 +100,6 @@ export const RecommendationsSection = () => {
 
   return (
     <div className="space-y-4">
-      <h2 className="text-lg font-semibold text-gray-900">Recommendations</h2>
-
       <div className="space-y-3">
         {isLoading
           ? Array.from({ length: 4 }).map((_, i) => <CardSkeleton key={i} />)
@@ -113,13 +119,17 @@ export const RecommendationsSection = () => {
 
       {!isLoading && visibleRecommendations.length === 0 && data && data.length > 0 && (
         <div className="bg-white rounded-xl border border-gray-200 p-8 text-center">
-          <p className="text-sm text-gray-500">All recommendations acknowledged.</p>
+          <CheckCircle className="h-10 w-10 text-green-400 mx-auto mb-3" />
+          <p className="text-sm font-medium text-gray-900 mb-1">All caught up!</p>
+          <p className="text-xs text-gray-500">You've addressed all recommendations. Keep up the great work!</p>
         </div>
       )}
 
       {!isLoading && data && data.length === 0 && (
         <div className="bg-white rounded-xl border border-gray-200 p-8 text-center">
-          <p className="text-sm text-gray-500">No recommendations at this time.</p>
+          <CheckCircle className="h-10 w-10 text-gray-300 mx-auto mb-3" />
+          <p className="text-sm font-medium text-gray-900 mb-1">No recommendations yet</p>
+          <p className="text-xs text-gray-500">Keep training consistently to receive personalized recommendations.</p>
         </div>
       )}
     </div>

@@ -26,11 +26,11 @@ const SummaryCard = ({
 }: SummaryCardProps) => {
   if (isLoading) {
     return (
-      <div className="bg-white rounded-xl border border-gray-200 p-6">
+      <div className="bg-white rounded-xl border border-gray-200 p-6 hover:shadow-sm transition-shadow">
         <div className="flex items-center justify-between">
           <div className="space-y-3 flex-1">
-            <div className="h-4 bg-gray-200 rounded w-24 animate-pulse" />
-            <div className="h-8 bg-gray-200 rounded w-20 animate-pulse" />
+            <div className="h-3 bg-gray-200 rounded w-24 animate-pulse" />
+            <div className="h-7 bg-gray-200 rounded w-20 animate-pulse" />
           </div>
           <div className="h-12 w-12 bg-gray-200 rounded-full animate-pulse" />
         </div>
@@ -39,31 +39,31 @@ const SummaryCard = ({
   }
 
   return (
-    <div className="bg-white rounded-xl border border-gray-200 p-6">
+    <div className="bg-white rounded-xl border border-gray-200 p-6 hover:shadow-sm transition-shadow">
       <div className="flex items-center justify-between">
         <div className="space-y-1">
-          <p className="text-sm font-medium text-gray-500">{title}</p>
+          <p className="text-[11px] font-medium uppercase tracking-wider text-gray-500">{title}</p>
           <div className="flex items-baseline gap-1">
             <CountUp
               to={value}
               decimals={decimals}
-              className="text-3xl font-bold text-gray-900"
+              className="text-[24px] font-semibold text-gray-900"
             />
             {suffix && (
-              <span className="text-sm font-medium text-gray-500">{suffix}</span>
+              <span className="text-[11px] font-medium uppercase tracking-wider text-gray-500">{suffix}</span>
             )}
           </div>
           {delta !== undefined && deltaLabel && (
             <div className="flex items-center gap-1 mt-2">
               <span
-                className={`text-sm font-medium ${
+                className={`text-[11px] font-semibold ${
                   delta >= 0 ? 'text-green-600' : 'text-red-600'
                 }`}
               >
                 {delta >= 0 ? '+' : ''}
                 {delta.toFixed(0)}%
               </span>
-              <span className="text-xs text-gray-500">{deltaLabel}</span>
+              <span className="text-[11px] text-gray-400">{deltaLabel}</span>
             </div>
           )}
         </div>
