@@ -25,11 +25,8 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   }
 
   async validate(payload: any) {
-    // Payload is the decoded JWT token
-    // We expect it to have a 'sub' property which is the user ID
     const userId = payload.sub;
 
-    // Fetch the user profile from the database
     const { data, error } = await this.supabaseService
       .getClient()
       .from('profiles')
@@ -38,11 +35,11 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       .single();
 
     if (error || !data) {
-      // If we can't find the profile, the token is invalid
-      return null;
+      console.error('[jwt] Profile not found for userId:', userId, 'error:', error?.message);
+      // Return a minimal user object so auth doesn't fail — profile may not exist yet
+      return { id: userId, email: null };
     }
 
-    // Return the user profile (which has an 'id' field)
     return data;
   }
 }

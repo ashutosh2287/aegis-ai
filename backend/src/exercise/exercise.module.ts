@@ -11,5 +11,6 @@ import { AuthModule } from '../auth/auth.module';
   ],
   controllers: [ExerciseController],
   providers: [ExerciseService],
+  exports: [ExerciseService],
 })
 export class ExerciseModule {}

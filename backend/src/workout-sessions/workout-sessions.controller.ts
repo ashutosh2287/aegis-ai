@@ -23,13 +23,13 @@ import { WorkoutSessionResponse } from './interfaces/workout-session.interface';
 import { JwtAuthGuard } from '@/auth/guards/jwt-auth.guard';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
 
-@Controller('workout-sessions')
+@Controller('sessions')
 @ApiTags('workout-sessions')
 export class WorkoutSessionsController {
   constructor(private readonly workoutSessionsService: WorkoutSessionsService) {}
 
-  // POST /workouts/:workoutId/sessions
-  @Post('workouts/:workoutId/sessions')
+  // POST /sessions
+  @Post()
   @UseGuards(JwtAuthGuard)
   @ApiOperation({ summary: 'Create a new workout session' })
   @ApiResponse({ status: 201, description: 'Session created successfully' })
@@ -40,7 +40,6 @@ export class WorkoutSessionsController {
   @ApiResponse({ status: 500, description: 'Internal server error' })
   @ApiBearerAuth()
   async createSession(
-    @Param('workoutId') workoutId: string,
     @Body() dto: CreateWorkoutSessionDto,
     @Req() req: Request,
   ): Promise<WorkoutSessionResponse> {
@@ -49,7 +48,7 @@ export class WorkoutSessionsController {
       throw new UnauthorizedException('User not found');
     }
     const userId = user.id;
-    return this.workoutSessionsService.createSession(userId, workoutId, dto);
+    return this.workoutSessionsService.createSession(userId, dto.workoutId, dto);
   }
 
   // GET /sessions

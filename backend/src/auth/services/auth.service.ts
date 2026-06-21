@@ -24,8 +24,9 @@ export class AuthService {
    * @param signupDto - The signup data
    * @returns Promise containing access and refresh tokens
    */
-  async signup(signupDto: SignupDto): Promise<{ accessToken: string; refreshToken: string }> {
-    const { email, password, fullName } = signupDto;
+  async signup(signupDto: SignupDto): Promise<{ token: string; refreshToken: string; user: { id: string; firstName: string; lastName: string; email: string } }> {
+    const { email, password, firstName, lastName } = signupDto;
+    const fullName = `${firstName} ${lastName}`.trim();
 
     // Step 1: Create user in Supabase Auth
     const { data: authData, error: authError } = await this.tokenService.supabaseService.getClient().auth.signUp({
@@ -34,24 +35,28 @@ export class AuthService {
       options: {
         data: {
           full_name: fullName,
+          first_name: firstName,
+          last_name: lastName,
         },
       },
     });
 
     if (authError) {
+      console.error('[signup] Supabase auth error:', authError);
       throw new InternalServerErrorException(`Failed to create user: ${authError.message}`);
     }
 
     const user = authData.user;
     if (!user) {
+      console.error('[signup] No user returned from Supabase Auth. authData:', JSON.stringify(authData));
       throw new InternalServerErrorException('No user returned from Supabase Auth');
     }
 
     // Step 2: Create profile for the user
     const profileData = {
       id: user.id,
-      username: user.email?.split('@')[0] || undefined, // Generate a username from email
-      full_name: fullName || null,
+      username: user.email?.split('@')[0] || undefined,
+      full_name: fullName,
       avatar_url: null,
       bio: null,
       training_years: 0,
@@ -62,13 +67,23 @@ export class AuthService {
       notification_preferences: { email: true, push: true, workout_reminder: true },
     };
 
-    await this.profileService.createProfile(profileData);
+    console.error('[signup] Creating profile for user:', user.id);
+    try {
+      await this.profileService.createProfile(profileData);
+    } catch (err) {
+      console.error('[signup] Profile creation failed:', err);
+      throw err;
+    }
 
     // Step 3: Generate access and refresh tokens
-    const accessToken = this.tokenService.signAccessToken(user.id);
+    const token = this.tokenService.signAccessToken(user.id);
     const refreshToken = await this.tokenService.signRefreshToken(user.id);
 
-    return { accessToken, refreshToken };
+    return {
+      token,
+      refreshToken,
+      user: { id: user.id, firstName, lastName, email },
+    };
   }
 
   /**
@@ -76,7 +91,7 @@ export class AuthService {
    * @param loginDto - The login data
    * @returns Promise containing access and refresh tokens
    */
-  async login(loginDto: LoginDto): Promise<{ accessToken: string; refreshToken: string }> {
+  async login(loginDto: LoginDto): Promise<{ token: string; refreshToken: string; user: { id: string; firstName: string; lastName: string; email: string } }> {
     const { email, password } = loginDto;
 
     // Step 1: Authenticate with Supabase Auth
@@ -86,22 +101,45 @@ export class AuthService {
     });
 
     if (authError) {
+      console.error('[login] Supabase auth error:', authError.message, authError);
       throw new UnauthorizedException('Invalid email or password');
     }
 
     const user = authData.user;
     if (!user) {
+      console.error('[login] No user returned from Supabase Auth');
       throw new InternalServerErrorException('No user returned from Supabase Auth');
     }
 
-    // Step 2: Ensure profile exists (should, but we'll check)
-    const profile = await this.profileService.getProfile(user.id);
+    // Step 2: Ensure profile exists
+    let profile;
+    try {
+      profile = await this.profileService.getProfile(user.id);
+    } catch (err) {
+      console.error('[login] Profile fetch failed, creating profile:', (err as Error).message);
+      profile = await this.profileService.createProfile({
+        id: user.id,
+        username: user.email?.split('@')[0] || undefined,
+        full_name: (user.user_metadata as any)?.full_name || `${(user.user_metadata as any)?.first_name || ''} ${(user.user_metadata as any)?.last_name || ''}`.trim(),
+        experience_level: 'beginner',
+        preferred_units: 'metric',
+        timezone: 'UTC',
+        notification_preferences: { email: true, push: true, workout_reminder: true },
+      });
+    }
 
-    // Step 3: Generate access and refresh tokens (and store refresh token hash)
-    const accessToken = this.tokenService.signAccessToken(user.id);
+    // Step 3: Generate access and refresh tokens
+    const token = this.tokenService.signAccessToken(user.id);
     const refreshToken = await this.tokenService.signRefreshToken(user.id);
 
-    return { accessToken, refreshToken };
+    const firstName = (user.user_metadata as any)?.first_name || (user.user_metadata as any)?.full_name?.split(' ')[0] || '';
+    const lastName = (user.user_metadata as any)?.last_name || (user.user_metadata as any)?.full_name?.split(' ').slice(1).join(' ') || '';
+
+    return {
+      token,
+      refreshToken,
+      user: { id: user.id, firstName, lastName, email: user.email || email },
+    };
   }
 
   /**

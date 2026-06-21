@@ -10,8 +10,10 @@ import { FrequencyForecastCalculator } from './services/frequency-forecast-calcu
 import { TrendAnalysisService } from './services/trend-analysis.service';
 import { GoalAchievementEstimator } from './services/goal-achievement-estimator';
 import { GoalRecommendationEngine } from './services/goal-recommendation-engine';
+import { WorkoutSessionsModule } from '../workout-sessions/workout-sessions.module';
 
 @Module({
+  imports: [WorkoutSessionsModule],
   controllers: [AnalyticsController],
   providers: [
     AnalyticsService,

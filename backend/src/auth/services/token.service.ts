@@ -89,18 +89,23 @@ export class TokenService {
    * @returns Promise<boolean>
    */
   async isValidRefreshToken(userId: string, refreshToken: string): Promise<boolean> {
-    const tokenHash = await bcrypt.hash(refreshToken, 10);
-
     const { data, error } = await this.supabaseService
       .getClient()
       .from('refresh_tokens')
-      .select('*')
+      .select('token_hash')
       .eq('user_id', userId)
-      .eq('token_hash', tokenHash)
-      .gt('expires_at', new Date().toISOString())
-      .single();
+      .gt('expires_at', new Date().toISOString());
 
-    return !error && !!data;
+    if (error || !data || data.length === 0) {
+      return false;
+    }
+
+    for (const row of data) {
+      const match = await bcrypt.compare(refreshToken, row.token_hash);
+      if (match) return true;
+    }
+
+    return false;
   }
 
   /**
@@ -108,16 +113,31 @@ export class TokenService {
    * @param refreshToken - The refresh token to remove
    */
   async removeRefreshToken(refreshToken: string): Promise<void> {
-    const tokenHash = await bcrypt.hash(refreshToken, 10);
-
-    const { error } = await this.supabaseService
+    const { data, error: fetchError } = await this.supabaseService
       .getClient()
       .from('refresh_tokens')
-      .delete()
-      .eq('token_hash', tokenHash);
+      .select('id, token_hash');
 
-    if (error) {
-      throw new InternalServerErrorException(`Failed to remove refresh token: ${error.message}`);
+    if (fetchError) {
+      throw new InternalServerErrorException(`Failed to fetch refresh tokens: ${fetchError.message}`);
+    }
+
+    if (!data || data.length === 0) return;
+
+    for (const row of data) {
+      const match = await bcrypt.compare(refreshToken, row.token_hash);
+      if (match) {
+        const { error } = await this.supabaseService
+          .getClient()
+          .from('refresh_tokens')
+          .delete()
+          .eq('id', row.id);
+
+        if (error) {
+          throw new InternalServerErrorException(`Failed to remove refresh token: ${error.message}`);
+        }
+        return;
+      }
     }
   }
 

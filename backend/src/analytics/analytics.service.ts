@@ -211,8 +211,7 @@ export class AnalyticsService {
         .is('workout_sets.deleted_at', null)
         .is('workout_exercises.deleted_at', null)
         .is('workout_sessions.deleted_at', null)
-        .is('weight', 'not null')
-        .order('workout_exercises.workout_sessions.completed_at', { ascending: true });
+        .is('weight', 'not null');
 
       if (setsRes.error) {
         throw new InternalServerErrorException(setsRes.error.message);

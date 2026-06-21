@@ -68,8 +68,8 @@ describe('AuthController', () => {
 
   describe('signup', () => {
     it('should call authService.signup', async () => {
-      const signupDto = { email: 'test@example.com', password: 'password123' };
-      mockAuthService.signup.mockResolvedValue({ accessToken: 'token', refreshToken: 'token' });
+      const signupDto = { email: 'test@example.com', password: 'password123', firstName: 'Test', lastName: 'User' };
+      mockAuthService.signup.mockResolvedValue({ token: 'token', refreshToken: 'token', user: { id: '1', firstName: 'Test', lastName: 'User', email: 'test@example.com' } });
       await controller.signup(signupDto);
       expect(authService.signup).toHaveBeenCalledWith(signupDto);
     });
@@ -78,7 +78,7 @@ describe('AuthController', () => {
   describe('login', () => {
     it('should call authService.login', async () => {
       const loginDto = { email: 'test@example.com', password: 'password123' };
-      mockAuthService.login.mockResolvedValue({ accessToken: 'token', refreshToken: 'token' });
+      mockAuthService.login.mockResolvedValue({ token: 'token', refreshToken: 'token', user: { id: '1', firstName: 'Test', lastName: 'User', email: 'test@example.com' } });
       await controller.login(loginDto);
       expect(authService.login).toHaveBeenCalledWith(loginDto);
     });

@@ -21,12 +21,13 @@ import { WorkoutResponseDto } from './dto/workout-response.dto';
 import { JwtAuthGuard } from '@/auth/guards/jwt-auth.guard';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
 
-@Controller('workout')
+@Controller('workouts')
 @ApiTags('workout')
 export class WorkoutController {
   constructor(private readonly workoutService: WorkoutService) {}
 
   @Get()
+  @UseGuards(JwtAuthGuard)
   @ApiOperation({ summary: 'Get all workouts for the user' })
   @ApiResponse({ status: 200, description: 'Return a list of workouts' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
@@ -52,6 +53,7 @@ export class WorkoutController {
   }
 
   @Get(':id')
+  @UseGuards(JwtAuthGuard)
   @ApiOperation({ summary: 'Get a workout by ID' })
   @ApiResponse({ status: 200, description: 'Return the workout details' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })

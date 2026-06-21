@@ -12,6 +12,7 @@ import { ExerciseModule } from './exercise/exercise.module';
 import { WorkoutModule } from './workout/workout.module';
 import { WorkoutSetsModule } from './workout-sets/workout-sets.module';
 import { WorkoutSessionsModule } from './workout-sessions/workout-sessions.module';
+import { WorkoutExercisesModule } from './workout-exercises/workout-exercises.module';
 import { AnalyticsModule } from './analytics/analytics.module';
 import { LoggerModule } from 'nestjs-pino';
 
@@ -65,6 +66,7 @@ import { LoggerModule } from 'nestjs-pino';
     WorkoutModule,
     WorkoutSetsModule,
     WorkoutSessionsModule,
+    WorkoutExercisesModule,
   ],
   controllers: [HealthController],
   providers: [],

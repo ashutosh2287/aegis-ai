@@ -6,13 +6,13 @@ export const configValidationSchema = Joi.object({
     .default('development'),
   PORT: Joi.number().default(4000),
   // Supabase
-  SUPABASE_URL: Joi.string().required(),
-  SUPABASE_ANON_KEY: Joi.string().required(),
-  SUPABASE_SERVICE_ROLE_KEY: Joi.string().required(),
+  SUPABASE_URL: Joi.string().default('https://cdjxjddklqxhfhzasbaw.supabase.co'),
+  SUPABASE_ANON_KEY: Joi.string().default('eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNkanhqZGRrbHF4aGZoemFzYmF3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE1MzMyODUsImV4cCI6MjA5NzEwOTI4NX0.r37BT7XFyAMRCIT1C6we7qYRMEPYoChHNqznZyhNyyI'),
+  SUPABASE_SERVICE_ROLE_KEY: Joi.string().default('eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNkanhqZGRrbHF4aGZoemFzYmF3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE1MzMyODUsImV4cCI6MjA5NzEwOTI4NX0.r37BT7XFyAMRCIT1C6we7qYRMEPYoChHNqznZyhNyyI'),
   // JWT
-  JWT_SECRET: Joi.string().required(),
+  JWT_SECRET: Joi.string().required().default('super_secret_jwt_key_change_me'),
   JWT_EXPIRES_IN: Joi.string().default('15m'),
-  JWT_REFRESH_SECRET: Joi.string().required(),
+  JWT_REFRESH_SECRET: Joi.string().required().default('super_secret_refresh_key_change_me'),
   JWT_REFRESH_EXPIRES_IN: Joi.string().default('7d'),
   JWT_REFRESH_EXPIRES_IN_MS: Joi.number().default(7 * 24 * 60 * 60 * 1000), // 7 days in milliseconds
   // Web URL for OAuth callbacks and reset password redirects

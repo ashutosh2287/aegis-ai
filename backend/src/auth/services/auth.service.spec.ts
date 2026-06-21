@@ -115,7 +115,8 @@ describe('AuthService', () => {
       const signupDto = {
         email: 'test@example.com',
         password: 'password123',
-        fullName: 'Test User',
+        firstName: 'Test',
+        lastName: 'User',
       };
 
       mockSupabaseClient.auth.signUp.mockResolvedValue({
@@ -136,8 +137,9 @@ describe('AuthService', () => {
       const result = await service.signup(signupDto);
 
       expect(result).toEqual({
-        accessToken: 'access-token',
+        token: 'access-token',
         refreshToken: 'refresh-token',
+        user: { id: 'user-id', firstName: 'Test', lastName: 'User', email: 'test@example.com' },
       });
     });
   });
