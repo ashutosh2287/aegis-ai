@@ -79,20 +79,20 @@ const stats: StatDef[] = [
 ];
 
 const StatSkeleton = () => (
-  <div className="bg-white rounded-xl border border-gray-200 p-5">
+  <div className="bg-aegis-charcoal rounded-xl border border-aegis-border p-5">
     <div className="flex items-center gap-3 mb-3">
-      <div className="h-9 w-9 bg-gray-200 rounded-lg animate-pulse" />
-      <div className="h-4 bg-gray-200 rounded w-20 animate-pulse" />
+      <div className="h-9 w-9 bg-aegis-border rounded-lg animate-pulse" />
+      <div className="h-4 bg-aegis-border rounded w-20 animate-pulse" />
     </div>
-    <div className="h-8 bg-gray-200 rounded w-24 animate-pulse" />
-    <div className="h-3 bg-gray-100 rounded w-16 mt-2 animate-pulse" />
+    <div className="h-8 bg-aegis-border rounded w-24 animate-pulse" />
+    <div className="h-3 bg-aegis-dark rounded w-16 mt-2 animate-pulse" />
   </div>
 );
 
 const ChartSkeleton = () => (
-  <div className="bg-white rounded-xl border border-gray-200 p-6">
-    <div className="h-4 bg-gray-200 rounded w-40 mb-6 animate-pulse" />
-    <div className="h-[250px] bg-gray-100 rounded-lg animate-pulse" />
+  <div className="bg-aegis-charcoal rounded-xl border border-aegis-border p-6">
+    <div className="h-4 bg-aegis-border rounded w-40 mb-6 animate-pulse" />
+    <div className="h-[250px] bg-aegis-dark rounded-lg animate-pulse" />
   </div>
 );
 
@@ -146,10 +146,10 @@ const ChartTooltip = ({ active, payload, label }: ChartTooltipProps) => {
   if (!active || !payload?.length) return null;
 
   return (
-    <div className="bg-white border border-gray-200 rounded-lg shadow-lg px-3 py-2">
-      <p className="text-xs text-gray-500 mb-1">{label}</p>
+    <div className="bg-aegis-charcoal border border-aegis-border rounded-lg shadow-lg px-3 py-2">
+      <p className="text-xs text-aegis-muted mb-1">{label}</p>
       {payload.map((entry) => (
-        <p key={entry.name} className="text-sm font-medium" style={{ color: entry.color }}>
+        <p key={entry.name} className="text-sm font-medium text-white">
           {entry.name}: {entry.value.toLocaleString()}
         </p>
       ))}
@@ -206,17 +206,17 @@ export const ComparativeAnalyticsSection = () => {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-end">
-        <div className="flex bg-gray-100 rounded-lg p-0.5 shrink-0" role="tablist" aria-label="Time period">
+        <div className="flex bg-aegis-dark rounded-lg p-0.5 shrink-0" role="tablist" aria-label="Time period">
           {(['week', 'month'] as const).map((p) => (
             <button
               key={p}
               role="tab"
               aria-selected={period === p}
               onClick={() => setPeriod(p)}
-              className={`px-3 py-1.5 text-sm font-medium rounded-md transition-all focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1 ${
+              className={`px-3 py-1.5 text-sm font-medium rounded-md transition-all focus:outline-none focus:ring-2 focus:ring-aegis-gold focus:ring-offset-1 ${
                 period === p
-                  ? 'bg-white text-gray-900 shadow-sm'
-                  : 'text-gray-500 hover:text-gray-700'
+                  ? 'bg-aegis-charcoal text-white shadow-sm'
+                  : 'text-aegis-muted hover:text-white'
               }`}
             >
               {p === 'week' ? 'Week' : 'Month'}
@@ -236,13 +236,13 @@ export const ComparativeAnalyticsSection = () => {
                 <motion.div
                   key={stat.key}
                   layout
-                  className="bg-white rounded-xl border border-gray-200 p-5"
+                  className="bg-aegis-charcoal rounded-xl border border-aegis-border p-5"
                 >
                   <div className="flex items-center gap-3 mb-3">
-                    <div className="h-9 w-9 bg-indigo-50 rounded-lg flex items-center justify-center text-indigo-600">
+                    <div className="h-9 w-9 bg-aegis-gold/10 rounded-lg flex items-center justify-center text-aegis-gold">
                       {stat.icon}
                     </div>
-                    <span className="text-sm font-medium text-gray-500">{stat.label}</span>
+                    <span className="text-sm font-medium text-aegis-muted">{stat.label}</span>
                   </div>
                   <AnimatePresence mode="wait">
                     <motion.div
@@ -251,7 +251,7 @@ export const ComparativeAnalyticsSection = () => {
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, y: -4 }}
                       transition={{ duration: 0.15 }}
-                      className="text-2xl font-bold text-gray-900"
+                      className="text-2xl font-bold text-white"
                     >
                       {stat.format(current)}
                     </motion.div>
@@ -271,8 +271,8 @@ export const ComparativeAnalyticsSection = () => {
       {isLoading ? (
         <ChartSkeleton />
       ) : (
-        <div className="bg-white rounded-xl border border-gray-200 p-6">
-          <h3 className="text-sm font-semibold text-gray-900 mb-4">
+        <div className="bg-aegis-charcoal rounded-xl border border-aegis-border p-6">
+          <h3 className="text-sm font-semibold text-white mb-4">
             Volume Comparison
           </h3>
           <div className="h-[250px] w-full" role="img" aria-label="Bar chart comparing current and previous period volume, sets, and reps">
@@ -280,22 +280,22 @@ export const ComparativeAnalyticsSection = () => {
               <BarChart data={chartData} barCategoryGap="30%" barSize={16}>
                 <XAxis
                   dataKey="name"
-                  tick={{ fontSize: 12 }}
+                  tick={{ fontSize: 12, fill: '#888888' }}
                   tickLine={false}
                   axisLine={false}
                 />
-                <YAxis tickFormatter={formatYAxis} tick={{ fontSize: 12 }} tickLine={false} axisLine={false} />
-                <Tooltip content={<ChartTooltip />} cursor={{ fill: 'rgba(99, 102, 241, 0.08)' }} />
+                <YAxis tickFormatter={formatYAxis} tick={{ fontSize: 12, fill: '#888888' }} tickLine={false} axisLine={false} />
+                <Tooltip content={<ChartTooltip />} cursor={{ fill: 'rgba(212, 168, 67, 0.08)' }} />
                 <Bar
                   dataKey="current"
                   name="Current Period"
-                  fill="#6366f1"
+                  fill="#d4a843"
                   radius={[4, 4, 0, 0]}
                 />
                 <Bar
                   dataKey="previous"
                   name="Previous Period"
-                  fill="#c7d2fe"
+                  fill="#2a2a2a"
                   radius={[4, 4, 0, 0]}
                 />
                 <Legend
@@ -305,7 +305,7 @@ export const ComparativeAnalyticsSection = () => {
                   iconSize={8}
                   wrapperStyle={{ fontSize: '12px', lineHeight: '18px' }}
                   formatter={(value: string) => (
-                    <span className="text-xs text-gray-600">{value}</span>
+                    <span className="text-xs text-aegis-muted">{value}</span>
                   )}
                 />
               </BarChart>

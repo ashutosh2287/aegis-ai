@@ -30,21 +30,21 @@ function getInitials(firstName: string, lastName: string): string {
 function ProfileSkeleton() {
   return (
     <div className="max-w-2xl mx-auto space-y-6">
-      <div className="bg-white rounded-xl border border-gray-200 p-6">
+      <div className="bg-aegis-charcoal rounded-xl border border-aegis-border p-6">
         <div className="flex items-center gap-4">
-          <div className="h-16 w-16 bg-gray-200 rounded-full animate-pulse" />
+          <div className="h-16 w-16 bg-aegis-border rounded-full animate-pulse" />
           <div className="space-y-2">
-            <div className="h-5 bg-gray-200 rounded w-40 animate-pulse" />
-            <div className="h-4 bg-gray-100 rounded w-56 animate-pulse" />
-            <div className="h-3 bg-gray-100 rounded w-32 animate-pulse" />
+            <div className="h-5 bg-aegis-border rounded w-40 animate-pulse" />
+            <div className="h-4 bg-aegis-dark rounded w-56 animate-pulse" />
+            <div className="h-3 bg-aegis-dark rounded w-32 animate-pulse" />
           </div>
         </div>
       </div>
-      <div className="bg-white rounded-xl border border-gray-200 p-6 space-y-4">
+      <div className="bg-aegis-charcoal rounded-xl border border-aegis-border p-6 space-y-4">
         {Array.from({ length: 4 }).map((_, i) => (
           <div key={i} className="flex items-center justify-between py-3">
-            <div className="h-4 bg-gray-200 rounded w-32 animate-pulse" />
-            <div className="h-4 bg-gray-100 rounded w-24 animate-pulse" />
+            <div className="h-4 bg-aegis-border rounded w-32 animate-pulse" />
+            <div className="h-4 bg-aegis-dark rounded w-24 animate-pulse" />
           </div>
         ))}
       </div>
@@ -109,42 +109,42 @@ export const ProfilePage = () => {
       className="max-w-2xl mx-auto px-4 sm:px-6 py-6 sm:py-8 space-y-6"
     >
       {/* Profile Header */}
-      <motion.div variants={sectionVariants} className="bg-white rounded-xl border border-gray-200 p-6">
+      <motion.div variants={sectionVariants} className="bg-aegis-charcoal rounded-xl border border-aegis-border p-6">
         <div className="flex items-center gap-4">
-          <div className="h-16 w-16 bg-gray-900 rounded-full flex items-center justify-center shrink-0">
-            <span className="text-lg font-semibold text-white">
+          <div className="h-16 w-16 bg-aegis-gold rounded-full flex items-center justify-center shrink-0">
+            <span className="text-lg font-semibold text-aegis-black">
               {getInitials(firstName, lastName)}
             </span>
           </div>
           <div className="min-w-0">
-            <h2 className="text-lg font-semibold text-gray-900 truncate">
+            <h2 className="text-lg font-semibold text-white truncate">
               {firstName} {lastName}
             </h2>
-            <p className="text-sm text-gray-500 truncate">{email}</p>
+            <p className="text-sm text-aegis-muted truncate">{email}</p>
             {memberSince && (
-              <p className="text-xs text-gray-400 mt-1">Member since {formatDate(memberSince)}</p>
+              <p className="text-xs text-aegis-muted mt-1">Member since {formatDate(memberSince)}</p>
             )}
           </div>
         </div>
       </motion.div>
 
       {/* Settings */}
-      <motion.div variants={sectionVariants} className="bg-white rounded-xl border border-gray-200 divide-y divide-gray-100">
+      <motion.div variants={sectionVariants} className="bg-aegis-charcoal rounded-xl border border-aegis-border divide-y divide-aegis-border">
         {/* Units Preference */}
         <div className="flex items-center justify-between p-5">
           <div className="flex items-center gap-3">
-            <div className="h-9 w-9 bg-gray-100 rounded-lg flex items-center justify-center">
-              <Ruler className="h-4 w-4 text-gray-600" />
+            <div className="h-9 w-9 bg-aegis-dark rounded-lg flex items-center justify-center">
+              <Ruler className="h-4 w-4 text-aegis-muted" />
             </div>
             <div>
-              <p className="text-sm font-medium text-gray-900">Units</p>
-              <p className="text-xs text-gray-500">Choose your preferred measurement system</p>
+              <p className="text-sm font-medium text-white">Units</p>
+              <p className="text-xs text-aegis-muted">Choose your preferred measurement system</p>
             </div>
           </div>
           <select
             value={units}
             onChange={(e) => handleUnitsChange(e.target.value)}
-            className="text-sm font-medium text-gray-700 bg-gray-50 border border-gray-200 rounded-lg px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1"
+            className="text-sm font-medium text-white bg-aegis-dark border border-aegis-border rounded-lg px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-aegis-gold focus:ring-offset-1"
           >
             <option value="metric">Metric (kg)</option>
             <option value="imperial">Imperial (lbs)</option>
@@ -154,12 +154,12 @@ export const ProfilePage = () => {
         {/* Notifications */}
         <div className="p-5">
           <div className="flex items-center gap-3 mb-4">
-            <div className="h-9 w-9 bg-gray-100 rounded-lg flex items-center justify-center">
-              <Bell className="h-4 w-4 text-gray-600" />
+            <div className="h-9 w-9 bg-aegis-dark rounded-lg flex items-center justify-center">
+              <Bell className="h-4 w-4 text-aegis-muted" />
             </div>
             <div>
-              <p className="text-sm font-medium text-gray-900">Notifications</p>
-              <p className="text-xs text-gray-500">Manage your notification preferences</p>
+              <p className="text-sm font-medium text-white">Notifications</p>
+              <p className="text-xs text-aegis-muted">Manage your notification preferences</p>
             </div>
           </div>
           <div className="space-y-3 ml-12">
@@ -169,14 +169,14 @@ export const ProfilePage = () => {
               { key: 'pr_celebrations', label: 'PR celebrations' },
             ].map(({ key, label }) => (
               <label key={key} className="flex items-center justify-between cursor-pointer">
-                <span className="text-sm text-gray-700">{label}</span>
+                <span className="text-sm text-aegis-muted">{label}</span>
                 <button
                   type="button"
                   role="switch"
                   aria-checked={!!notifications[key]}
                   onClick={() => handleNotificationToggle(key)}
-                  className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 ${
-                    notifications[key] ? 'bg-indigo-600' : 'bg-gray-200'
+                  className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-aegis-gold focus:ring-offset-2 ${
+                    notifications[key] ? 'bg-aegis-gold' : 'bg-aegis-border'
                   }`}
                 >
                   <span
@@ -196,10 +196,10 @@ export const ProfilePage = () => {
             onClick={() => {/* TODO: open edit profile modal */}}
             className="flex items-center gap-3 w-full"
           >
-            <div className="h-9 w-9 bg-gray-100 rounded-lg flex items-center justify-center">
-              <Edit3 className="h-4 w-4 text-gray-600" />
+            <div className="h-9 w-9 bg-aegis-dark rounded-lg flex items-center justify-center">
+              <Edit3 className="h-4 w-4 text-aegis-muted" />
             </div>
-            <span className="text-sm font-medium text-gray-900">Edit profile</span>
+            <span className="text-sm font-medium text-white">Edit profile</span>
           </button>
         </div>
 
@@ -209,10 +209,10 @@ export const ProfilePage = () => {
             onClick={handleSignOut}
             className="flex items-center gap-3 w-full"
           >
-            <div className="h-9 w-9 bg-red-50 rounded-lg flex items-center justify-center">
-              <LogOut className="h-4 w-4 text-red-600" />
+            <div className="h-9 w-9 bg-red-900/30 rounded-lg flex items-center justify-center">
+              <LogOut className="h-4 w-4 text-red-400" />
             </div>
-            <span className="text-sm font-medium text-red-600">Sign out</span>
+            <span className="text-sm font-medium text-red-400">Sign out</span>
           </button>
         </div>
       </motion.div>

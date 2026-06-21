@@ -26,48 +26,48 @@ const SummaryCard = ({
 }: SummaryCardProps) => {
   if (isLoading) {
     return (
-      <div className="bg-white rounded-xl border border-gray-200 p-6 hover:shadow-sm transition-shadow">
+      <div className="bg-aegis-charcoal rounded-xl border border-aegis-border p-6 hover:shadow-sm transition-shadow">
         <div className="flex items-center justify-between">
           <div className="space-y-3 flex-1">
-            <div className="h-3 bg-gray-200 rounded w-24 animate-pulse" />
-            <div className="h-7 bg-gray-200 rounded w-20 animate-pulse" />
+            <div className="h-3 bg-aegis-border rounded w-24 animate-pulse" />
+            <div className="h-7 bg-aegis-border rounded w-20 animate-pulse" />
           </div>
-          <div className="h-12 w-12 bg-gray-200 rounded-full animate-pulse" />
+          <div className="h-12 w-12 bg-aegis-border rounded-full animate-pulse" />
         </div>
       </div>
     );
   }
 
   return (
-    <div className="bg-white rounded-xl border border-gray-200 p-6 hover:shadow-sm transition-shadow">
+    <div className="bg-aegis-charcoal rounded-xl border border-aegis-border p-6 hover:shadow-sm transition-shadow">
       <div className="flex items-center justify-between">
         <div className="space-y-1">
-          <p className="text-[11px] font-medium uppercase tracking-wider text-gray-500">{title}</p>
+          <p className="text-[11px] font-medium uppercase tracking-wider text-aegis-muted">{title}</p>
           <div className="flex items-baseline gap-1">
             <CountUp
               to={value}
               decimals={decimals}
-              className="text-[24px] font-semibold text-gray-900"
+              className="text-[24px] font-semibold text-white"
             />
             {suffix && (
-              <span className="text-[11px] font-medium uppercase tracking-wider text-gray-500">{suffix}</span>
+              <span className="text-[11px] font-medium uppercase tracking-wider text-aegis-muted">{suffix}</span>
             )}
           </div>
           {delta !== undefined && deltaLabel && (
             <div className="flex items-center gap-1 mt-2">
               <span
                 className={`text-[11px] font-semibold ${
-                  delta >= 0 ? 'text-green-600' : 'text-red-600'
+                  delta >= 0 ? 'text-green-400' : 'text-red-400'
                 }`}
               >
                 {delta >= 0 ? '+' : ''}
                 {delta.toFixed(0)}%
               </span>
-              <span className="text-[11px] text-gray-400">{deltaLabel}</span>
+              <span className="text-[11px] text-aegis-muted">{deltaLabel}</span>
             </div>
           )}
         </div>
-        <div className="h-12 w-12 bg-indigo-50 rounded-full flex items-center justify-center text-indigo-600">
+        <div className="h-12 w-12 bg-aegis-gold/10 rounded-full flex items-center justify-center text-aegis-gold">
           {icon}
         </div>
       </div>
@@ -76,52 +76,48 @@ const SummaryCard = ({
 };
 
 export const DashboardSummaryCards = () => {
-  const { overview, kpis } = useDashboard();
+  const { dashboard } = useDashboard();
 
-  const isLoading = overview.isLoading || kpis.isLoading;
-  const hasError = overview.isError || kpis.isError;
+  const isLoading = dashboard.isLoading;
+  const hasError = dashboard.isError;
 
   if (hasError) {
-    const errorMessage = overview.error?.message || kpis.error?.message;
     return (
       <DashboardSectionError
         title="Summary Cards"
-        message={errorMessage}
-        onRetry={() => {
-          overview.refetch();
-          kpis.refetch();
-        }}
+        message={dashboard.error?.message}
+        onRetry={() => dashboard.refetch()}
       />
     );
   }
+
+  const data = dashboard.data;
 
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
       <SummaryCard
         title="Total Workouts"
-        value={overview.data?.totalWorkouts ?? 0}
+        value={data?.workoutConsistency.totalWorkoutDays ?? 0}
         icon={<Dumbbell className="h-6 w-6" />}
         isLoading={isLoading}
       />
       <SummaryCard
         title="Total Volume"
-        value={overview.data?.totalVolume ?? 0}
+        value={data?.weeklyVolume.totalVolume ?? 0}
         suffix="kg"
         icon={<Weight className="h-6 w-6" />}
         isLoading={isLoading}
       />
       <SummaryCard
         title="Weekly Volume"
-        value={kpis.data?.totalVolumeThisWeek ?? 0}
+        value={data?.weeklyVolume.totalVolume ?? 0}
         suffix="kg"
         icon={<TrendingUp className="h-6 w-6" />}
-        delta={kpis.data?.volumeChangePercent}
-        deltaLabel="vs last week"
         isLoading={isLoading}
       />
       <SummaryCard
         title="Current Streak"
-        value={overview.data?.currentStreak ?? 0}
+        value={data?.workoutConsistency.currentStreak ?? 0}
         suffix="days"
         icon={<Flame className="h-6 w-6" />}
         isLoading={isLoading}

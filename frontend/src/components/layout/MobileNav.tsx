@@ -9,13 +9,13 @@ import {
 
 export const MobileNav = () => {
   return (
-    <nav className="fixed bottom-0 left-0 right-0 h-16 flex items-center justify-around bg-white border-t border-gray-200" aria-label="Mobile navigation">
+    <nav className="fixed bottom-0 left-0 right-0 h-16 flex items-center justify-around bg-aegis-charcoal border-t border-aegis-border" aria-label="Mobile navigation">
       <NavLink
         to="/app/dashboard"
         end
         className={({ isActive }) => `
           flex flex-col items-center px-2 py-1 text-sm font-medium
-          ${isActive ? 'text-indigo-600' : 'text-gray-500'}
+          ${isActive ? 'text-aegis-gold' : 'text-aegis-muted'}
         `}
       >
         <Menu className="h-4 w-4 mb-1" />
@@ -27,7 +27,7 @@ export const MobileNav = () => {
         end
         className={({ isActive }) => `
           flex flex-col items-center px-2 py-1 text-sm font-medium
-          ${isActive ? 'text-indigo-600' : 'text-gray-500'}
+          ${isActive ? 'text-aegis-gold' : 'text-aegis-muted'}
         `}
       >
         <Activity className="h-4 w-4 mb-1" />
@@ -39,7 +39,7 @@ export const MobileNav = () => {
         end
         className={({ isActive }) => `
           flex flex-col items-center px-2 py-1 text-sm font-medium
-          ${isActive ? 'text-indigo-600' : 'text-gray-500'}
+          ${isActive ? 'text-aegis-gold' : 'text-aegis-muted'}
         `}
       >
         <BarChart2 className="h-4 w-4 mb-1" />
@@ -51,7 +51,7 @@ export const MobileNav = () => {
         end
         className={({ isActive }) => `
           flex flex-col items-center px-2 py-1 text-sm font-medium
-          ${isActive ? 'text-indigo-600' : 'text-gray-500'}
+          ${isActive ? 'text-aegis-gold' : 'text-aegis-muted'}
         `}
       >
         <TrendingUp className="h-4 w-4 mb-1" />
@@ -63,7 +63,7 @@ export const MobileNav = () => {
         end
         className={({ isActive }) => `
           flex flex-col items-center px-2 py-1 text-sm font-medium
-          ${isActive ? 'text-indigo-600' : 'text-gray-500'}
+          ${isActive ? 'text-aegis-gold' : 'text-aegis-muted'}
         `}
       >
         <User className="h-4 w-4 mb-1" />

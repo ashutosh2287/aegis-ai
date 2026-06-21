@@ -65,22 +65,22 @@ export const WorkoutsPage = () => {
     return (
       <div className="p-4 sm:p-6 max-w-7xl mx-auto">
         <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 mb-6">
-          <h1 className="text-[11px] font-medium uppercase tracking-wider text-gray-500">My Workouts</h1>
-          <div className="h-9 w-32 bg-gray-200 rounded-lg animate-pulse" />
+          <h1 className="text-[11px] font-medium uppercase tracking-wider text-aegis-muted">My Workouts</h1>
+          <div className="h-9 w-32 bg-aegis-border rounded-lg animate-pulse" />
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {[1, 2, 3, 4, 5, 6].map((_, index) => (
             <div
               key={index}
-              className="bg-white rounded-xl border border-gray-200 p-5"
+              className="bg-aegis-charcoal rounded-xl border border-aegis-border p-5"
             >
-              <div className="h-5 bg-gray-200 rounded w-40 mb-3 animate-pulse" />
-              <div className="h-3 bg-gray-100 rounded w-full mb-4 animate-pulse" />
+              <div className="h-5 bg-aegis-border rounded w-40 mb-3 animate-pulse" />
+              <div className="h-3 bg-aegis-dark rounded w-full mb-4 animate-pulse" />
               <div className="flex gap-2 mb-4">
-                <div className="h-5 bg-gray-100 rounded-full w-20 animate-pulse" />
-                <div className="h-5 bg-gray-100 rounded-full w-16 animate-pulse" />
+                <div className="h-5 bg-aegis-dark rounded-full w-20 animate-pulse" />
+                <div className="h-5 bg-aegis-dark rounded-full w-16 animate-pulse" />
               </div>
-              <div className="h-9 bg-gray-100 rounded-lg w-full animate-pulse" />
+              <div className="h-9 bg-aegis-dark rounded-lg w-full animate-pulse" />
             </div>
           ))}
         </div>
@@ -92,10 +92,10 @@ export const WorkoutsPage = () => {
     return (
       <div className="p-4 sm:p-6 max-w-7xl mx-auto">
         <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 mb-6">
-          <h1 className="text-[11px] font-medium uppercase tracking-wider text-gray-500">My Workouts</h1>
+          <h1 className="text-[11px] font-medium uppercase tracking-wider text-aegis-muted">My Workouts</h1>
           <button
             onClick={() => navigate('/app/workout-builder')}
-            className="inline-flex items-center gap-1.5 border border-gray-300 text-gray-700 hover:bg-gray-50 font-medium text-[11px] uppercase tracking-wider py-2 px-3 rounded-lg transition-colors self-start"
+            className="inline-flex items-center gap-1.5 border border-aegis-border text-aegis-muted hover:bg-white/5 font-medium text-[11px] uppercase tracking-wider py-2 px-3 rounded-lg transition-colors self-start"
           >
             <Plus className="h-3.5 w-3.5" />
             New Workout
@@ -114,25 +114,25 @@ export const WorkoutsPage = () => {
     return (
       <div className="p-4 sm:p-6 max-w-7xl mx-auto">
         <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 mb-6">
-          <h1 className="text-[11px] font-medium uppercase tracking-wider text-gray-500">My Workouts</h1>
+          <h1 className="text-[11px] font-medium uppercase tracking-wider text-aegis-muted">My Workouts</h1>
           <button
             onClick={() => navigate('/app/workout-builder')}
-            className="inline-flex items-center gap-1.5 border border-gray-300 text-gray-700 hover:bg-gray-50 font-medium text-[11px] uppercase tracking-wider py-2 px-3 rounded-lg transition-colors self-start"
+            className="inline-flex items-center gap-1.5 border border-aegis-border text-aegis-muted hover:bg-white/5 font-medium text-[11px] uppercase tracking-wider py-2 px-3 rounded-lg transition-colors self-start"
           >
             <Plus className="h-3.5 w-3.5" />
             New Workout
           </button>
         </div>
         <div className="flex flex-col items-center justify-center py-20">
-          <div className="h-16 w-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
-            <Dumbbell className="h-7 w-7 text-gray-400" />
+          <div className="h-16 w-16 bg-aegis-dark rounded-full flex items-center justify-center mb-4">
+            <Dumbbell className="h-7 w-7 text-aegis-muted" />
           </div>
-          <p className="text-[11px] font-medium uppercase tracking-wider text-gray-500 mb-4">
+          <p className="text-[11px] font-medium uppercase tracking-wider text-aegis-muted mb-4">
             No workouts yet
           </p>
           <button
             onClick={() => navigate('/app/workout-builder')}
-            className="inline-flex items-center gap-1.5 bg-gray-900 text-white hover:bg-gray-800 font-medium text-[11px] uppercase tracking-wider py-2.5 px-5 rounded-lg transition-colors"
+            className="inline-flex items-center gap-1.5 bg-aegis-gold text-aegis-black hover:bg-aegis-gold-light font-medium text-[11px] uppercase tracking-wider py-2.5 px-5 rounded-lg transition-colors shadow-[0_0_20px_rgba(212,168,67,0.15)]"
           >
             <Plus className="h-3.5 w-3.5" />
             Create Your First Workout
@@ -145,10 +145,10 @@ export const WorkoutsPage = () => {
   return (
     <div className="p-4 sm:p-6 max-w-7xl mx-auto">
       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 mb-6">
-        <h1 className="text-[11px] font-medium uppercase tracking-wider text-gray-500">My Workouts</h1>
+        <h1 className="text-[11px] font-medium uppercase tracking-wider text-aegis-muted">My Workouts</h1>
         <button
           onClick={() => navigate('/app/workout-builder')}
-          className="inline-flex items-center gap-1.5 border border-gray-300 text-gray-700 hover:bg-gray-50 font-medium text-[11px] uppercase tracking-wider py-2 px-3 rounded-lg transition-colors self-start"
+          className="inline-flex items-center gap-1.5 border border-aegis-border text-aegis-muted hover:bg-white/5 font-medium text-[11px] uppercase tracking-wider py-2 px-3 rounded-lg transition-colors self-start"
         >
           <Plus className="h-3.5 w-3.5" />
           New Workout
@@ -168,7 +168,7 @@ export const WorkoutsPage = () => {
             <motion.div
               key={workout.id}
               variants={cardVariants}
-              className={`bg-white rounded-xl border border-gray-200 p-5 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 ${
+              className={`bg-aegis-charcoal rounded-xl border border-aegis-border p-5 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 ${
                 isStarting ? 'opacity-60 cursor-wait' : 'cursor-pointer'
               }`}
               onClick={() => handleStartWorkout(workout.id)}
@@ -184,20 +184,20 @@ export const WorkoutsPage = () => {
               aria-busy={isStarting}
             >
               <div className="mb-1">
-                <h2 className="text-[16px] font-semibold text-gray-900 truncate">{workout.name}</h2>
+                <h2 className="text-[16px] font-semibold text-white truncate">{workout.name}</h2>
                 {workout.description && (
-                  <p className="text-[11px] text-gray-400 mt-1 line-clamp-2">{workout.description}</p>
+                  <p className="text-[11px] text-aegis-muted mt-1 line-clamp-2">{workout.description}</p>
                 )}
               </div>
 
               <div className="flex flex-wrap items-center gap-1.5 mb-4">
-                <span className="text-[10px] font-semibold bg-blue-50 text-blue-700 px-2 py-0.5 rounded-full">
+                <span className="text-[10px] font-semibold bg-aegis-dark text-aegis-muted px-2 py-0.5 rounded-full">
                   {workout.workoutExercises?.length || 0} exercises
                 </span>
                 {getMuscleGroupTags(workout).map((muscleGroup, index) => (
                   <span
                     key={index}
-                    className="text-[10px] font-semibold bg-green-50 text-green-700 px-2 py-0.5 rounded-full"
+                    className="text-[10px] font-semibold bg-aegis-gold/10 text-aegis-gold px-2 py-0.5 rounded-full"
                   >
                     {muscleGroup}
                   </span>
@@ -213,7 +213,7 @@ export const WorkoutsPage = () => {
                   handleStartWorkout(workout.id);
                 }}
                 disabled={isStarting}
-                className="w-full inline-flex items-center justify-center gap-1.5 bg-gray-900 text-white hover:bg-gray-800 font-medium text-[11px] uppercase tracking-wider py-2.5 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-wait"
+                className="w-full inline-flex items-center justify-center gap-1.5 bg-aegis-gold text-aegis-black hover:bg-aegis-gold-light font-medium text-[11px] uppercase tracking-wider py-2.5 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-wait shadow-[0_0_20px_rgba(212,168,67,0.15)]"
               >
                 {isStarting ? (
                   <span>Starting...</span>

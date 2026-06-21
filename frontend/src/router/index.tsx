@@ -17,6 +17,7 @@ import {
   ActiveSessionPage,
   SessionSummaryPage,
   ExerciseCatalogPage,
+  OnboardingPage,
 } from './lazyRoutes';
 
 const router = createBrowserRouter([
@@ -31,6 +32,16 @@ const router = createBrowserRouter([
   {
     path: '/register',
     element: <RegisterPage />,
+  },
+  {
+    path: '/onboarding',
+    element: (
+      <AuthProtectedRoute>
+        <SuspenseWrapper>
+          <OnboardingPage />
+        </SuspenseWrapper>
+      </AuthProtectedRoute>
+    ),
   },
   {
     path: '/app',

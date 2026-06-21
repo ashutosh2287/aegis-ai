@@ -7,34 +7,34 @@ import type {
 
 export const goalsService = {
   async getGoals(): Promise<GoalProjection[]> {
-    const response = await api.get('/analytics/goals');
+    const response = await api.get('/analytics/projection/goal-achievement');
     return response.data;
   },
 
   async getGoalProjection(goalId: string): Promise<GoalProjection> {
-    const response = await api.get('/analytics/goal-projection', {
+    const response = await api.get('/analytics/projection/goal-achievement', {
       params: { goalId },
     });
     return response.data;
   },
 
   async getStrengthForecast(): Promise<ForecastHistoryPoint[]> {
-    const response = await api.get('/analytics/strength-forecast');
+    const response = await api.get('/analytics/projection/strength');
     return response.data;
   },
 
   async getVolumeForecast(): Promise<ForecastHistoryPoint[]> {
-    const response = await api.get('/analytics/volume-forecast');
+    const response = await api.get('/analytics/projection/volume');
     return response.data;
   },
 
   async getFrequencyForecast(): Promise<ForecastHistoryPoint[]> {
-    const response = await api.get('/analytics/frequency-forecast');
+    const response = await api.get('/analytics/projection/frequency');
     return response.data;
   },
 
   async getForecastRecommendations(): Promise<ForecastRecommendation[]> {
-    const response = await api.get('/analytics/forecast-recommendations');
+    const response = await api.get('/analytics/projection/recommendations');
     return response.data;
   },
 };

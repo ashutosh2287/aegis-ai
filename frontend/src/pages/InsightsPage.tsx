@@ -34,10 +34,10 @@ interface Insight {
 }
 
 const categoryStyles: Record<string, { iconBg: string; iconColor: string }> = {
-  progress: { iconBg: 'bg-indigo-50', iconColor: 'text-indigo-600' },
-  warning: { iconBg: 'bg-amber-50', iconColor: 'text-amber-600' },
-  achievement: { iconBg: 'bg-emerald-50', iconColor: 'text-emerald-600' },
-  tip: { iconBg: 'bg-blue-50', iconColor: 'text-blue-600' },
+  progress: { iconBg: 'bg-aegis-gold/10', iconColor: 'text-aegis-gold' },
+  warning: { iconBg: 'bg-amber-900/30', iconColor: 'text-amber-400' },
+  achievement: { iconBg: 'bg-green-900/30', iconColor: 'text-green-400' },
+  tip: { iconBg: 'bg-aegis-dark', iconColor: 'text-aegis-muted' },
 };
 
 function InsightCard({ insight }: { insight: Insight }) {
@@ -46,15 +46,15 @@ function InsightCard({ insight }: { insight: Insight }) {
   return (
     <motion.div
       variants={cardVariants}
-      className="bg-white rounded-xl border border-gray-200 p-5 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200"
+      className="bg-aegis-charcoal rounded-xl border border-aegis-border p-5 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200"
     >
       <div className="flex items-start gap-4">
         <div className={`h-10 w-10 rounded-lg flex items-center justify-center shrink-0 ${style.iconBg}`}>
           <span className={style.iconColor}>{insight.icon}</span>
         </div>
         <div className="min-w-0">
-          <h3 className="text-sm font-semibold text-gray-900 mb-1">{insight.headline}</h3>
-          <p className="text-sm text-gray-500 leading-relaxed">{insight.explanation}</p>
+          <h3 className="text-sm font-semibold text-white mb-1">{insight.headline}</h3>
+          <p className="text-sm text-aegis-muted leading-relaxed">{insight.explanation}</p>
         </div>
       </div>
     </motion.div>
@@ -63,13 +63,13 @@ function InsightCard({ insight }: { insight: Insight }) {
 
 function InsightCardSkeleton() {
   return (
-    <div className="bg-white rounded-xl border border-gray-200 p-5">
+    <div className="bg-aegis-charcoal rounded-xl border border-aegis-border p-5">
       <div className="flex items-start gap-4">
-        <div className="h-10 w-10 bg-gray-200 rounded-lg animate-pulse shrink-0" />
+        <div className="h-10 w-10 bg-aegis-border rounded-lg animate-pulse shrink-0" />
         <div className="flex-1 space-y-2">
-          <div className="h-4 bg-gray-200 rounded w-3/4 animate-pulse" />
-          <div className="h-3 bg-gray-100 rounded w-full animate-pulse" />
-          <div className="h-3 bg-gray-100 rounded w-2/3 animate-pulse" />
+          <div className="h-4 bg-aegis-border rounded w-3/4 animate-pulse" />
+          <div className="h-3 bg-aegis-dark rounded w-full animate-pulse" />
+          <div className="h-3 bg-aegis-dark rounded w-2/3 animate-pulse" />
         </div>
       </div>
     </div>
@@ -227,9 +227,9 @@ export const InsightsPage = () => {
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-6">
       <div>
-        <h1 className="text-[11px] font-medium uppercase tracking-wider text-gray-400 mb-1">Insights</h1>
-        <h2 className="text-lg font-semibold text-gray-900">AI-Generated Observations</h2>
-        <p className="text-sm text-gray-500 mt-1">
+        <h1 className="text-[11px] font-medium uppercase tracking-wider text-aegis-muted mb-1">Insights</h1>
+        <h2 className="text-lg font-semibold text-white">AI-Generated Observations</h2>
+        <p className="text-sm text-aegis-muted mt-1">
           Personalized observations based on your training data, consistency, and progress patterns.
         </p>
       </div>
@@ -241,12 +241,12 @@ export const InsightsPage = () => {
           ))}
         </div>
       ) : insights.length === 0 ? (
-        <div className="bg-white rounded-xl border border-gray-200 p-8 text-center">
-          <div className="h-12 w-12 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-            <Lightbulb className="h-6 w-6 text-gray-400" />
+        <div className="bg-aegis-charcoal rounded-xl border border-aegis-border p-8 text-center">
+          <div className="h-12 w-12 bg-aegis-dark rounded-full flex items-center justify-center mx-auto mb-4">
+            <Lightbulb className="h-6 w-6 text-aegis-muted" />
           </div>
-          <h3 className="text-sm font-medium text-gray-900 mb-1">Not enough data yet</h3>
-          <p className="text-xs text-gray-500 max-w-xs mx-auto">
+          <h3 className="text-sm font-medium text-white mb-1">Not enough data yet</h3>
+          <p className="text-xs text-aegis-muted max-w-xs mx-auto">
             Complete a few more workouts and your personalized insights will appear here.
           </p>
         </div>

@@ -24,3 +24,16 @@ export enum SessionStatus {
   COMPLETED = 'completed',
   ABANDONED = 'abandoned'
 }
+
+export enum ExperienceLevel {
+  NEW = 'new',
+  FEW_MONTHS = 'few_months',
+  ONE_YEAR = 'one_year',
+  YEARS = 'years',
+  COMPETITOR = 'competitor',
+}
+
+export enum WeightUnit {
+  METRIC = 'metric',
+  IMPERIAL = 'imperial',
+}

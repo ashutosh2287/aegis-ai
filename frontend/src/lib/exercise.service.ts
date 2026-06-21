@@ -11,8 +11,8 @@ export const exerciseService = {
    * @param query - Search term
    */
   async searchExercises(query: string): Promise<Exercise[]> {
-    const response = await api.get('/exercises/search', {
-      params: { q: query }
+    const response = await api.get('/exercises', {
+      params: { search: query }
     });
     return response.data;
   },

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Lightbulb, Target } from 'lucide-react';
+import { Lightbulb, Target, AlertTriangle } from 'lucide-react';
 import { useGoals, useStrengthForecast, useVolumeForecast, useFrequencyForecast, useForecastRecommendations } from '../hooks/useGoals';
 import { GoalCard, GoalCardSkeleton } from '../components/ui/GoalCard';
 import { ForecastTimelineChart, ForecastTimelineChartSkeleton } from '../components/ui/ForecastTimelineChart';
@@ -42,17 +42,17 @@ function ForecastRecommendationsSection() {
 
   if (isLoading) {
     return (
-      <div className="bg-white rounded-xl border border-gray-200 p-6">
-        <div className="h-4 bg-gray-200 rounded w-48 mb-4 animate-pulse" />
+      <div className="bg-aegis-charcoal rounded-xl border border-aegis-border p-6">
+        <div className="h-4 bg-aegis-border rounded w-48 mb-4 animate-pulse" />
         <div className="space-y-3">
           {Array.from({ length: 2 }).map((_, i) => (
-            <div key={i} className="p-4 bg-gray-50 rounded-lg space-y-2">
+            <div key={i} className="p-4 bg-aegis-dark rounded-lg space-y-2">
               <div className="flex items-center gap-2">
-                <div className="h-5 w-5 bg-gray-200 rounded animate-pulse" />
-                <div className="h-4 bg-gray-200 rounded w-32 animate-pulse" />
+                <div className="h-5 w-5 bg-aegis-border rounded animate-pulse" />
+                <div className="h-4 bg-aegis-border rounded w-32 animate-pulse" />
               </div>
-              <div className="h-3 bg-gray-100 rounded w-full animate-pulse" />
-              <div className="h-3 bg-gray-100 rounded w-3/4 animate-pulse" />
+              <div className="h-3 bg-aegis-border rounded w-full animate-pulse" />
+              <div className="h-3 bg-aegis-border rounded w-3/4 animate-pulse" />
             </div>
           ))}
         </div>
@@ -64,33 +64,33 @@ function ForecastRecommendationsSection() {
 
   if (recommendations.length === 0) {
     return (
-      <div className="bg-white rounded-xl border border-gray-200 p-6">
-        <h3 className="text-sm font-semibold text-gray-900 mb-2">Forecast Recommendations</h3>
-        <p className="text-sm text-gray-500">No recommendations yet. Complete more workouts to receive personalized suggestions.</p>
+      <div className="bg-aegis-charcoal rounded-xl border border-aegis-border p-6">
+        <h3 className="text-sm font-semibold text-white mb-2">Forecast Recommendations</h3>
+        <p className="text-sm text-aegis-muted">No recommendations yet. Complete more workouts to receive personalized suggestions.</p>
       </div>
     );
   }
 
   return (
-    <div className="bg-white rounded-xl border border-gray-200 p-6">
-      <h3 className="text-sm font-semibold text-gray-900 mb-4">Forecast Recommendations</h3>
+    <div className="bg-aegis-charcoal rounded-xl border border-aegis-border p-6">
+      <h3 className="text-sm font-semibold text-white mb-4">Forecast Recommendations</h3>
       <div className="space-y-3">
         {recommendations.map((rec) => (
           <div
             key={`${rec.exerciseId}-${rec.goalType}`}
-            className="p-4 bg-gray-50 rounded-lg space-y-2"
+            className="p-4 bg-aegis-dark rounded-lg space-y-2"
           >
             <div className="flex items-center gap-2">
-              <Lightbulb className="h-4 w-4 text-amber-500 shrink-0" />
-              <p className="text-sm font-medium text-gray-900">
+              <Lightbulb className="h-4 w-4 text-aegis-gold shrink-0" />
+              <p className="text-sm font-medium text-white">
                 {rec.exerciseName} · {rec.goalType}
               </p>
-              <span className="ml-auto text-xs text-gray-400">
+              <span className="ml-auto text-xs text-aegis-muted">
                 {Math.round(rec.confidenceScore * 100)}% confidence
               </span>
             </div>
-            <p className="text-sm text-gray-600">{rec.suggestedAdjustment}</p>
-            <p className="text-xs text-gray-500">{rec.reasoning}</p>
+            <p className="text-sm text-aegis-muted">{rec.suggestedAdjustment}</p>
+            <p className="text-xs text-aegis-muted">{rec.reasoning}</p>
           </div>
         ))}
       </div>
@@ -119,11 +119,23 @@ export const GoalsPage = () => {
       animate="visible"
       className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-8"
     >
+      {/* Stub data warning banner */}
+      <div className="bg-amber-900/20 border border-amber-700/40 rounded-xl p-4 flex items-start gap-3">
+        <AlertTriangle className="h-5 w-5 text-amber-400 shrink-0 mt-0.5" />
+        <div>
+          <p className="text-sm font-medium text-amber-300">Projections are placeholder data</p>
+          <p className="text-xs text-amber-400/70 mt-1">
+            The forecast and goal projections shown on this page currently return hardcoded stub values.
+            They will be replaced with real calculations once the backend forecasting services are implemented.
+          </p>
+        </div>
+      </div>
+
       {/* Section 1: Goal Cards */}
       <motion.section variants={sectionVariants}>
         <SectionErrorBoundary title="Goal Cards">
           <div>
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">Your Goals</h2>
+            <h2 className="text-lg font-semibold text-white mb-4">Your Goals</h2>
 
             {goalsError && (
               <DashboardSectionError
@@ -156,10 +168,10 @@ export const GoalsPage = () => {
             )}
 
             {!goalsLoading && !goalsError && (goals ?? []).length === 0 && (
-              <div className="bg-white rounded-xl border border-gray-200 p-8 text-center">
-                <Target className="h-10 w-10 text-gray-300 mx-auto mb-3" />
-                <p className="text-sm font-medium text-gray-900 mb-1">No active goals yet</p>
-                <p className="text-xs text-gray-500">Complete more workouts and your goals will appear here automatically.</p>
+              <div className="bg-aegis-charcoal rounded-xl border border-aegis-border p-8 text-center">
+                <Target className="h-10 w-10 text-aegis-muted mx-auto mb-3" />
+                <p className="text-sm font-medium text-white mb-1">No active goals yet</p>
+                <p className="text-xs text-aegis-muted">Complete more workouts and your goals will appear here automatically.</p>
               </div>
             )}
           </div>
@@ -171,7 +183,7 @@ export const GoalsPage = () => {
         <motion.section key={type} variants={sectionVariants}>
           <SectionErrorBoundary title={`${type.charAt(0).toUpperCase() + type.slice(1)} Forecast`}>
             <div>
-              <h2 className="text-lg font-semibold text-gray-900 mb-4">
+              <h2 className="text-lg font-semibold text-white mb-4">
                 {type.charAt(0).toUpperCase() + type.slice(1)} Forecast
               </h2>
 

@@ -72,10 +72,11 @@ export const sessionService = {
    * @param offset - Offset for pagination
    */
   async getWorkoutSessions(limit: number, offset: number): Promise<SessionSummary[]> {
-    const response = await api.get('/workout-sessions', {
-      params: { limit: limit.toString(), offset: offset.toString() },
+    const page = Math.floor(offset / limit) + 1;
+    const response = await api.get('/sessions', {
+      params: { limit: limit.toString(), page: page.toString() },
     });
-    return response.data;
+    return response.data.sessions;
   }
 };
 

@@ -60,10 +60,10 @@ export const ExerciseCatalogPage = () => {
   if (isLoading) {
     return (
       <div className="p-4 sm:p-6">
-        <h1 className="text-xl sm:text-2xl font-bold mb-6">Exercise Catalog</h1>
+        <h1 className="text-xl sm:text-2xl font-bold text-white mb-6">Exercise Catalog</h1>
         <div className="space-y-3">
           {Array.from({ length: 6 }).map((_, i) => (
-            <div key={i} className="h-20 bg-gray-100 rounded-lg animate-pulse" />
+            <div key={i} className="h-20 bg-aegis-border rounded-lg animate-pulse" />
           ))}
         </div>
       </div>
@@ -73,7 +73,7 @@ export const ExerciseCatalogPage = () => {
   if (error) {
     return (
       <div className="p-4 sm:p-6">
-        <h1 className="text-xl sm:text-2xl font-bold mb-6">Exercise Catalog</h1>
+        <h1 className="text-xl sm:text-2xl font-bold text-white mb-6">Exercise Catalog</h1>
         <ErrorCard
           title="Failed to load exercises"
           message={error.message || 'Could not fetch the exercise catalog. Please try again.'}
@@ -85,21 +85,21 @@ export const ExerciseCatalogPage = () => {
 
   return (
     <div className="p-4 sm:p-6">
-      <h1 className="text-xl sm:text-2xl font-bold mb-6">Exercise Catalog</h1>
+      <h1 className="text-xl sm:text-2xl font-bold text-white mb-6">Exercise Catalog</h1>
 
       <div className="relative mb-6">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-aegis-muted" />
         <input
           type="text"
           placeholder="Search exercises..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="w-full pl-10 pr-10 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+          className="w-full pl-10 pr-10 py-2.5 bg-aegis-dark border border-aegis-border rounded-lg text-white placeholder:text-aegis-muted focus:outline-none focus:ring-2 focus:ring-aegis-gold focus:border-aegis-gold"
         />
         {search && (
           <button
             onClick={() => setSearch('')}
-            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-aegis-muted hover:text-white"
             aria-label="Clear search"
           >
             <X className="h-4 w-4" />
@@ -108,8 +108,8 @@ export const ExerciseCatalogPage = () => {
       </div>
 
       {filtered.length === 0 && (
-        <div className="text-center py-16 text-gray-500">
-          <Dumbbell className="h-12 w-12 mx-auto mb-3 text-gray-300" />
+        <div className="text-center py-16 text-aegis-muted">
+          <Dumbbell className="h-12 w-12 mx-auto mb-3 text-aegis-muted" />
           <p className="text-lg">No exercises found</p>
           <p className="text-sm mt-1">Try a different search term.</p>
         </div>
@@ -123,7 +123,7 @@ export const ExerciseCatalogPage = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.25 }}
           >
-            <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">
+            <h2 className="text-sm font-semibold text-aegis-muted uppercase tracking-wide mb-3">
               {muscleGroup}
             </h2>
             <div className="space-y-2">
@@ -131,24 +131,24 @@ export const ExerciseCatalogPage = () => {
                 <button
                   key={exercise.id}
                   onClick={() => handleSelect(exercise)}
-                  className="w-full flex items-center justify-between p-4 bg-white rounded-lg border border-gray-200 hover:border-indigo-300 hover:shadow-sm transition-all text-left focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1"
+                  className="w-full flex items-center justify-between p-4 bg-aegis-charcoal rounded-lg border border-aegis-border hover:border-aegis-gold/30 hover:shadow-sm transition-all text-left focus:outline-none focus:ring-2 focus:ring-aegis-gold focus:ring-offset-1"
                   aria-label={`View details for ${exercise.name}`}
                 >
                   <div className="min-w-0">
-                    <p className="font-medium text-gray-900 truncate">{exercise.name}</p>
+                    <p className="font-medium text-white truncate">{exercise.name}</p>
                     <div className="flex items-center gap-2 mt-0.5">
                       {exercise.muscleGroup && (
-                        <span className="text-xs text-gray-500">{exercise.muscleGroup}</span>
+                        <span className="text-xs text-aegis-muted">{exercise.muscleGroup}</span>
                       )}
                       {exercise.equipment && (
                         <>
-                          <span className="text-gray-300">·</span>
-                          <span className="text-xs text-gray-500">{exercise.equipment}</span>
+                          <span className="text-aegis-border">·</span>
+                          <span className="text-xs text-aegis-muted">{exercise.equipment}</span>
                         </>
                       )}
                     </div>
                   </div>
-                  <ChevronRight className="h-4 w-4 text-gray-400 shrink-0 ml-3" />
+                  <ChevronRight className="h-4 w-4 text-aegis-muted shrink-0 ml-3" />
                 </button>
               ))}
             </div>
@@ -219,7 +219,7 @@ function DetailDrawer({
         animate={{ x: 0 }}
         exit={{ x: '100%' }}
         transition={{ type: 'spring', damping: 30, stiffness: 300 }}
-        className="fixed right-0 top-0 bottom-0 w-full max-w-md bg-white shadow-xl z-50 overflow-y-auto"
+        className="fixed right-0 top-0 bottom-0 w-full max-w-md bg-aegis-charcoal shadow-xl z-50 overflow-y-auto"
         role="dialog"
         aria-modal="true"
         aria-label={`Exercise details: ${exercise.name}`}
@@ -227,22 +227,22 @@ function DetailDrawer({
         <div className="p-6">
           <div className="flex items-start justify-between mb-6">
             <div>
-              <h2 className="text-xl font-bold text-gray-900">{exercise.name}</h2>
+              <h2 className="text-xl font-bold text-white">{exercise.name}</h2>
               <div className="flex items-center gap-2 mt-1">
                 {exercise.muscleGroup && (
-                  <span className="text-sm text-gray-500">{exercise.muscleGroup}</span>
+                  <span className="text-sm text-aegis-muted">{exercise.muscleGroup}</span>
                 )}
                 {exercise.equipment && (
                   <>
-                    <span className="text-gray-300">·</span>
-                    <span className="text-sm text-gray-500">{exercise.equipment}</span>
+                    <span className="text-aegis-border">·</span>
+                    <span className="text-sm text-aegis-muted">{exercise.equipment}</span>
                   </>
                 )}
               </div>
             </div>
             <button
               onClick={onClose}
-              className="p-1 text-gray-400 hover:text-gray-600 rounded-lg"
+              className="p-1 text-aegis-muted hover:text-white rounded-lg"
               aria-label="Close exercise details"
             >
               <X className="h-5 w-5" />
@@ -250,22 +250,22 @@ function DetailDrawer({
           </div>
 
           {exercise.description && (
-            <p className="text-sm text-gray-600 mb-6">{exercise.description}</p>
+            <p className="text-sm text-aegis-muted mb-6">{exercise.description}</p>
           )}
 
-          <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">
+          <h3 className="text-sm font-semibold text-aegis-muted uppercase tracking-wide mb-3">
             Strength Trend
           </h3>
 
           {trendLoading && (
             <div className="space-y-3 py-4">
-              <div className="h-4 bg-gray-200 rounded w-24 animate-pulse" />
-              <div className="h-48 bg-gray-100 rounded-lg animate-pulse" />
+              <div className="h-4 bg-aegis-border rounded w-24 animate-pulse" />
+              <div className="h-48 bg-aegis-dark rounded-lg animate-pulse" />
             </div>
           )}
 
           {trendError && (
-            <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-red-700">
+            <div className="bg-red-900/30 border border-red-800/50 rounded-lg p-4 text-red-400">
               <div className="flex items-center gap-2">
                 <AlertCircle className="h-4 w-4 shrink-0" />
                 <p className="text-sm">{trendError.message}</p>
@@ -274,7 +274,7 @@ function DetailDrawer({
           )}
 
           {trend && chartData.length === 0 && !trendLoading && (
-            <div className="text-center py-12 text-gray-500">
+            <div className="text-center py-12 text-aegis-muted">
               <p className="text-sm">No trend data available yet.</p>
               <p className="text-xs mt-1">Complete workouts to see your progress here.</p>
             </div>
@@ -286,12 +286,12 @@ function DetailDrawer({
                 <LineChart data={chartData}>
                   <XAxis
                     dataKey="date"
-                    tick={{ fontSize: 12 }}
+                    tick={{ fontSize: 12, fill: '#888888' }}
                     tickLine={false}
                     axisLine={false}
                   />
                   <YAxis
-                    tick={{ fontSize: 12 }}
+                    tick={{ fontSize: 12, fill: '#888888' }}
                     tickLine={false}
                     axisLine={false}
                     width={40}
@@ -299,16 +299,18 @@ function DetailDrawer({
                   <Tooltip
                     contentStyle={{
                       borderRadius: '8px',
-                      border: '1px solid #e5e7eb',
-                      boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
+                      border: '1px solid #2a2a2a',
+                      backgroundColor: '#1a1a1a',
+                      color: '#ffffff',
+                      boxShadow: '0 2px 8px rgba(0,0,0,0.3)',
                     }}
                   />
                   <Line
                     type="monotone"
                     dataKey="weight"
-                    stroke="#6366f1"
+                    stroke="#d4a843"
                     strokeWidth={2}
-                    dot={{ r: 3, fill: '#6366f1' }}
+                    dot={{ r: 3, fill: '#d4a843' }}
                     activeDot={{ r: 5 }}
                     name="Avg Weight"
                   />

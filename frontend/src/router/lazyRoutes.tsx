@@ -12,3 +12,4 @@ export const WorkoutBuilderPage = lazy(() => import('../pages/WorkoutBuilderPage
 export const ActiveSessionPage = lazy(() => import('../pages/ActiveSessionPage'));
 export const SessionSummaryPage = lazy(() => import('../pages/SessionSummaryPage'));
 export const ExerciseCatalogPage = lazy(() => import('../pages/ExerciseCatalogPage'));
+export const OnboardingPage = lazy(() => import('../pages/OnboardingPage'));

@@ -178,25 +178,25 @@ const ExerciseAccordion = memo(({
   const completedCount = exercise.sets.filter(s => s.completed).length;
 
   return (
-    <div className="border rounded-lg overflow-hidden">
+    <div className="border border-aegis-border rounded-lg overflow-hidden">
       <button
         onClick={onToggle}
-        className="w-full flex items-center justify-between p-4 hover:bg-gray-50 transition-colors"
+        className="w-full flex items-center justify-between p-4 hover:bg-aegis-charcoal transition-colors"
         aria-expanded={isExpanded}
         aria-controls={`exercise-sets-${exercise.id}`}
       >
         <div className="flex items-center gap-3">
           <span className={`w-2 h-2 rounded-full ${isCompleted ? 'bg-green-500' : 'bg-yellow-500'}`} />
-          <span className="font-medium">{exercise.exerciseName}</span>
+          <span className="font-medium text-white">{exercise.exerciseName}</span>
         </div>
         <div className="flex items-center gap-2">
-          <span className="text-sm text-gray-500">
+          <span className="text-sm text-aegis-muted">
             {completedCount}/{exercise.sets.length}
           </span>
           <motion.svg
             animate={{ rotate: isExpanded ? 180 : 0 }}
             transition={{ duration: 0.2 }}
-            className="w-4 h-4 text-gray-400"
+            className="w-4 h-4 text-aegis-muted"
             viewBox="0 0 20 20"
             fill="currentColor"
           >
@@ -216,7 +216,7 @@ const ExerciseAccordion = memo(({
             id={`exercise-sets-${exercise.id}`}
           >
             <div className="px-4 pb-4">
-              <div className="grid grid-cols-[auto_1fr_1fr_auto] sm:grid-cols-[auto_1fr_1fr_1fr_auto] gap-2 text-xs text-gray-500 mb-2 px-1">
+              <div className="grid grid-cols-[auto_1fr_1fr_auto] sm:grid-cols-[auto_1fr_1fr_1fr_auto] gap-2 text-xs text-aegis-muted mb-2 px-1">
                 <span>Set</span>
                 <span className="hidden sm:inline">Prev Best</span>
                 <span>Weight</span>
@@ -229,11 +229,11 @@ const ExerciseAccordion = memo(({
                   key={set.id}
                   className="grid grid-cols-[auto_1fr_1fr_auto] sm:grid-cols-[auto_1fr_1fr_1fr_auto] gap-2 items-center mb-2"
                 >
-                  <span className="w-8 text-center font-medium text-sm">
+                  <span className="w-8 text-center font-medium text-sm text-white">
                     {set.setNumber}
                   </span>
 
-                  <span className="hidden sm:inline text-sm text-gray-500 text-center">
+                  <span className="hidden sm:inline text-sm text-aegis-muted text-center">
                     {set.previousBest
                       ? `${set.previousBest.weight}×${set.previousBest.reps}`
                       : '-'}
@@ -245,7 +245,7 @@ const ExerciseAccordion = memo(({
                     onChange={e =>
                       onUpdateSet(set.id, 'weight', Number(e.target.value) || 0)
                     }
-                    className="w-full border rounded px-2 py-1 text-sm text-center focus:outline-none focus:ring-1 focus:ring-blue-500"
+                    className="w-full bg-aegis-dark border border-aegis-border rounded px-2 py-1 text-sm text-center text-white focus:outline-none focus:ring-1 focus:ring-aegis-gold"
                     placeholder="0"
                     min={0}
                     aria-label={`Weight for set ${set.setNumber}`}
@@ -257,7 +257,7 @@ const ExerciseAccordion = memo(({
                     onChange={e =>
                       onUpdateSet(set.id, 'reps', Number(e.target.value) || 0)
                     }
-                    className="w-full border rounded px-2 py-1 text-sm text-center focus:outline-none focus:ring-1 focus:ring-blue-500"
+                    className="w-full bg-aegis-dark border border-aegis-border rounded px-2 py-1 text-sm text-center text-white focus:outline-none focus:ring-1 focus:ring-aegis-gold"
                     placeholder="0"
                     min={0}
                     aria-label={`Reps for set ${set.setNumber}`}
@@ -265,14 +265,14 @@ const ExerciseAccordion = memo(({
 
                   <div className="w-8 flex justify-center relative">
                     {isSyncing(set.id) ? (
-                      <div className="w-4 h-4 border-2 border-gray-300 border-t-blue-500 rounded-full animate-spin" />
+                      <div className="w-4 h-4 border-2 border-aegis-border border-t-aegis-gold rounded-full animate-spin" />
                     ) : (
                       <button
                         onClick={() => onCheckSet(set.id)}
                         className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-colors ${
                           set.completed
                             ? 'bg-green-500 border-green-500 text-white'
-                            : 'border-gray-300 hover:border-green-500'
+                            : 'border-aegis-border hover:border-green-500'
                         }`}
                         aria-label={`Mark set ${set.setNumber} as ${set.completed ? 'incomplete' : 'complete'}`}
                         role="checkbox"
@@ -304,7 +304,7 @@ const ExerciseAccordion = memo(({
 
               <button
                 onClick={onAddSet}
-                className="mt-2 text-sm text-blue-500 hover:text-blue-700 font-medium"
+                className="mt-2 text-sm text-aegis-gold hover:text-aegis-gold-light font-medium"
                 aria-label={`Add set to ${exercise.exerciseName}`}
               >
                 + Add Set
@@ -496,11 +496,11 @@ export const ActiveSessionPage = () => {
     return (
       <div className="p-4 sm:p-6 max-w-2xl mx-auto">
         <div className="animate-pulse space-y-4">
-          <div className="h-8 bg-gray-200 rounded w-48" />
-          <div className="h-4 bg-gray-200 rounded w-32" />
+          <div className="h-8 bg-aegis-border rounded w-48" />
+          <div className="h-4 bg-aegis-border rounded w-32" />
           <div className="space-y-3">
             {[1, 2, 3].map(i => (
-              <div key={i} className="h-20 bg-gray-200 rounded" />
+              <div key={i} className="h-20 bg-aegis-border rounded" />
             ))}
           </div>
         </div>
@@ -524,8 +524,8 @@ export const ActiveSessionPage = () => {
     <div className="p-4 sm:p-6 max-w-2xl mx-auto">
       <div className="flex items-center justify-between mb-6">
         <div className="min-w-0 flex-1 mr-4">
-          <h1 className="text-xl sm:text-2xl font-bold truncate">{state.workoutName}</h1>
-          <p className="text-gray-500 text-sm font-mono" aria-live="polite" aria-atomic="true">{formatTime(state.elapsedSeconds)}</p>
+          <h1 className="text-xl sm:text-2xl font-bold text-white truncate">{state.workoutName}</h1>
+          <p className="text-aegis-muted text-sm font-mono" aria-live="polite" aria-atomic="true">{formatTime(state.elapsedSeconds)}</p>
         </div>
         <button
           onClick={handleFinish}
@@ -537,17 +537,17 @@ export const ActiveSessionPage = () => {
       </div>
 
       <div className="grid grid-cols-3 gap-2 sm:gap-4 mb-6" role="status" aria-live="polite">
-        <div className="bg-blue-50 rounded-lg p-2 sm:p-3 text-center">
-          <p className="text-lg sm:text-2xl font-bold text-blue-600">{stats.completedSets}</p>
-          <p className="text-[10px] sm:text-xs text-gray-500">Sets Done</p>
+        <div className="bg-aegis-dark rounded-lg p-2 sm:p-3 text-center">
+          <p className="text-lg sm:text-2xl font-bold text-aegis-gold">{stats.completedSets}</p>
+          <p className="text-[10px] sm:text-xs text-aegis-muted">Sets Done</p>
         </div>
-        <div className="bg-green-50 rounded-lg p-2 sm:p-3 text-center">
-          <p className="text-lg sm:text-2xl font-bold text-green-600">{stats.volume.toLocaleString()}</p>
-          <p className="text-[10px] sm:text-xs text-gray-500">Volume (kg)</p>
+        <div className="bg-aegis-dark rounded-lg p-2 sm:p-3 text-center">
+          <p className="text-lg sm:text-2xl font-bold text-green-400">{stats.volume.toLocaleString()}</p>
+          <p className="text-[10px] sm:text-xs text-aegis-muted">Volume (kg)</p>
         </div>
-        <div className="bg-purple-50 rounded-lg p-2 sm:p-3 text-center">
-          <p className="text-lg sm:text-2xl font-bold text-purple-600">{stats.exercisesCompleted}</p>
-          <p className="text-[10px] sm:text-xs text-gray-500">Exercises Done</p>
+        <div className="bg-aegis-dark rounded-lg p-2 sm:p-3 text-center">
+          <p className="text-lg sm:text-2xl font-bold text-aegis-gold">{stats.exercisesCompleted}</p>
+          <p className="text-[10px] sm:text-xs text-aegis-muted">Exercises Done</p>
         </div>
       </div>
 

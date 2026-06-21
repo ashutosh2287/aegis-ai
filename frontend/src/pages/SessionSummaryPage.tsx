@@ -63,15 +63,15 @@ export const SessionSummaryPage = () => {
     return (
       <div className="p-4 sm:p-6 max-w-2xl mx-auto">
         <div className="animate-pulse space-y-6">
-          <div className="h-8 bg-gray-200 rounded w-48" />
+          <div className="h-8 bg-aegis-border rounded w-48" />
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
             {[1, 2, 3, 4].map((i) => (
-              <div key={i} className="h-24 bg-gray-200 rounded-lg" />
+              <div key={i} className="h-24 bg-aegis-border rounded-lg" />
             ))}
           </div>
           <div className="space-y-3">
             {[1, 2, 3].map((i) => (
-              <div key={i} className="h-16 bg-gray-200 rounded" />
+              <div key={i} className="h-16 bg-aegis-border rounded" />
             ))}
           </div>
         </div>
@@ -119,8 +119,8 @@ export const SessionSummaryPage = () => {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4 }}
       >
-        <h1 className="text-xl sm:text-2xl font-bold mb-2">Session Complete</h1>
-        <p className="text-gray-500 mb-6">{sessionData.workout?.name ?? 'Workout'}</p>
+        <h1 className="text-xl sm:text-2xl font-bold text-white mb-2">Session Complete</h1>
+        <p className="text-aegis-muted mb-6">{sessionData.workout?.name ?? 'Workout'}</p>
       </motion.div>
 
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
@@ -128,46 +128,46 @@ export const SessionSummaryPage = () => {
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ delay: 0.1 }}
-          className="bg-blue-50 rounded-lg p-4 text-center"
+          className="bg-aegis-dark rounded-lg p-4 text-center"
         >
-          <p className="text-2xl sm:text-3xl font-bold text-blue-600">
+          <p className="text-2xl sm:text-3xl font-bold text-aegis-gold">
             <CountUp to={stats.totalSets} duration={1.2} />
           </p>
-          <p className="text-sm text-gray-500 mt-1">Sets</p>
+          <p className="text-sm text-aegis-muted mt-1">Sets</p>
         </motion.div>
 
         <motion.div
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ delay: 0.2 }}
-          className="bg-green-50 rounded-lg p-4 text-center"
+          className="bg-aegis-dark rounded-lg p-4 text-center"
         >
-          <p className="text-2xl sm:text-3xl font-bold text-green-600">
+          <p className="text-2xl sm:text-3xl font-bold text-green-400">
             <CountUp to={stats.totalVolume} duration={1.5} />
           </p>
-          <p className="text-sm text-gray-500 mt-1">Volume (kg)</p>
+          <p className="text-sm text-aegis-muted mt-1">Volume (kg)</p>
         </motion.div>
 
         <motion.div
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ delay: 0.3 }}
-          className="bg-purple-50 rounded-lg p-4 text-center"
+          className="bg-aegis-dark rounded-lg p-4 text-center"
         >
-          <p className="text-2xl sm:text-3xl font-bold text-purple-600">
+          <p className="text-2xl sm:text-3xl font-bold text-aegis-gold">
             <CountUp to={stats.exerciseCount} duration={1} />
           </p>
-          <p className="text-sm text-gray-500 mt-1">Exercises</p>
+          <p className="text-sm text-aegis-muted mt-1">Exercises</p>
         </motion.div>
 
         <motion.div
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ delay: 0.4 }}
-          className="bg-orange-50 rounded-lg p-4 text-center"
+          className="bg-aegis-dark rounded-lg p-4 text-center"
         >
-          <p className="text-xl sm:text-3xl font-bold text-orange-600">{duration}</p>
-          <p className="text-sm text-gray-500 mt-1">Duration</p>
+          <p className="text-xl sm:text-3xl font-bold text-amber-400">{duration}</p>
+          <p className="text-sm text-aegis-muted mt-1">Duration</p>
         </motion.div>
       </div>
 
@@ -176,7 +176,7 @@ export const SessionSummaryPage = () => {
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.5 }}
       >
-        <h2 className="text-lg font-semibold mb-4">Exercise Breakdown</h2>
+        <h2 className="text-lg font-semibold text-white mb-4">Exercise Breakdown</h2>
         <div className="space-y-3">
           {(sessionData.sessionExercises ?? [])
             .sort((a, b) => a.order - b.order)
@@ -191,24 +191,24 @@ export const SessionSummaryPage = () => {
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: 0.6 + idx * 0.08 }}
-                  className="bg-white border border-gray-200 rounded-lg p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2"
+                  className="bg-aegis-charcoal border border-aegis-border rounded-lg p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2"
                 >
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
-                      <h3 className="font-medium">
+                      <h3 className="font-medium text-white">
                         Exercise {exercise.order}
                       </h3>
                       {hasPR && (
-                        <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-yellow-100 text-yellow-800">
+                        <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-aegis-gold/20 text-aegis-gold">
                           PR
                         </span>
                       )}
                     </div>
-                    <p className="text-sm text-gray-500 mt-1">
+                    <p className="text-sm text-aegis-muted mt-1">
                       {sets.length} sets &middot; {exerciseVolume.toLocaleString()} kg volume
                     </p>
                   </div>
-                  <div className="text-right text-sm text-gray-500 sm:ml-4">
+                  <div className="text-right text-sm text-aegis-muted sm:ml-4">
                     {sets.map((set) => (
                       <span key={set.id} className="inline sm:block mr-2 sm:mr-0">
                         {set.weight}kg &times; {set.reps}
@@ -229,14 +229,14 @@ export const SessionSummaryPage = () => {
       >
         <button
           onClick={() => navigate('/app/analytics')}
-          className="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium py-3 px-4 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2"
+          className="flex-1 bg-aegis-dark hover:bg-aegis-border text-white font-medium py-3 px-4 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-aegis-gold focus:ring-offset-2"
         >
           View Analytics
         </button>
         <button
           onClick={handleDoItAgain}
           disabled={isStartingAgain}
-          className="flex-1 bg-blue-500 hover:bg-blue-600 text-white font-medium py-3 px-4 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="flex-1 bg-aegis-gold hover:bg-aegis-gold-light text-aegis-black font-medium py-3 px-4 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-aegis-gold focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed shadow-[0_0_20px_rgba(212,168,67,0.15)]"
         >
           {isStartingAgain ? 'Starting...' : 'Do It Again'}
         </button>

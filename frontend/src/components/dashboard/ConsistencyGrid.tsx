@@ -1,149 +1,60 @@
-import { useMemo } from 'react';
 import { useDashboard } from '../../hooks/useDashboard';
 import { DashboardSectionError } from './DashboardSectionError';
 
-const CELL_SIZE = 13;
-const GAP = 3;
 const TRAINED_COLOR = '#1D9E75';
 const REST_COLOR = 'transparent';
-const BORDER_COLOR = '#e5e7eb';
-
-interface GridCellProps {
-  date: string;
-  trained: boolean;
-  row: number;
-  col: number;
-}
-
-const GridCell = ({ date, trained, row, col }: GridCellProps) => (
-  <div
-    className="rounded-sm"
-    style={{
-      width: CELL_SIZE,
-      height: CELL_SIZE,
-      backgroundColor: trained ? TRAINED_COLOR : REST_COLOR,
-      border: `1px solid ${BORDER_COLOR}`,
-      gridColumn: col + 1,
-      gridRow: row + 1,
-    }}
-    title={`${date}${trained ? ' - Trained' : ' - Rest'}`}
-  />
-);
-
-const getWeeksData = (heatmapData: Array<{ date: string; trained: boolean }>) => {
-  if (heatmapData.length === 0) return [];
-
-  const weeks: Array<Array<{ date: string; trained: boolean } | null>> = [];
-  let currentWeek: Array<{ date: string; trained: boolean } | null> = [];
-
-  for (const day of heatmapData) {
-    const dayOfWeek = new Date(day.date).getDay();
-
-    if (currentWeek.length === 0 && dayOfWeek !== 0) {
-      for (let i = 0; i < dayOfWeek; i++) {
-        currentWeek.push(null);
-      }
-    }
-
-    currentWeek.push(day);
-
-    if (dayOfWeek === 6 || day === heatmapData[heatmapData.length - 1]) {
-      while (currentWeek.length < 7) {
-        currentWeek.push(null);
-      }
-      weeks.push(currentWeek);
-      currentWeek = [];
-    }
-  }
-
-  return weeks;
-};
+const BORDER_COLOR = '#2a2a2a';
 
 export const ConsistencyGrid = () => {
-  const { overview } = useDashboard();
+  const { dashboard } = useDashboard();
 
-  const weeks = useMemo(() => {
-    return getWeeksData(overview.data?.heatmapData ?? []);
-  }, [overview.data]);
-
-  if (overview.isError) {
+  if (dashboard.isError) {
     return (
       <DashboardSectionError
         title="Consistency Grid"
-        message={overview.error?.message}
-        onRetry={() => overview.refetch()}
+        message={dashboard.error?.message}
+        onRetry={() => dashboard.refetch()}
       />
     );
   }
 
-  if (overview.isLoading) {
+  if (dashboard.isLoading) {
     return (
-      <div className="bg-white rounded-xl border border-gray-200 p-6 hover:shadow-sm transition-shadow">
-        <div className="h-3 bg-gray-200 rounded w-32 mb-4 animate-pulse" />
-        <div className="h-[200px] bg-gray-100 rounded-lg animate-pulse" />
+      <div className="bg-aegis-charcoal rounded-xl border border-aegis-border p-6 hover:shadow-sm transition-shadow">
+        <div className="h-3 bg-aegis-border rounded w-32 mb-4 animate-pulse" />
+        <div className="h-[200px] bg-aegis-dark rounded-lg animate-pulse" />
         <div className="mt-4 flex gap-8">
-          <div className="h-3 bg-gray-200 rounded w-24 animate-pulse" />
-          <div className="h-3 bg-gray-200 rounded w-24 animate-pulse" />
+          <div className="h-3 bg-aegis-border rounded w-24 animate-pulse" />
+          <div className="h-3 bg-aegis-border rounded w-24 animate-pulse" />
         </div>
       </div>
     );
   }
 
-  const adherencePercentage = overview.data?.adherencePercentage ?? 0;
-  const bestStreak = overview.data?.longestStreak ?? 0;
+  const data = dashboard.data;
+  const adherencePercentage = data?.workoutConsistency.adherencePercentage ?? 0;
+  const bestStreak = data?.workoutConsistency.longestStreak ?? 0;
 
   return (
-    <div className="bg-white rounded-xl border border-gray-200 p-6 hover:shadow-sm transition-shadow">
-      <h3 className="text-[11px] font-medium uppercase tracking-wider text-gray-500 mb-4">Consistency</h3>
+    <div className="bg-aegis-charcoal rounded-xl border border-aegis-border p-6 hover:shadow-sm transition-shadow">
+      <h3 className="text-[11px] font-medium uppercase tracking-wider text-aegis-muted mb-4">Consistency</h3>
 
       <div className="overflow-x-auto -mx-2 px-2">
-        <div
-          className="w-fit"
-          role="img"
-          aria-label={`Training consistency heatmap showing ${adherencePercentage.toFixed(0)}% adherence`}
-          style={{
-            display: 'grid',
-            gridTemplateColumns: `repeat(7, ${CELL_SIZE}px)`,
-            gridAutoRows: `${CELL_SIZE}px`,
-            gap: GAP,
-          }}
-        >
-        {weeks.map((week, weekIdx) =>
-          week.map((day, dayIdx) =>
-            day ? (
-              <GridCell
-                key={day.date}
-                date={day.date}
-                trained={day.trained}
-                row={weekIdx}
-                col={dayIdx}
-              />
-            ) : (
-              <div
-                key={`empty-${weekIdx}-${dayIdx}`}
-                style={{
-                  width: CELL_SIZE,
-                  height: CELL_SIZE,
-                  gridColumn: dayIdx + 1,
-                  gridRow: weekIdx + 1,
-                }}
-              />
-            )
-          )
-        )}
+        <div className="h-[200px] flex items-center justify-center text-aegis-muted text-sm">
+          Heatmap data not available from current API.
         </div>
       </div>
 
       <div className="mt-4 flex flex-wrap items-center gap-4 sm:gap-8">
         <div>
-          <span className="text-[11px] font-medium uppercase tracking-wider text-gray-500">Adherence: </span>
-          <span className="text-[24px] font-semibold text-gray-900">
+          <span className="text-[11px] font-medium uppercase tracking-wider text-aegis-muted">Adherence: </span>
+          <span className="text-[24px] font-semibold text-white">
             {adherencePercentage.toFixed(0)}%
           </span>
         </div>
         <div>
-          <span className="text-[11px] font-medium uppercase tracking-wider text-gray-500">Best Streak: </span>
-          <span className="text-[24px] font-semibold text-gray-900">
+          <span className="text-[11px] font-medium uppercase tracking-wider text-aegis-muted">Best Streak: </span>
+          <span className="text-[24px] font-semibold text-white">
             {bestStreak} days
           </span>
         </div>
@@ -157,7 +68,7 @@ export const ConsistencyGrid = () => {
               border: `1px solid ${BORDER_COLOR}`,
             }}
           />
-          <span className="text-xs text-gray-600">Rest</span>
+          <span className="text-xs text-aegis-muted">Rest</span>
           <div
             className="rounded-sm"
             style={{
@@ -166,7 +77,7 @@ export const ConsistencyGrid = () => {
               backgroundColor: TRAINED_COLOR,
             }}
           />
-          <span className="text-xs text-gray-600">Trained</span>
+          <span className="text-xs text-aegis-muted">Trained</span>
         </div>
       </div>
     </div>

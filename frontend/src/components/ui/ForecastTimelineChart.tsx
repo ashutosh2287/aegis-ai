@@ -20,12 +20,12 @@ interface ForecastTimelineChartProps {
 
 export function ForecastTimelineChartSkeleton() {
   return (
-    <div className="bg-white rounded-xl border border-gray-200 p-4 sm:p-6">
-      <div className="h-4 bg-gray-200 rounded w-40 mb-4 animate-pulse" />
-      <div className="h-[200px] bg-gray-100 rounded-lg animate-pulse" />
+    <div className="bg-aegis-charcoal rounded-xl border border-aegis-border p-4 sm:p-6">
+      <div className="h-4 bg-aegis-border rounded w-40 mb-4 animate-pulse" />
+      <div className="h-[200px] bg-aegis-dark rounded-lg animate-pulse" />
       <div className="mt-4 flex flex-wrap gap-4">
-        <div className="h-3 bg-gray-200 rounded w-20 animate-pulse" />
-        <div className="h-3 bg-gray-200 rounded w-20 animate-pulse" />
+        <div className="h-3 bg-aegis-border rounded w-20 animate-pulse" />
+        <div className="h-3 bg-aegis-border rounded w-20 animate-pulse" />
       </div>
     </div>
   );
@@ -63,8 +63,8 @@ export const ForecastTimelineChart = memo(function ForecastTimelineChart({ data,
         {
           label: 'Actual',
           data: actualData,
-          borderColor: '#6366f1',
-          backgroundColor: 'rgba(99, 102, 241, 0.08)',
+          borderColor: '#d4a843',
+          backgroundColor: 'rgba(212, 168, 67, 0.08)',
           borderWidth: 2,
           tension: 0.3,
           fill: true,
@@ -73,14 +73,14 @@ export const ForecastTimelineChart = memo(function ForecastTimelineChart({ data,
             if (ctx.dataIndex === todayIndex) return 5;
             return 0;
           },
-          pointBackgroundColor: '#6366f1',
-          pointBorderColor: '#fff',
+          pointBackgroundColor: '#d4a843',
+          pointBorderColor: '#1a1a1a',
           pointBorderWidth: 2,
         },
         {
           label: 'Projected',
           data: projectedData,
-          borderColor: '#6366f1',
+          borderColor: '#d4a843',
           borderWidth: 2,
           borderDash: [6, 4],
           tension: 0.3,
@@ -93,9 +93,9 @@ export const ForecastTimelineChart = memo(function ForecastTimelineChart({ data,
           },
           pointBackgroundColor: (ctx: { dataIndex: number }) => {
             if (ctx.dataIndex === lastProjectedIndex) return '#10b981';
-            return '#6366f1';
+            return '#d4a843';
           },
-          pointBorderColor: '#fff',
+          pointBorderColor: '#1a1a1a',
           pointBorderWidth: 2,
         },
       ],
@@ -116,10 +116,10 @@ export const ForecastTimelineChart = memo(function ForecastTimelineChart({ data,
           display: false,
         },
         tooltip: {
-          backgroundColor: '#fff',
-          titleColor: '#374151',
-          bodyColor: '#374151',
-          borderColor: '#e5e7eb',
+          backgroundColor: '#1a1a1a',
+          titleColor: '#ffffff',
+          bodyColor: '#d4d4d4',
+          borderColor: '#2a2a2a',
           borderWidth: 1,
           padding: 10,
           cornerRadius: 8,
@@ -147,17 +147,17 @@ export const ForecastTimelineChart = memo(function ForecastTimelineChart({ data,
           grid: { display: false },
           ticks: {
             font: { size: 11 },
-            color: '#6b7280',
+            color: '#888888',
             maxRotation: 45,
             autoSkip: true,
             maxTicksLimit: 8,
           },
         },
         y: {
-          grid: { color: '#f3f4f6' },
+          grid: { color: '#2a2a2a' },
           ticks: {
             font: { size: 11 },
-            color: '#6b7280',
+            color: '#888888',
             callback: (v: string | number) => `${v}${unit}`,
           },
         },
@@ -167,18 +167,18 @@ export const ForecastTimelineChart = memo(function ForecastTimelineChart({ data,
   );
 
   return (
-    <div className="bg-white rounded-xl border border-gray-200 p-4 sm:p-6">
-      <h3 className="text-sm font-semibold text-gray-900 mb-4">Forecast Timeline</h3>
+    <div className="bg-aegis-charcoal rounded-xl border border-aegis-border p-4 sm:p-6">
+      <h3 className="text-sm font-semibold text-white mb-4">Forecast Timeline</h3>
       <div className="h-[200px] w-full" role="img" aria-label="Forecast timeline chart showing actual and projected values over time">
         <Line data={chartData} options={options} />
       </div>
-      <div className="mt-4 flex flex-wrap items-center gap-3 sm:gap-4 text-xs text-gray-500">
+      <div className="mt-4 flex flex-wrap items-center gap-3 sm:gap-4 text-xs text-aegis-muted">
         <div className="flex items-center gap-1.5">
-          <span className="w-4 h-0.5 bg-indigo-500 inline-block" />
+          <span className="w-4 h-0.5 bg-aegis-gold inline-block" />
           <span>Actual</span>
         </div>
         <div className="flex items-center gap-1.5">
-          <span className="w-4 h-0.5 bg-indigo-500 inline-block border-dashed" style={{ borderTop: '2px dashed #6366f1', height: 0 }} />
+          <span className="w-4 h-0.5 bg-aegis-gold inline-block border-dashed" style={{ borderTop: '2px dashed #d4a843', height: 0 }} />
           <span>Projected</span>
         </div>
         <div className="flex items-center gap-1.5">

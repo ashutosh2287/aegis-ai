@@ -20,7 +20,7 @@ export function FrequencyMiniBars({ weeks }: FrequencyMiniBarsProps) {
               <div
                 className={`w-full rounded-sm transition-colors ${
                   met ? 'bg-green-400' : 'bg-amber-400'
-                } ${isCurrentWeek ? 'ring-1 ring-indigo-400' : ''}`}
+                } ${isCurrentWeek ? 'ring-1 ring-aegis-gold' : ''}`}
                 style={{ height: `${Math.max(heightPct, 8)}%` }}
               />
             </div>
@@ -29,7 +29,7 @@ export function FrequencyMiniBars({ weeks }: FrequencyMiniBarsProps) {
       </div>
       <div className="flex gap-1">
         {weeks.map((week) => (
-          <span key={week.weekLabel} className="flex-1 text-center text-[10px] text-gray-400 truncate">
+          <span key={week.weekLabel} className="flex-1 text-center text-[10px] text-aegis-muted truncate">
             {week.weekLabel}
           </span>
         ))}

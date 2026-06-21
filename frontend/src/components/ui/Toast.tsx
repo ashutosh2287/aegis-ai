@@ -51,8 +51,8 @@ function ToastItem({ toast, onDismiss }: { toast: Toast; onDismiss: (id: string)
       transition={{ duration: 0.2 }}
       className={`pointer-events-auto flex items-center gap-3 px-4 py-3 rounded-lg shadow-lg border ${
         toast.type === 'success'
-          ? 'bg-green-50 border-green-200 text-green-800'
-          : 'bg-red-50 border-red-200 text-red-800'
+          ? 'bg-green-900/30 border-green-800/50 text-green-300'
+          : 'bg-red-900/30 border-red-800/50 text-red-300'
       }`}
     >
       {toast.type === 'success' ? (
@@ -63,7 +63,7 @@ function ToastItem({ toast, onDismiss }: { toast: Toast; onDismiss: (id: string)
       <span className="text-sm font-medium">{toast.message}</span>
       <button
         onClick={() => onDismiss(toast.id)}
-        className="ml-2 shrink-0 text-gray-400 hover:text-gray-600"
+        className="ml-2 shrink-0 text-aegis-muted hover:text-white"
         aria-label="Dismiss notification"
       >
         <X className="h-4 w-4" />

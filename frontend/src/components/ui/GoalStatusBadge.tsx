@@ -6,11 +6,11 @@ const STATUS_CONFIG: Record<
   GoalStatus,
   { label: string; color: string }
 > = {
-  achieved: { label: 'Achieved', color: 'bg-green-50 text-green-700 border-green-200' },
-  on_track: { label: 'On Track', color: 'bg-blue-50 text-blue-700 border-blue-200' },
-  at_risk: { label: 'At Risk', color: 'bg-amber-50 text-amber-700 border-amber-200' },
-  behind: { label: 'Behind', color: 'bg-amber-50 text-amber-700 border-amber-200' },
-  expired: { label: 'Expired', color: 'bg-gray-50 text-gray-500 border-gray-200' },
+  achieved: { label: 'Achieved', color: 'bg-green-900/30 text-green-400 border-green-800/50' },
+  on_track: { label: 'On Track', color: 'bg-aegis-gold/10 text-aegis-gold border-aegis-gold/30' },
+  at_risk: { label: 'At Risk', color: 'bg-amber-900/30 text-amber-400 border-amber-800/50' },
+  behind: { label: 'Behind', color: 'bg-amber-900/30 text-amber-400 border-amber-800/50' },
+  expired: { label: 'Expired', color: 'bg-aegis-dark text-aegis-muted border-aegis-border' },
 };
 
 interface GoalStatusBadgeProps {

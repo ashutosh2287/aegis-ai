@@ -4,6 +4,7 @@ import { LoginDto } from '../dto/login.dto';
 import { RefreshTokenDto } from '../dto/refresh-token.dto';
 import { ResetPasswordDto } from '../dto/reset-password.dto';
 import { UpdateProfileDto } from '../dto/update-profile.dto';
+import { OnboardingDto } from '../dto/onboarding.dto';
 import { UserProfile } from '../interfaces/auth.interface';
 import { TokenService } from './token.service';
 import { OAuthService } from './oauth.service';
@@ -201,10 +202,28 @@ export class AuthService {
   /**
    * Get the current user's profile
    * @param userId - The user ID from the JWT
-   * @returns The user profile
+   * @returns The user profile with isOnboarded flag
    */
-  async getProfile(userId: string): Promise<UserProfile> {
-    return this.profileService.getProfile(userId);
+  async getProfile(userId: string): Promise<UserProfile & { is_onboarded: boolean }> {
+    const profile = await this.profileService.getProfile(userId);
+    return {
+      ...profile,
+      is_onboarded: !!profile.onboarding_completed_at,
+    };
+  }
+
+  /**
+   * Complete onboarding for a user
+   * @param userId - The user ID from the JWT
+   * @param onboardingDto - The onboarding data
+   * @returns The updated profile with isOnboarded flag
+   */
+  async completeOnboarding(userId: string, onboardingDto: OnboardingDto): Promise<UserProfile & { is_onboarded: boolean }> {
+    const profile = await this.profileService.completeOnboarding(userId, onboardingDto);
+    return {
+      ...profile,
+      is_onboarded: true,
+    };
   }
 
   /**

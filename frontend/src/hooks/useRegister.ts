@@ -5,7 +5,7 @@ import type { AuthResponse } from '../lib/authTypes';
 
 export const useRegister = () => {
   const navigate = useNavigate();
-  const { setAuth, setLoading } = useAuthStore();
+  const { setAuth, setLoading, setOnboarded } = useAuthStore();
 
   const register = async (firstName: string, lastName: string, email: string, password: string) => {
     setLoading(true);
@@ -14,7 +14,11 @@ export const useRegister = () => {
       // Assuming the response contains token, refreshToken, and user
       const { token, refreshToken, user } = response.data;
       setAuth(token, refreshToken, user);
-      navigate('/app/dashboard'); // Redirect to dashboard after registration
+
+      // New users haven't completed onboarding yet
+      setOnboarded(false);
+
+      navigate('/onboarding'); // Redirect to onboarding after registration
     } catch (error: unknown) {
       throw error;
     } finally {

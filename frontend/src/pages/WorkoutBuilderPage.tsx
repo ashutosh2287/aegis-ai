@@ -67,13 +67,13 @@ function SortableExerciseItem({
     <div
       ref={setNodeRef}
       style={style}
-      className="border rounded-lg p-3 sm:p-4 mb-4 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 bg-white"
+      className="border border-aegis-border rounded-lg p-3 sm:p-4 mb-4 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 bg-aegis-charcoal"
     >
       <div className="flex items-center gap-3 min-w-0">
         <button
           {...attributes}
           {...listeners}
-          className="cursor-grab active:cursor-grabbing text-gray-400 hover:text-gray-600 touch-none shrink-0"
+          className="cursor-grab active:cursor-grabbing text-aegis-muted hover:text-white touch-none shrink-0"
           aria-label="Drag to reorder"
         >
           <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
@@ -86,31 +86,31 @@ function SortableExerciseItem({
           </svg>
         </button>
         <div className="min-w-0">
-          <h3 className="font-semibold truncate">{exercise.name}</h3>
-          <p className="text-sm text-gray-600">{exercise.muscleGroup}</p>
+          <h3 className="font-semibold text-white truncate">{exercise.name}</h3>
+          <p className="text-sm text-aegis-muted">{exercise.muscleGroup}</p>
         </div>
       </div>
       <div className="flex items-center space-x-2 sm:space-x-3 shrink-0">
         <button
           onClick={() => onDecrement(exercise.id)}
           disabled={exercise.setCount === 1}
-          className="px-3 py-1 bg-gray-200 rounded hover:bg-gray-300 disabled:opacity-50"
+          className="px-3 py-1 bg-aegis-dark hover:bg-aegis-border rounded disabled:opacity-50 text-white"
           aria-label={`Decrease sets for ${exercise.name}`}
         >
           -
         </button>
-        <span className="w-8 text-center" aria-label={`${exercise.setCount} sets`}>{exercise.setCount}</span>
+        <span className="w-8 text-center text-white" aria-label={`${exercise.setCount} sets`}>{exercise.setCount}</span>
         <button
           onClick={() => onIncrement(exercise.id)}
           disabled={exercise.setCount === 20}
-          className="px-3 py-1 bg-gray-200 rounded hover:bg-gray-300 disabled:opacity-50"
+          className="px-3 py-1 bg-aegis-dark hover:bg-aegis-border rounded disabled:opacity-50 text-white"
           aria-label={`Increase sets for ${exercise.name}`}
         >
           +
         </button>
         <button
           onClick={() => onRemove(exercise.id)}
-          className="text-red-500 hover:text-red-700 text-sm"
+          className="text-red-400 hover:text-red-300 text-sm"
           aria-label={`Remove ${exercise.name} from workout`}
         >
           Remove
@@ -233,23 +233,23 @@ const WorkoutBuilderPage = () => {
 
   return (
     <div className="p-4 sm:p-6 max-w-2xl mx-auto">
-      <h1 className="text-xl sm:text-2xl font-bold mb-4">Workout Builder</h1>
+      <h1 className="text-xl sm:text-2xl font-bold text-white mb-4">Workout Builder</h1>
 
       {/* Workout Name Field */}
       <div className="mb-6">
-        <label className="block text-sm font-medium mb-2">Workout Name</label>
+        <label className="block text-sm font-medium text-white mb-2">Workout Name</label>
         <input
           type="text"
           value={workoutName}
           onChange={(e) => setWorkoutName(e.target.value)}
-          className={`block w-full px-4 py-2 border rounded-md ${
-            !isWorkoutNameValid && workoutName.length > 0 ? 'border-red-500' : 'border-gray-300'
-          } focus:outline-none focus:ring-2 focus:ring-blue-500`}
+          className={`block w-full px-4 py-2 bg-aegis-dark border rounded-md text-white placeholder:text-aegis-muted ${
+            !isWorkoutNameValid && workoutName.length > 0 ? 'border-red-500' : 'border-aegis-border'
+          } focus:outline-none focus:ring-2 focus:ring-aegis-gold`}
           placeholder="Enter workout name (minimum 3 characters)"
         >
         </input>
         {!isWorkoutNameValid && workoutName.length > 0 && (
-          <p className="text-xs text-red-500 mt-1">
+          <p className="text-xs text-red-400 mt-1">
             Workout name must be at least 3 characters long
           </p>
         )}
@@ -257,9 +257,9 @@ const WorkoutBuilderPage = () => {
 
       {/* Selected Exercises Section */}
       <div className="mb-6">
-        <h2 className="text-lg font-bold mb-4">Selected Exercises</h2>
+        <h2 className="text-lg font-bold text-white mb-4">Selected Exercises</h2>
         {exercises.length === 0 ? (
-          <p className="text-gray-500">No exercises added yet</p>
+          <p className="text-aegis-muted">No exercises added yet</p>
         ) : (
           <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
             <SortableContext items={exercises.map(e => e.id)} strategy={verticalListSortingStrategy}>
@@ -287,46 +287,46 @@ const WorkoutBuilderPage = () => {
 
       {/* Exercise Search Panel */}
       <div className="mb-6">
-        <h2 className="text-lg font-bold mb-4">Search Exercises</h2>
+        <h2 className="text-lg font-bold text-white mb-4">Search Exercises</h2>
         <input
           type="text"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          className="block w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="block w-full px-4 py-2 bg-aegis-dark border border-aegis-border rounded-md text-white placeholder:text-aegis-muted focus:outline-none focus:ring-2 focus:ring-aegis-gold"
           placeholder="Search exercises by name..."
         />
         {searchQuery.trim() && (
-          <div className="mt-3 border rounded-lg divide-y max-h-64 overflow-y-auto">
+          <div className="mt-3 border border-aegis-border rounded-lg divide-y divide-aegis-border max-h-64 overflow-y-auto">
             {searchLoading && (
               <div className="p-4 space-y-3">
                 {[1, 2, 3].map((i) => (
                   <div key={i} className="flex items-center justify-between">
                     <div className="space-y-1.5">
-                      <div className="h-4 bg-gray-200 rounded w-32 animate-pulse" />
-                      <div className="h-3 bg-gray-100 rounded w-24 animate-pulse" />
+                      <div className="h-4 bg-aegis-border rounded w-32 animate-pulse" />
+                      <div className="h-3 bg-aegis-dark rounded w-24 animate-pulse" />
                     </div>
-                    <div className="h-7 bg-gray-200 rounded w-12 animate-pulse" />
+                    <div className="h-7 bg-aegis-border rounded w-12 animate-pulse" />
                   </div>
                 ))}
               </div>
             )}
             {!searchLoading && searchError && (
               <div className="p-4 text-center">
-                <p className="text-red-500 text-sm mb-2">Failed to search exercises</p>
-                <p className="text-gray-500 text-xs">{searchError.message || 'Please try again.'}</p>
+                <p className="text-red-400 text-sm mb-2">Failed to search exercises</p>
+                <p className="text-aegis-muted text-xs">{searchError.message || 'Please try again.'}</p>
               </div>
             )}
             {!searchLoading && !searchError && isFetched && searchResults.length === 0 && (
-              <p className="p-4 text-gray-500 text-sm">No exercises found</p>
+              <p className="p-4 text-aegis-muted text-sm">No exercises found</p>
             )}
             {!searchLoading && !searchError && isFetched && searchResults.map((exercise) => (
               <div
                 key={exercise.id}
-                className="p-4 flex justify-between items-center hover:bg-gray-50"
+                className="p-4 flex justify-between items-center hover:bg-aegis-dark"
               >
                 <div>
-                  <p className="font-medium">{exercise.name}</p>
-                  <p className="text-sm text-gray-600">
+                  <p className="font-medium text-white">{exercise.name}</p>
+                  <p className="text-sm text-aegis-muted">
                     {exercise.muscleGroup}
                     {exercise.equipment && ` · ${exercise.equipment}`}
                   </p>
@@ -334,7 +334,7 @@ const WorkoutBuilderPage = () => {
                 <button
                   onClick={() => handleAddExercise(exercise)}
                   disabled={isAlreadyAdded(exercise.id)}
-                  className="px-3 py-1 bg-blue-500 text-white text-sm rounded hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1"
+                  className="px-3 py-1 bg-aegis-gold text-aegis-black text-sm rounded hover:bg-aegis-gold-light disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-aegis-gold focus:ring-offset-1"
                   aria-label={isAlreadyAdded(exercise.id) ? `${exercise.name} already added` : `Add ${exercise.name} to workout`}
                 >
                   {isAlreadyAdded(exercise.id) ? 'Added' : 'Add'}
@@ -347,12 +347,12 @@ const WorkoutBuilderPage = () => {
 
       {/* Save Button */}
       {saveError && (
-        <p className="text-red-500 text-sm mb-3">{saveError}</p>
+        <p className="text-red-400 text-sm mb-3">{saveError}</p>
       )}
       <button
         onClick={handleSaveWorkout}
         disabled={!isWorkoutNameValid || exercises.length === 0 || isSaving}
-        className={`bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 ${
+        className={`bg-aegis-gold hover:bg-aegis-gold-light text-aegis-black font-bold py-2 px-4 rounded focus:outline-none focus:ring-2 focus:ring-aegis-gold focus:ring-offset-2 shadow-[0_0_20px_rgba(212,168,67,0.15)] ${
           !isWorkoutNameValid || exercises.length === 0 || isSaving ? 'opacity-50 cursor-not-allowed' : ''
         }`}
       >

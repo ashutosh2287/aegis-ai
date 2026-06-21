@@ -8,9 +8,9 @@ export const AppShell = () => {
   const location = useLocation();
 
   return (
-    <div className="flex flex-col md:flex-row min-h-screen bg-gray-50">
+    <div className="flex flex-col md:flex-row min-h-screen bg-aegis-black">
       {/* Desktop Sidebar */}
-      <aside className="hidden md:block w-64 shrink-0 sticky top-0 h-screen bg-white border-r border-gray-200">
+      <aside className="hidden md:block w-64 shrink-0 sticky top-0 h-screen bg-aegis-charcoal border-r border-aegis-border">
         <Sidebar />
       </aside>
       {/* Main content */}

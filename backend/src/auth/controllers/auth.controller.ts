@@ -17,6 +17,7 @@ import { LoginDto } from '../dto/login.dto';
 import { RefreshTokenDto } from '../dto/refresh-token.dto';
 import { ResetPasswordDto } from '../dto/reset-password.dto';
 import { UpdateProfileDto } from '../dto/update-profile.dto';
+import { OnboardingDto } from '../dto/onboarding.dto';
 import { JwtAuthGuard } from '../guards/jwt-auth.guard';
 import { RefreshTokenGuard } from '../guards/refresh-token.guard';
 import { Request } from 'express';
@@ -128,5 +129,20 @@ export class AuthController {
       throw new UnauthorizedException('User not found');
     }
     return this.authService.updateProfile(user.id, updateProfileDto);
+  }
+
+  @Patch('onboarding')
+  @UseGuards(JwtAuthGuard)
+  @ApiOperation({ summary: 'Complete onboarding questionnaire' })
+  @ApiResponse({ status: 200, description: 'Onboarding completed successfully' })
+  @ApiResponse({ status: 400, description: 'Bad request' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  @ApiResponse({ status: 500, description: 'Internal server error' })
+  async completeOnboarding(@Body() onboardingDto: OnboardingDto, @Req() req: Request) {
+    const user = req.user;
+    if (!user) {
+      throw new UnauthorizedException('User not found');
+    }
+    return this.authService.completeOnboarding(user.id, onboardingDto);
   }
 }

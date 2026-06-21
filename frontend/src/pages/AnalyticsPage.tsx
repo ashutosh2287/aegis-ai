@@ -36,10 +36,10 @@ export const AnalyticsPage = () => {
     >
       {sections.map(({ label, Component }) => (
         <motion.section key={label} variants={sectionVariants}>
-          <p className="text-[11px] font-medium uppercase tracking-wider text-gray-400 mb-2">
+          <p className="text-[11px] font-medium uppercase tracking-wider text-aegis-muted mb-2">
             {label}
           </p>
-          <div className="bg-white rounded-xl border border-gray-200 p-5">
+          <div className="bg-aegis-charcoal rounded-xl border border-aegis-border p-5">
             <SectionErrorBoundary title={label}>
               <Component />
             </SectionErrorBoundary>

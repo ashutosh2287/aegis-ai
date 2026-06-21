@@ -19,10 +19,10 @@ export function ProgressBar({ progress, className = '' }: ProgressBarProps) {
   return (
     <div
       ref={ref}
-      className={`h-2 bg-gray-100 rounded-full overflow-hidden ${className}`}
+      className={`h-2 bg-aegis-border rounded-full overflow-hidden ${className}`}
     >
       <div
-        className="h-full bg-indigo-500 rounded-full"
+        className="h-full bg-aegis-gold rounded-full"
         style={{
           width: `${width}%`,
           transition: 'width 1s ease',

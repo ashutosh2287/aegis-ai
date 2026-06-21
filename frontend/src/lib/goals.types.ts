@@ -2,6 +2,19 @@ export type GoalType = 'strength' | 'volume' | 'frequency';
 
 export type GoalStatus = 'on_track' | 'at_risk' | 'behind' | 'achieved' | 'expired';
 
+export enum ExperienceLevel {
+  NEW = 'new',
+  FEW_MONTHS = 'few_months',
+  ONE_YEAR = 'one_year',
+  YEARS = 'years',
+  COMPETITOR = 'competitor',
+}
+
+export enum WeightUnit {
+  METRIC = 'metric',
+  IMPERIAL = 'imperial',
+}
+
 export interface GoalProjection {
   goalId: string;
   exerciseId: string;

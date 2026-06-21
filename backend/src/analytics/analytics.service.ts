@@ -115,8 +115,8 @@ export class AnalyticsService {
         .from('workout_sessions')
         .select('id', { count: 'exact' })
         .eq('user_id', userId)
-        .gte('startedAt', startDate)
-        .lte('startedAt', endDate)
+        .gte('started_at', startDate)
+        .lte('started_at', endDate)
         .is('deleted_at', null);
 
       if (res.error) {
@@ -137,8 +137,8 @@ export class AnalyticsService {
         .from('workout_sessions')
         .select('id')
         .eq('user_id', userId)
-        .gte('startedAt', startDate)
-        .lte('startedAt', endDate)
+        .gte('started_at', startDate)
+        .lte('started_at', endDate)
         .is('deleted_at', null);
 
       if (sessionsRes.error) {
@@ -204,13 +204,13 @@ export class AnalyticsService {
       const setsRes = await this.supabaseService
         .getClient()
         .from('workout_sets')
-        .select('weight, reps, createdAt, workout_exercises!inner(exercise_id), workout_exercises.workout_sessions!inner(user_id, completed_at)')
+        .select('weight, reps, created_at, workout_exercises!inner(exercise_id, workout_sessions!inner(user_id, completed_at))')
         .eq('workout_exercises.workout_sessions.user_id', userId)
         .gte('workout_exercises.workout_sessions.completed_at', startDate)
         .lte('workout_exercises.workout_sessions.completed_at', endDate)
         .is('workout_sets.deleted_at', null)
         .is('workout_exercises.deleted_at', null)
-        .is('workout_sessions.deleted_at', null)
+        .is('workout_exercises.workout_sessions.deleted_at', null)
         .is('weight', 'not null');
 
       if (setsRes.error) {
@@ -325,12 +325,12 @@ export class AnalyticsService {
     const setsRes = await this.supabaseService
       .getClient()
       .from('workout_sets')
-      .select('weight, reps, createdAt, workout_exercises!inner(id, exercise_id), workout_exercises.workout_sessions!inner(id, completed_at)')
+      .select('weight, reps, created_at, workout_exercises!inner(id, exercise_id, workout_sessions!inner(id, completed_at))')
       .eq('workout_exercises.exercise_id', exerciseId)
       .eq('workout_exercises.workout_sessions.user_id', userId)
       .is('workout_sets.deleted_at', null)
       .is('workout_exercises.deleted_at', null)
-      .is('workout_sessions.deleted_at', null)
+      .is('workout_exercises.workout_sessions.deleted_at', null)
       .is('weight', 'not null');
 
     const sets = Array.isArray(setsRes.data) ? setsRes.data : [];
@@ -435,7 +435,7 @@ export class AnalyticsService {
       .eq('workout_exercises.workout_sessions.user_id', userId)
       .is('workout_sets.deleted_at', null)
       .is('workout_exercises.deleted_at', null)
-      .is('workout_sessions.deleted_at', null)
+      .is('workout_exercises.workout_sessions.deleted_at', null)
       .is('weight', 'not null');
 
     const sets = Array.isArray(setsRes.data) ? setsRes.data : [];
@@ -465,14 +465,14 @@ export class AnalyticsService {
     const setsRes = await this.supabaseService
       .getClient()
       .from('workout_sets')
-      .select('weight, reps, createdAt')
+      .select('weight, reps, created_at')
       .eq('workout_exercises.exercise_id', exerciseId)
       .eq('workout_exercises.workout_sessions.user_id', userId)
       .is('workout_sets.deleted_at', null)
       .is('workout_exercises.deleted_at', null)
-      .is('workout_sessions.deleted_at', null)
+      .is('workout_exercises.workout_sessions.deleted_at', null)
       .is('weight', 'not null')
-      .order('createdAt', { ascending: true });
+      .order('created_at', { ascending: true });
 
     const sets = Array.isArray(setsRes.data) ? setsRes.data : [];
 
@@ -526,11 +526,11 @@ export class AnalyticsService {
     const heaviestWeightRes = await this.supabaseService
       .getClient()
       .from('workout_sets')
-      .select('weight, createdAt, workout_exercises!inner(id, exercise_id), workout_exercises.workout_sessions!inner(id, user_id, completed_at, startedAt)')
+      .select('weight, created_at, workout_exercises!inner(id, exercise_id, workout_sessions!inner(id, user_id, completed_at, started_at))')
       .eq('workout_exercises.workout_sessions.user_id', userId)
       .is('workout_sets.deleted_at', null)
       .is('workout_exercises.deleted_at', null)
-      .is('workout_sessions.deleted_at', null)
+      .is('workout_exercises.workout_sessions.deleted_at', null)
       .is('weight', 'not null')
       .order('weight', { ascending: false })
       .limit(1);
@@ -551,11 +551,11 @@ export class AnalyticsService {
     const mostRepsRes = await this.supabaseService
       .getClient()
       .from('workout_sets')
-      .select('reps, createdAt, workout_exercises!inner(id, exercise_id), workout_exercises.workout_sessions!inner(id, user_id, completed_at, startedAt)')
+      .select('reps, created_at, workout_exercises!inner(id, exercise_id, workout_sessions!inner(id, user_id, completed_at, started_at))')
       .eq('workout_exercises.workout_sessions.user_id', userId)
       .is('workout_sets.deleted_at', null)
       .is('workout_exercises.deleted_at', null)
-      .is('workout_sessions.deleted_at', null)
+      .is('workout_exercises.workout_sessions.deleted_at', null)
       .order('reps', { ascending: false })
       .limit(1);
 
@@ -575,11 +575,11 @@ export class AnalyticsService {
     const highestVolumeRes = await this.supabaseService
       .getClient()
       .from('workout_sets')
-      .select('weight, reps, createdAt, workout_exercises!inner(id, exercise_id), workout_exercises.workout_sessions!inner(id, user_id, completed_at, startedAt)')
+      .select('weight, reps, created_at, workout_exercises!inner(id, exercise_id, workout_sessions!inner(id, user_id, completed_at, started_at))')
       .eq('workout_exercises.workout_sessions.user_id', userId)
       .is('workout_sets.deleted_at', null)
       .is('workout_exercises.deleted_at', null)
-      .is('workout_sessions.deleted_at', null)
+      .is('workout_exercises.workout_sessions.deleted_at', null)
       .is('weight', 'not null');
 
     if (!highestVolumeRes.error && highestVolumeRes.data.length > 0) {
@@ -610,17 +610,17 @@ export class AnalyticsService {
     const longestSessionRes = await this.supabaseService
       .getClient()
       .from('workout_sessions')
-      .select('id, startedAt, completed_at, durationSeconds')
+      .select('id, started_at, completed_at, duration_seconds')
       .eq('user_id', userId)
       .is('deleted_at', null)
       .is('completed_at', 'not null')
-      .order('durationSeconds', { ascending: false })
+      .order('duration_seconds', { ascending: false })
       .limit(1);
 
     if (!longestSessionRes.error && longestSessionRes.data.length > 0) {
       const session = longestSessionRes.data[0];
-      const duration = session.durationSeconds !== null ? session.durationSeconds :
-        (new Date(session.completed_at).getTime() - new Date(session.startedAt).getTime()) / 1000;
+      const duration = session.duration_seconds !== null ? session.duration_seconds :
+        (new Date(session.completed_at).getTime() - new Date(session.started_at).getTime()) / 1000;
       personalRecords.push({
         type: PersonalRecordType.LONGEST_SESSION,
         value: duration,
@@ -633,11 +633,11 @@ export class AnalyticsService {
     const mostSetsRes = await this.supabaseService
       .getClient()
       .from('workout_sets')
-      .select('id, workout_exercise_id, createdAt, workout_exercises!inner(id, exercise_id), workout_exercises.workout_sessions!inner(id, user_id, completed_at, startedAt)')
+      .select('id, workout_exercise_id, created_at, workout_exercises!inner(id, exercise_id, workout_sessions!inner(id, user_id, completed_at, started_at))')
       .eq('workout_exercises.workout_sessions.user_id', userId)
       .is('workout_sets.deleted_at', null)
       .is('workout_exercises.deleted_at', null)
-      .is('workout_sessions.deleted_at', null);
+      .is('workout_exercises.workout_sessions.deleted_at', null);
 
     if (!mostSetsRes.error && mostSetsRes.data.length > 0) {
       // Group sets by workoutExerciseId in TypeScript
@@ -729,12 +729,12 @@ export class AnalyticsService {
     const heaviestWeightRes = await this.supabaseService
       .getClient()
       .from('workout_sets')
-      .select('weight, createdAt, workout_exercises!inner(id, exercise_id), workout_exercises.workout_sessions!inner(id, user_id, completed_at, startedAt)')
+      .select('weight, created_at, workout_exercises!inner(id, exercise_id, workout_sessions!inner(id, user_id, completed_at, started_at))')
       .eq('workout_exercises.exercise_id', exerciseId)
       .eq('workout_exercises.workout_sessions.user_id', userId)
       .is('workout_sets.deleted_at', null)
       .is('workout_exercises.deleted_at', null)
-      .is('workout_sessions.deleted_at', null)
+      .is('workout_exercises.workout_sessions.deleted_at', null)
       .is('weight', 'not null')
       .order('weight', { ascending: false })
       .limit(1);
@@ -755,12 +755,12 @@ export class AnalyticsService {
     const mostRepsRes = await this.supabaseService
       .getClient()
       .from('workout_sets')
-      .select('reps, createdAt, workout_exercises!inner(id, exercise_id), workout_exercises.workout_sessions!inner(id, user_id, completed_at, startedAt)')
+      .select('reps, created_at, workout_exercises!inner(id, exercise_id, workout_sessions!inner(id, user_id, completed_at, started_at))')
       .eq('workout_exercises.exercise_id', exerciseId)
       .eq('workout_exercises.workout_sessions.user_id', userId)
       .is('workout_sets.deleted_at', null)
       .is('workout_exercises.deleted_at', null)
-      .is('workout_sessions.deleted_at', null)
+      .is('workout_exercises.workout_sessions.deleted_at', null)
       .order('reps', { ascending: false })
       .limit(1);
 
@@ -780,12 +780,12 @@ export class AnalyticsService {
     const highestVolumeRes = await this.supabaseService
       .getClient()
       .from('workout_sets')
-      .select('weight, reps, createdAt, workout_exercises!inner(id, exercise_id), workout_exercises.workout_sessions!inner(id, user_id, completed_at, startedAt)')
+      .select('weight, reps, created_at, workout_exercises!inner(id, exercise_id, workout_sessions!inner(id, user_id, completed_at, started_at))')
       .eq('workout_exercises.exercise_id', exerciseId)
       .eq('workout_exercises.workout_sessions.user_id', userId)
       .is('workout_sets.deleted_at', null)
       .is('workout_exercises.deleted_at', null)
-      .is('workout_sessions.deleted_at', null)
+      .is('workout_exercises.workout_sessions.deleted_at', null)
       .is('weight', 'not null');
 
     if (!highestVolumeRes.error && highestVolumeRes.data.length > 0) {
@@ -816,7 +816,7 @@ export class AnalyticsService {
     const longestSessionRes = await this.supabaseService
       .getClient()
       .from('workout_sessions')
-      .select('id, startedAt, completed_at, durationSeconds')
+      .select('id, started_at, completed_at, duration_seconds')
       .eq('user_id', userId)
       .is('deleted_at', null)
       .is('completed_at', 'not null')
@@ -826,13 +826,13 @@ export class AnalyticsService {
         .select('workout_id')
         .eq('exercise_id', exerciseId)
       )
-      .order('durationSeconds', { ascending: false })
+      .order('duration_seconds', { ascending: false })
       .limit(1);
 
     if (!longestSessionRes.error && longestSessionRes.data.length > 0) {
       const session = longestSessionRes.data[0];
-      const duration = session.durationSeconds !== null ? session.durationSeconds :
-        (new Date(session.completed_at).getTime() - new Date(session.startedAt).getTime()) / 1000;
+      const duration = session.duration_seconds !== null ? session.duration_seconds :
+        (new Date(session.completed_at).getTime() - new Date(session.started_at).getTime()) / 1000;
       personalRecords.push({
         type: PersonalRecordType.LONGEST_SESSION,
         value: duration,
@@ -845,12 +845,12 @@ export class AnalyticsService {
     const mostSetsRes = await this.supabaseService
       .getClient()
       .from('workout_sets')
-      .select('id, workout_exercise_id, createdAt, workout_exercises!inner(id, exercise_id), workout_exercises.workout_sessions!inner(id, user_id, completed_at, startedAt)')
+      .select('id, workout_exercise_id, created_at, workout_exercises!inner(id, exercise_id, workout_sessions!inner(id, user_id, completed_at, started_at))')
       .eq('workout_exercises.exercise_id', exerciseId)
       .eq('workout_exercises.workout_sessions.user_id', userId)
       .is('workout_sets.deleted_at', null)
       .is('workout_exercises.deleted_at', null)
-      .is('workout_sessions.deleted_at', null);
+      .is('workout_exercises.workout_sessions.deleted_at', null);
 
     if (!mostSetsRes.error && mostSetsRes.data.length > 0) {
       // Since we're filtering by a specific exerciseId, all sets should belong to the same workout_exercise_id
@@ -1082,8 +1082,8 @@ export class AnalyticsService {
       .from('workout_sessions')
       .select('id')
       .eq('user_id', userId)
-      .gte('startedAt', startDateISO)
-      .lte('startedAt', endDateISO)
+.gte('started_at', startDateISO)
+        .lte('started_at', endDateISO)
       .is('deleted_at', null);
 
     if (sessions.error) {
@@ -1172,8 +1172,8 @@ export class AnalyticsService {
       .from('workout_sessions')
       .select('id')
       .eq('user_id', userId)
-      .gte('startedAt', startDateISO)
-      .lte('startedAt', endDateISO)
+.gte('started_at', startDateISO)
+        .lte('started_at', endDateISO)
       .is('deleted_at', null);
 
     if (sessions.error) {
@@ -1574,8 +1574,8 @@ export class AnalyticsService {
         .from('workout_sessions')
         .select('id')
         .eq('user_id', userId)
-        .gte('startedAt', startDate)
-        .lte('startedAt', endDate)
+        .gte('started_at', startDate)
+        .lte('started_at', endDate)
         .is('deleted_at', null);
 
       if (sessionsRes.error) {
@@ -1647,8 +1647,8 @@ export class AnalyticsService {
         .from('workout_sessions')
         .select('id', { count: 'exact' })
         .eq('user_id', userId)
-        .gte('startedAt', startDate)
-        .lte('startedAt', endDate)
+        .gte('started_at', startDate)
+        .lte('started_at', endDate)
         .is('deleted_at', null);
 
       if (res.error) {
