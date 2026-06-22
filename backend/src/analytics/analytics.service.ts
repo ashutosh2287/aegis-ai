@@ -198,26 +198,68 @@ export class AnalyticsService {
     }
   }
 
+  private async getSetsForUser(userId: string, startDate: string, endDate: string): Promise<any[]> {
+    const client = this.supabaseService.getClient();
+
+    // Step 1: Get workout_sessions for user in date range
+    const sessionsRes = await client
+      .from('workout_sessions')
+      .select('id, workout_id, completed_at')
+      .eq('user_id', userId)
+      .gte('completed_at', startDate)
+      .lte('completed_at', endDate)
+      .is('deleted_at', null);
+
+    if (sessionsRes.error || !sessionsRes.data || sessionsRes.data.length === 0) {
+      return [];
+    }
+
+    const sessionIds = sessionsRes.data.map((s: any) => s.id);
+    const sessionMap = new Map<string, string>();
+    for (const s of sessionsRes.data) {
+      sessionMap.set(s.id, s.completed_at);
+    }
+
+    // Step 2: Get workout_exercises for those sessions
+    const exercisesRes = await client
+      .from('workout_exercises')
+      .select('id, workout_id, exercise_id')
+      .in('workout_id', sessionIds)
+      .is('deleted_at', null);
+
+    if (exercisesRes.error || !exercisesRes.data || exercisesRes.data.length === 0) {
+      return [];
+    }
+
+    const exerciseIds = exercisesRes.data.map((e: any) => e.id);
+    const exerciseToSessionMap = new Map<string, string>();
+    for (const e of exercisesRes.data) {
+      exerciseToSessionMap.set(e.id, e.workout_id);
+    }
+
+    // Step 3: Get workout_sets for those exercises
+    const setsRes = await client
+      .from('workout_sets')
+      .select('id, weight, reps, created_at, workout_exercise_id')
+      .in('workout_exercise_id', exerciseIds)
+      .is('deleted_at', null)
+      .not('weight', 'is', null);
+
+    if (setsRes.error || !setsRes.data) {
+      return [];
+    }
+
+    // Attach completed_at to each set
+    return setsRes.data.map((set: any) => {
+      const sessionId = exerciseToSessionMap.get(set.workout_exercise_id);
+      const completedAt = sessionId ? sessionMap.get(sessionId) : null;
+      return { ...set, completed_at: completedAt };
+    });
+  }
+
   async getOverallStrengthTrend(userId: string, startDate: string, endDate: string): Promise<any> {
     try {
-      // Get all exercises for the user in date range and calculate overall strength trend
-      const setsRes = await this.supabaseService
-        .getClient()
-        .from('workout_sets')
-        .select('weight, reps, created_at, workout_exercises!inner(exercise_id, workout_sessions!inner(user_id, completed_at))')
-        .eq('workout_exercises.workout_sessions.user_id', userId)
-        .gte('workout_exercises.workout_sessions.completed_at', startDate)
-        .lte('workout_exercises.workout_sessions.completed_at', endDate)
-        .is('workout_sets.deleted_at', null)
-        .is('workout_exercises.deleted_at', null)
-        .is('workout_exercises.workout_sessions.deleted_at', null)
-        .is('weight', 'not null');
-
-      if (setsRes.error) {
-        throw new InternalServerErrorException(setsRes.error.message);
-      }
-
-      const sets = Array.isArray(setsRes.data) ? setsRes.data : [];
+      const sets = await this.getSetsForUser(userId, startDate, endDate);
 
       if (sets.length === 0) {
         return {
@@ -232,7 +274,6 @@ export class AnalyticsService {
         };
       }
 
-      // Calculate 1RM for each set
       const oneRepMaxValues: number[] = [];
       const workoutDates: Set<string> = new Set();
 
@@ -241,9 +282,9 @@ export class AnalyticsService {
         if (oneRepMax > 0) {
           oneRepMaxValues.push(oneRepMax);
         }
-        // Extract date from completedAt
-        const date = set.workout_exercises.workout_sessions.completed_at.split('T')[0];
-        workoutDates.add(date);
+        if (set.completed_at) {
+          workoutDates.add(set.completed_at.split('T')[0]);
+        }
       }
 
       if (oneRepMaxValues.length === 0) {
@@ -260,13 +301,11 @@ export class AnalyticsService {
         };
       }
 
-      // Sort by date to get chronological order
       const sortedSets = sets.sort((a: any, b: any) =>
-        new Date(a.workout_exercises.workout_sessions.completed_at).getTime() -
-        new Date(b.workout_exercises.workout_sessions.completed_at).getTime()
+        new Date(a.completed_at || 0).getTime() -
+        new Date(b.completed_at || 0).getTime()
       );
 
-      // Calculate 1RM for each set in chronological order
       const chronologicalOneRepMax: number[] = [];
       for (const set of sortedSets) {
         const oneRepMax = this.calculateOneRepMax(set.weight, set.reps);
@@ -275,16 +314,15 @@ export class AnalyticsService {
         }
       }
 
-      const currentOneRepMax = chronologicalOneRepMax[chronologicalOneRepMax.length - 1]; // most recent
-      const bestOneRepMax = Math.max(...oneRepMaxValues); // highest ever
-      const earliestOneRepMax = chronologicalOneRepMax[0]; // earliest
+      const currentOneRepMax = chronologicalOneRepMax[chronologicalOneRepMax.length - 1];
+      const bestOneRepMax = Math.max(...oneRepMaxValues);
+      const earliestOneRepMax = chronologicalOneRepMax[0];
 
       let improvementPercentage = 0;
       if (earliestOneRepMax > 0) {
         improvementPercentage = ((currentOneRepMax - earliestOneRepMax) / earliestOneRepMax) * 100;
       }
 
-      // Round improvementPercentage to 2 decimal places
       improvementPercentage = Math.round(improvementPercentage * 100) / 100;
 
       let trend: 'UPWARD' | 'DOWNWARD' | 'STABLE' = 'STABLE';
@@ -295,7 +333,7 @@ export class AnalyticsService {
       }
 
       return {
-        exerciseId: 'overall', // Special ID for overall metrics
+        exerciseId: 'overall',
         currentOneRepMax,
         bestOneRepMax,
         improvementPercentage,
@@ -321,100 +359,90 @@ export class AnalyticsService {
   }
 
   async getExerciseProgression(userId: string, exerciseId: string): Promise<StrengthProgression> {
-    // Fetch all sets for the given exercise and user, with necessary joins
-    const setsRes = await this.supabaseService
-      .getClient()
+    const client = this.supabaseService.getClient();
+
+    const defaultReturn: StrengthProgression = {
+      exerciseId,
+      currentOneRepMax: 0,
+      bestOneRepMax: 0,
+      improvementPercentage: 0,
+      trend: 'STABLE',
+      totalWorkouts: 0,
+    };
+
+    const sessionsRes = await client
+      .from('workout_sessions')
+      .select('id, workout_id, completed_at')
+      .eq('user_id', userId)
+      .is('deleted_at', null);
+
+    const sessions = sessionsRes.data || [];
+    if (sessions.length === 0) return defaultReturn;
+
+    const sessionIds = sessions.map((s: any) => s.id);
+
+    const exercisesRes = await client
+      .from('workout_exercises')
+      .select('id, workout_id, exercise_id')
+      .eq('exercise_id', exerciseId)
+      .in('workout_id', sessionIds)
+      .is('deleted_at', null);
+
+    const exercises = exercisesRes.data || [];
+    if (exercises.length === 0) return defaultReturn;
+
+    const exerciseIds = exercises.map((e: any) => e.id);
+
+    const setsRes = await client
       .from('workout_sets')
-      .select('weight, reps, created_at, workout_exercises!inner(id, exercise_id, workout_sessions!inner(id, completed_at))')
-      .eq('workout_exercises.exercise_id', exerciseId)
-      .eq('workout_exercises.workout_sessions.user_id', userId)
-      .is('workout_sets.deleted_at', null)
-      .is('workout_exercises.deleted_at', null)
-      .is('workout_exercises.workout_sessions.deleted_at', null)
-      .is('weight', 'not null');
+      .select('id, weight, reps, created_at, workout_exercise_id')
+      .in('workout_exercise_id', exerciseIds)
+      .is('deleted_at', null)
+      .not('weight', 'is', null);
 
-    const sets = Array.isArray(setsRes.data) ? setsRes.data : [];
+    const sets = (setsRes.data || []).map((set: any) => {
+      const ex = exercises.find((e: any) => e.id === set.workout_exercise_id);
+      const sessionId = ex?.workout_id || '';
+      const session = sessions.find((s: any) => s.id === sessionId);
+      return { ...set, completed_at: session?.completed_at || set.created_at };
+    });
 
-    if (setsRes.error) {
-      // If there's an error, return default values
-      return {
-        exerciseId,
-        currentOneRepMax: 0,
-        bestOneRepMax: 0,
-        improvementPercentage: 0,
-        trend: 'STABLE',
-        totalWorkouts: 0,
-      };
-    }
+    if (sets.length === 0) return defaultReturn;
 
-    // If no data, return default values
-    if (sets.length === 0) {
-      return {
-        exerciseId,
-        currentOneRepMax: 0,
-        bestOneRepMax: 0,
-        improvementPercentage: 0,
-        trend: 'STABLE',
-        totalWorkouts: 0,
-      };
-    }
-
-    // Calculate 1RM for each set and collect dates for workout counting
     const oneRepMaxValues: number[] = [];
     const workoutDates: Set<string> = new Set();
 
     for (const set of sets) {
       const oneRepMax = this.calculateOneRepMax(set.weight, set.reps);
-      if (oneRepMax > 0) {
-        oneRepMaxValues.push(oneRepMax);
-      }
-      // Extract date from createdAt (assuming ISO string)
-      const date = set.created_at.split('T')[0];
+      if (oneRepMax > 0) oneRepMaxValues.push(oneRepMax);
+      const date = set.completed_at.split('T')[0];
       workoutDates.add(date);
     }
 
-    if (oneRepMaxValues.length === 0) {
-      return {
-        exerciseId,
-        currentOneRepMax: 0,
-        bestOneRepMax: 0,
-        improvementPercentage: 0,
-        trend: 'STABLE',
-        totalWorkouts: workoutDates.size,
-      };
-    }
+    if (oneRepMaxValues.length === 0) return defaultReturn;
 
-    // Sort by date to get chronological order (we need earliest and most recent)
-    // We'll sort the sets by createdAt
-    const sortedSets = sets.sort((a: any, b: any) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
+    const sortedSets = sets.sort((a: any, b: any) => new Date(a.completed_at).getTime() - new Date(b.completed_at).getTime());
 
-    // Calculate 1RM for each set in chronological order
     const chronologicalOneRepMax: number[] = [];
     for (const set of sortedSets) {
       const oneRepMax = this.calculateOneRepMax(set.weight, set.reps);
-      if (oneRepMax > 0) {
-        chronologicalOneRepMax.push(oneRepMax);
-      }
+      if (oneRepMax > 0) chronologicalOneRepMax.push(oneRepMax);
     }
 
-    const currentOneRepMax = chronologicalOneRepMax[chronologicalOneRepMax.length - 1]; // most recent
-    const bestOneRepMax = Math.max(...oneRepMaxValues); // highest ever
-    const earliestOneRepMax = chronologicalOneRepMax[0]; // earliest
+    const currentOneRepMax = chronologicalOneRepMax[chronologicalOneRepMax.length - 1];
+    const bestOneRepMax = Math.max(...oneRepMaxValues);
+    const earliestOneRepMax = chronologicalOneRepMax[0];
 
     let improvementPercentage = 0;
     if (earliestOneRepMax > 0) {
       improvementPercentage = ((currentOneRepMax - earliestOneRepMax) / earliestOneRepMax) * 100;
     }
 
-    // Round improvementPercentage to 2 decimal places
     improvementPercentage = Math.round(improvementPercentage * 100) / 100;
 
     let trend: 'UPWARD' | 'DOWNWARD' | 'STABLE' = 'STABLE';
-    if (improvementPercentage > 5) {
-      trend = 'UPWARD';
-    } else if (improvementPercentage < -5) {
-      trend = 'DOWNWARD';
-    }
+    if (improvementPercentage > 5) trend = 'UPWARD';
+    else if (improvementPercentage < -5) trend = 'DOWNWARD';
 
     return {
       exerciseId,
@@ -433,10 +461,10 @@ export class AnalyticsService {
       .select('weight, reps')
       .eq('workout_exercises.exercise_id', exerciseId)
       .eq('workout_exercises.workout_sessions.user_id', userId)
-      .is('workout_sets.deleted_at', null)
+      .is('deleted_at', null)
       .is('workout_exercises.deleted_at', null)
       .is('workout_exercises.workout_sessions.deleted_at', null)
-      .is('weight', 'not null');
+      .not('weight', 'is', null);
 
     const sets = Array.isArray(setsRes.data) ? setsRes.data : [];
 
@@ -461,37 +489,42 @@ export class AnalyticsService {
   }
 
   async getStrengthTrend(userId: string, exerciseId: string): Promise<StrengthTrendResponse> {
-    // Fetch sets grouped by date (we'll get the best 1RM per day for simplicity)
-    const setsRes = await this.supabaseService
-      .getClient()
+    const client = this.supabaseService.getClient();
+
+    const sessionsRes = await client
+      .from('workout_sessions')
+      .select('id, workout_id, completed_at')
+      .eq('user_id', userId)
+      .is('deleted_at', null);
+
+    const sessions = sessionsRes.data || [];
+    if (sessions.length === 0) return { exerciseId, history: [] };
+
+    const sessionIds = sessions.map((s: any) => s.id);
+
+    const exercisesRes = await client
+      .from('workout_exercises')
+      .select('id, workout_id, exercise_id')
+      .eq('exercise_id', exerciseId)
+      .in('workout_id', sessionIds)
+      .is('deleted_at', null);
+
+    const exercises = exercisesRes.data || [];
+    if (exercises.length === 0) return { exerciseId, history: [] };
+
+    const exerciseIds = exercises.map((e: any) => e.id);
+
+    const setsRes = await client
       .from('workout_sets')
-      .select('weight, reps, created_at')
-      .eq('workout_exercises.exercise_id', exerciseId)
-      .eq('workout_exercises.workout_sessions.user_id', userId)
-      .is('workout_sets.deleted_at', null)
-      .is('workout_exercises.deleted_at', null)
-      .is('workout_exercises.workout_sessions.deleted_at', null)
-      .is('weight', 'not null')
+      .select('id, weight, reps, created_at, workout_exercise_id')
+      .in('workout_exercise_id', exerciseIds)
+      .is('deleted_at', null)
+      .not('weight', 'is', null)
       .order('created_at', { ascending: true });
 
-    const sets = Array.isArray(setsRes.data) ? setsRes.data : [];
+    const sets = setsRes.data || [];
+    if (sets.length === 0) return { exerciseId, history: [] };
 
-    if (setsRes.error) {
-      return {
-        exerciseId,
-        history: [],
-      };
-    }
-
-    // If no data, return empty history
-    if (sets.length === 0) {
-      return {
-        exerciseId,
-        history: [],
-      };
-    }
-
-    // Group by date and compute the max 1RM for each day
     const dailyMaxMap = new Map<string, number>();
 
     for (const set of sets) {
@@ -505,120 +538,269 @@ export class AnalyticsService {
       }
     }
 
-    // Convert map to array of history items sorted by date
     const history: StrengthTrendHistoryItem[] = Array.from(dailyMaxMap.entries())
       .map(([date, oneRepMax]) => ({
         date,
-        oneRepMax: Math.round(oneRepMax * 100) / 100, // round to 2 decimal places
+        oneRepMax: Math.round(oneRepMax * 100) / 100,
       }))
       .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
 
-    return {
-      exerciseId,
-      history,
-    };
+    return { exerciseId, history };
   }
 
   async getPersonalRecords(userId: string): Promise<PersonalRecord[]> {
     const personalRecords: PersonalRecord[] = [];
+    const client = this.supabaseService.getClient();
+
+    // Get all user's sessions
+    const sessionsRes = await client
+      .from('workout_sessions')
+      .select('id, workout_id, completed_at, started_at, duration_seconds')
+      .eq('user_id', userId)
+      .is('deleted_at', null);
+
+    const sessions = sessionsRes.data || [];
+    const sessionMap = new Map<string, any>();
+    for (const s of sessions) sessionMap.set(s.id, s);
+
+    if (sessions.length === 0) return personalRecords;
+
+    const sessionIds = sessions.map((s: any) => s.id);
+
+    // Get all workout_exercises for those sessions
+    const exercisesRes = await client
+      .from('workout_exercises')
+      .select('id, workout_id, exercise_id')
+      .in('workout_id', sessionIds)
+      .is('deleted_at', null);
+
+    const exercises = exercisesRes.data || [];
+    const exerciseToSessionMap = new Map<string, string>();
+    const exerciseIdMap = new Map<string, string>();
+    for (const e of exercises) {
+      exerciseToSessionMap.set(e.id, e.workout_id);
+      exerciseIdMap.set(e.id, e.exercise_id);
+    }
+
+    if (exercises.length === 0) return personalRecords;
+
+    const exerciseIds = exercises.map((e: any) => e.id);
+
+    // Get all sets for those exercises
+    const setsRes = await client
+      .from('workout_sets')
+      .select('id, weight, reps, created_at, workout_exercise_id')
+      .in('workout_exercise_id', exerciseIds)
+      .is('deleted_at', null);
+
+    const sets = (setsRes.data || []).map((set: any) => {
+      const wexId = exerciseToSessionMap.get(set.workout_exercise_id);
+      const sessionId = wexId || '';
+      return {
+        ...set,
+        exercise_id: exerciseIdMap.get(set.workout_exercise_id) || '',
+        session_id: sessionId,
+        completed_at: sessionMap.get(sessionId)?.completed_at || null,
+      };
+    });
 
     // HEAVIEST_WEIGHT
-    const heaviestWeightRes = await this.supabaseService
-      .getClient()
-      .from('workout_sets')
-      .select('weight, created_at, workout_exercises!inner(id, exercise_id, workout_sessions!inner(id, user_id, completed_at, started_at))')
-      .eq('workout_exercises.workout_sessions.user_id', userId)
-      .is('workout_sets.deleted_at', null)
-      .is('workout_exercises.deleted_at', null)
-      .is('workout_exercises.workout_sessions.deleted_at', null)
-      .is('weight', 'not null')
-      .order('weight', { ascending: false })
-      .limit(1);
-
-    if (!heaviestWeightRes.error && heaviestWeightRes.data.length > 0) {
-      const record = heaviestWeightRes.data[0];
-      const achievedAt = record.created_at;
+    const weightedSets = sets.filter((s: any) => s.weight != null);
+    if (weightedSets.length > 0) {
+      weightedSets.sort((a: any, b: any) => b.weight - a.weight);
+      const record = weightedSets[0];
       personalRecords.push({
         type: PersonalRecordType.HEAVIEST_WEIGHT,
         value: record.weight,
-        achievedAt,
-        exerciseId: record.workout_exercises.exercise_id,
-        sessionId: record.workout_exercises.workout_sessions.id,
+        achievedAt: record.created_at,
+        exerciseId: record.exercise_id,
+        sessionId: record.session_id,
       });
     }
 
     // MOST_REPS
-    const mostRepsRes = await this.supabaseService
-      .getClient()
-      .from('workout_sets')
-      .select('reps, created_at, workout_exercises!inner(id, exercise_id, workout_sessions!inner(id, user_id, completed_at, started_at))')
-      .eq('workout_exercises.workout_sessions.user_id', userId)
-      .is('workout_sets.deleted_at', null)
-      .is('workout_exercises.deleted_at', null)
-      .is('workout_exercises.workout_sessions.deleted_at', null)
-      .order('reps', { ascending: false })
-      .limit(1);
-
-    if (!mostRepsRes.error && mostRepsRes.data.length > 0) {
-      const record = mostRepsRes.data[0];
-      const achievedAt = record.created_at;
+    if (sets.length > 0) {
+      sets.sort((a: any, b: any) => b.reps - a.reps);
+      const record = sets[0];
       personalRecords.push({
         type: PersonalRecordType.MOST_REPS,
         value: record.reps,
-        achievedAt,
-        exerciseId: record.workout_exercises.exercise_id,
-        sessionId: record.workout_exercises.workout_sessions.id,
+        achievedAt: record.created_at,
+        exerciseId: record.exercise_id,
+        sessionId: record.session_id,
       });
     }
 
     // HIGHEST_VOLUME
-    const highestVolumeRes = await this.supabaseService
-      .getClient()
-      .from('workout_sets')
-      .select('weight, reps, created_at, workout_exercises!inner(id, exercise_id, workout_sessions!inner(id, user_id, completed_at, started_at))')
-      .eq('workout_exercises.workout_sessions.user_id', userId)
-      .is('workout_sets.deleted_at', null)
-      .is('workout_exercises.deleted_at', null)
-      .is('workout_exercises.workout_sessions.deleted_at', null)
-      .is('weight', 'not null');
-
-    if (!highestVolumeRes.error && highestVolumeRes.data.length > 0) {
+    if (weightedSets.length > 0) {
       let maxVolume = 0;
       let maxVolumeRecord = null;
-
-      for (const record of highestVolumeRes.data) {
+      for (const record of weightedSets) {
         const volume = record.weight * record.reps;
         if (volume > maxVolume) {
           maxVolume = volume;
           maxVolumeRecord = record;
         }
       }
-
       if (maxVolumeRecord) {
-        const achievedAt = maxVolumeRecord.created_at;
         personalRecords.push({
           type: PersonalRecordType.HIGHEST_VOLUME,
           value: maxVolume,
-          achievedAt,
-          exerciseId: maxVolumeRecord.workout_exercises.exercise_id,
-          sessionId: maxVolumeRecord.workout_exercises.workout_sessions.id,
+          achievedAt: maxVolumeRecord.created_at,
+          exerciseId: maxVolumeRecord.exercise_id,
+          sessionId: maxVolumeRecord.session_id,
         });
       }
     }
 
     // LONGEST_SESSION
-    const longestSessionRes = await this.supabaseService
-      .getClient()
-      .from('workout_sessions')
-      .select('id, started_at, completed_at, duration_seconds')
-      .eq('user_id', userId)
-      .is('deleted_at', null)
-      .is('completed_at', 'not null')
-      .order('duration_seconds', { ascending: false })
-      .limit(1);
+    const completedSessions = sessions.filter((s: any) => s.completed_at);
+    if (completedSessions.length > 0) {
+      completedSessions.sort((a: any, b: any) => (b.duration_seconds || 0) - (a.duration_seconds || 0));
+      const session = completedSessions[0];
+      const duration = session.duration_seconds !== null ? session.duration_seconds :
+        (new Date(session.completed_at).getTime() - new Date(session.started_at).getTime()) / 1000;
+      personalRecords.push({
+        type: PersonalRecordType.LONGEST_SESSION,
+        value: duration,
+        achievedAt: session.completed_at,
+        sessionId: session.id,
+      });
+    }
 
-    if (!longestSessionRes.error && longestSessionRes.data.length > 0) {
-      const session = longestSessionRes.data[0];
+    // MOST_SETS per exercise
+    const setsByExerciseId = new Map<string, any[]>();
+    for (const set of sets) {
+      const wexId = set.workout_exercise_id;
+      if (!setsByExerciseId.has(wexId)) setsByExerciseId.set(wexId, []);
+      setsByExerciseId.get(wexId)!.push(set);
+    }
+
+    let maxSets = 0;
+    let maxSetsRecord: any = null;
+    for (const [, exSets] of setsByExerciseId.entries()) {
+      if (exSets.length > maxSets) {
+        maxSets = exSets.length;
+        maxSetsRecord = exSets[0];
+      }
+    }
+
+    if (maxSetsRecord) {
+      personalRecords.push({
+        type: PersonalRecordType.MOST_SETS,
+        value: maxSets,
+        achievedAt: maxSetsRecord.created_at,
+        exerciseId: maxSetsRecord.exercise_id,
+        sessionId: maxSetsRecord.session_id,
+      });
+    }
+
+    return personalRecords;
+  }
+
+  async getExercisePersonalRecords(userId: string, exerciseId: string): Promise<PersonalRecord[]> {
+    const personalRecords: PersonalRecord[] = [];
+    const client = this.supabaseService.getClient();
+
+    // Get user's sessions
+    const sessionsRes = await client
+      .from('workout_sessions')
+      .select('id, workout_id, completed_at, started_at, duration_seconds')
+      .eq('user_id', userId)
+      .is('deleted_at', null);
+
+    const sessions = sessionsRes.data || [];
+    const sessionMap = new Map<string, any>();
+    for (const s of sessions) sessionMap.set(s.id, s);
+
+    const sessionIds = sessions.map((s: any) => s.id);
+    if (sessionIds.length === 0) return personalRecords;
+
+    // Get workout_exercises for this specific exerciseId
+    const exercisesRes = await client
+      .from('workout_exercises')
+      .select('id, workout_id, exercise_id')
+      .eq('exercise_id', exerciseId)
+      .in('workout_id', sessionIds)
+      .is('deleted_at', null);
+
+    const exercises = exercisesRes.data || [];
+    if (exercises.length === 0) return personalRecords;
+
+    const exerciseIds = exercises.map((e: any) => e.id);
+
+    // Get all sets for those exercises
+    const setsRes = await client
+      .from('workout_sets')
+      .select('id, weight, reps, created_at, workout_exercise_id')
+      .in('workout_exercise_id', exerciseIds)
+      .is('deleted_at', null);
+
+    const sets = (setsRes.data || []).map((set: any) => {
+      const ex = exercises.find((e: any) => e.id === set.workout_exercise_id);
+      const sessionId = ex?.workout_id || '';
+      return {
+        ...set,
+        exercise_id: exerciseId,
+        session_id: sessionId,
+      };
+    });
+
+    // HEAVIEST_WEIGHT
+    const weightedSets = sets.filter((s: any) => s.weight != null);
+    if (weightedSets.length > 0) {
+      weightedSets.sort((a: any, b: any) => b.weight - a.weight);
+      const record = weightedSets[0];
+      personalRecords.push({
+        type: PersonalRecordType.HEAVIEST_WEIGHT,
+        value: record.weight,
+        achievedAt: record.created_at,
+        exerciseId: record.exercise_id,
+        sessionId: record.session_id,
+      });
+    }
+
+    // MOST_REPS
+    if (sets.length > 0) {
+      sets.sort((a: any, b: any) => b.reps - a.reps);
+      const record = sets[0];
+      personalRecords.push({
+        type: PersonalRecordType.MOST_REPS,
+        value: record.reps,
+        achievedAt: record.created_at,
+        exerciseId: record.exercise_id,
+        sessionId: record.session_id,
+      });
+    }
+
+    // HIGHEST_VOLUME
+    if (weightedSets.length > 0) {
+      let maxVolume = 0;
+      let maxVolumeRecord = null;
+      for (const record of weightedSets) {
+        const volume = record.weight * record.reps;
+        if (volume > maxVolume) {
+          maxVolume = volume;
+          maxVolumeRecord = record;
+        }
+      }
+      if (maxVolumeRecord) {
+        personalRecords.push({
+          type: PersonalRecordType.HIGHEST_VOLUME,
+          value: maxVolume,
+          achievedAt: maxVolumeRecord.created_at,
+          exerciseId: maxVolumeRecord.exercise_id,
+          sessionId: maxVolumeRecord.session_id,
+        });
+      }
+    }
+
+    // LONGEST_SESSION
+    const sessionIdsForExercise = [...new Set(exercises.map((e: any) => e.workout_id))];
+    const relevantSessions = sessions.filter((s: any) => sessionIdsForExercise.includes(s.id) && s.completed_at);
+    if (relevantSessions.length > 0) {
+      relevantSessions.sort((a: any, b: any) => (b.duration_seconds || 0) - (a.duration_seconds || 0));
+      const session = relevantSessions[0];
       const duration = session.duration_seconds !== null ? session.duration_seconds :
         (new Date(session.completed_at).getTime() - new Date(session.started_at).getTime()) / 1000;
       personalRecords.push({
@@ -630,264 +812,30 @@ export class AnalyticsService {
     }
 
     // MOST_SETS
-    const mostSetsRes = await this.supabaseService
-      .getClient()
-      .from('workout_sets')
-      .select('id, workout_exercise_id, created_at, workout_exercises!inner(id, exercise_id, workout_sessions!inner(id, user_id, completed_at, started_at))')
-      .eq('workout_exercises.workout_sessions.user_id', userId)
-      .is('workout_sets.deleted_at', null)
-      .is('workout_exercises.deleted_at', null)
-      .is('workout_exercises.workout_sessions.deleted_at', null);
+    const setsByWexId = new Map<string, any[]>();
+    for (const set of sets) {
+      const wexId = set.workout_exercise_id;
+      if (!setsByWexId.has(wexId)) setsByWexId.set(wexId, []);
+      setsByWexId.get(wexId)!.push(set);
+    }
 
-    if (!mostSetsRes.error && mostSetsRes.data.length > 0) {
-      // Group sets by workoutExerciseId in TypeScript
-      const setsByExerciseId = new Map();
-
-      for (const set of mostSetsRes.data) {
-        const workoutExerciseId = set.workout_exercise_id;
-        if (!setsByExerciseId.has(workoutExerciseId)) {
-          setsByExerciseId.set(workoutExerciseId, []);
-        }
-        setsByExerciseId.get(workoutExerciseId).push(set);
-      }
-
-      // Find the exerciseId with the most sets
-      let maxSets = 0;
-      let maxSetsExerciseId = null;
-      let maxSetsRecord = null; // To store a representative set for this exerciseId
-
-      for (const [workoutExerciseId, sets] of setsByExerciseId.entries()) {
-        if (sets.length > maxSets) {
-          maxSets = sets.length;
-          maxSetsExerciseId = workoutExerciseId;
-          // Use the first set as representative (we could use the most recent if needed)
-          maxSetsRecord = sets[0];
-        }
-      }
-
-      if (maxSetsRecord) {
-        const achievedAt = maxSetsRecord.created_at;
-        personalRecords.push({
-          type: PersonalRecordType.MOST_SETS,
-          value: maxSets,
-          achievedAt,
-          exerciseId: maxSetsRecord.workout_exercises.exercise_id,
-          sessionId: maxSetsRecord.workout_exercises.workout_sessions.id,
-        });
+    let maxSets = 0;
+    let maxSetsRecord: any = null;
+    for (const [, exSets] of setsByWexId.entries()) {
+      if (exSets.length > maxSets) {
+        maxSets = exSets.length;
+        maxSetsRecord = exSets[0];
       }
     }
 
-    return personalRecords;
-  }
-
-  async getExercisePersonalRecords(userId: string, exerciseId: string): Promise<PersonalRecord[]> {
-    const personalRecords: PersonalRecord[] = [];
-
-    // First, validate that the exercise belongs to the user (via workout ownership)
-    const exerciseValidation = await this.supabaseService
-      .getClient()
-      .from('workout_exercises')
-      .select('id, workout_id')
-      .eq('id', exerciseId)
-      .single();
-
-    if (exerciseValidation.error) {
-      if (exerciseValidation.error.code === 'PGRST116') {
-        throw new NotFoundException(`Exercise with ID ${exerciseId} not found`);
-      }
-      throw new InternalServerErrorException(`Failed to fetch exercise: ${exerciseValidation.error.message}`);
-    }
-
-    if (!exerciseValidation.data) {
-      throw new NotFoundException(`Exercise with ID ${exerciseId} not found`);
-    }
-
-    const workoutId = exerciseValidation.data.workout_id;
-
-    // Validate workout belongs to user
-    const workoutValidation = await this.supabaseService
-      .getClient()
-      .from('workouts')
-      .select('id')
-      .eq('id', workoutId)
-      .eq('user_id', userId)
-      .is('deleted_at', null)
-      .single();
-
-    if (workoutValidation.error) {
-      if (workoutValidation.error.code === 'PGRST116') {
-        throw new NotFoundException(`Workout with ID ${workoutId} not found or does not belong to user`);
-      }
-      throw new InternalServerErrorException(`Failed to fetch workout: ${workoutValidation.error.message}`);
-    }
-
-    if (!workoutValidation.data) {
-      throw new NotFoundException(`Workout with ID ${workoutId} not found or does not belong to user`);
-    }
-
-    // HEAVIEST_WEIGHT for this exercise
-    const heaviestWeightRes = await this.supabaseService
-      .getClient()
-      .from('workout_sets')
-      .select('weight, created_at, workout_exercises!inner(id, exercise_id, workout_sessions!inner(id, user_id, completed_at, started_at))')
-      .eq('workout_exercises.exercise_id', exerciseId)
-      .eq('workout_exercises.workout_sessions.user_id', userId)
-      .is('workout_sets.deleted_at', null)
-      .is('workout_exercises.deleted_at', null)
-      .is('workout_exercises.workout_sessions.deleted_at', null)
-      .is('weight', 'not null')
-      .order('weight', { ascending: false })
-      .limit(1);
-
-    if (!heaviestWeightRes.error && heaviestWeightRes.data.length > 0) {
-      const record = heaviestWeightRes.data[0];
-      const achievedAt = record.created_at;
+    if (maxSetsRecord) {
       personalRecords.push({
-        type: PersonalRecordType.HEAVIEST_WEIGHT,
-        value: record.weight,
-        achievedAt,
-        exerciseId: record.workout_exercises.exercise_id,
-        sessionId: record.workout_exercises.workout_sessions.id,
+        type: PersonalRecordType.MOST_SETS,
+        value: maxSets,
+        achievedAt: maxSetsRecord.created_at,
+        exerciseId: maxSetsRecord.exercise_id,
+        sessionId: maxSetsRecord.session_id,
       });
-    }
-
-    // MOST_REPS for this exercise
-    const mostRepsRes = await this.supabaseService
-      .getClient()
-      .from('workout_sets')
-      .select('reps, created_at, workout_exercises!inner(id, exercise_id, workout_sessions!inner(id, user_id, completed_at, started_at))')
-      .eq('workout_exercises.exercise_id', exerciseId)
-      .eq('workout_exercises.workout_sessions.user_id', userId)
-      .is('workout_sets.deleted_at', null)
-      .is('workout_exercises.deleted_at', null)
-      .is('workout_exercises.workout_sessions.deleted_at', null)
-      .order('reps', { ascending: false })
-      .limit(1);
-
-    if (!mostRepsRes.error && mostRepsRes.data.length > 0) {
-      const record = mostRepsRes.data[0];
-      const achievedAt = record.created_at;
-      personalRecords.push({
-        type: PersonalRecordType.MOST_REPS,
-        value: record.reps,
-        achievedAt,
-        exerciseId: record.workout_exercises.exercise_id,
-        sessionId: record.workout_exercises.workout_sessions.id,
-      });
-    }
-
-    // HIGHEST_VOLUME for this exercise
-    const highestVolumeRes = await this.supabaseService
-      .getClient()
-      .from('workout_sets')
-      .select('weight, reps, created_at, workout_exercises!inner(id, exercise_id, workout_sessions!inner(id, user_id, completed_at, started_at))')
-      .eq('workout_exercises.exercise_id', exerciseId)
-      .eq('workout_exercises.workout_sessions.user_id', userId)
-      .is('workout_sets.deleted_at', null)
-      .is('workout_exercises.deleted_at', null)
-      .is('workout_exercises.workout_sessions.deleted_at', null)
-      .is('weight', 'not null');
-
-    if (!highestVolumeRes.error && highestVolumeRes.data.length > 0) {
-      let maxVolume = 0;
-      let maxVolumeRecord = null;
-
-      for (const record of highestVolumeRes.data) {
-        const volume = record.weight * record.reps;
-        if (volume > maxVolume) {
-          maxVolume = volume;
-          maxVolumeRecord = record;
-        }
-      }
-
-      if (maxVolumeRecord) {
-        const achievedAt = maxVolumeRecord.created_at;
-        personalRecords.push({
-          type: PersonalRecordType.HIGHEST_VOLUME,
-          value: maxVolume,
-          achievedAt,
-          exerciseId: maxVolumeRecord.workout_exercises.exercise_id,
-          sessionId: maxVolumeRecord.workout_exercises.workout_sessions.id,
-        });
-      }
-    }
-
-    // LONGEST_SESSION for this exercise (session that contains this exercise and has the longest duration)
-    const longestSessionRes = await this.supabaseService
-      .getClient()
-      .from('workout_sessions')
-      .select('id, started_at, completed_at, duration_seconds')
-      .eq('user_id', userId)
-      .is('deleted_at', null)
-      .is('completed_at', 'not null')
-      .in('id', this.supabaseService
-        .getClient()
-        .from('workout_exercises')
-        .select('workout_id')
-        .eq('exercise_id', exerciseId)
-      )
-      .order('duration_seconds', { ascending: false })
-      .limit(1);
-
-    if (!longestSessionRes.error && longestSessionRes.data.length > 0) {
-      const session = longestSessionRes.data[0];
-      const duration = session.duration_seconds !== null ? session.duration_seconds :
-        (new Date(session.completed_at).getTime() - new Date(session.started_at).getTime()) / 1000;
-      personalRecords.push({
-        type: PersonalRecordType.LONGEST_SESSION,
-        value: duration,
-        achievedAt: session.completed_at,
-        sessionId: session.id,
-      });
-    }
-
-    // MOST_SETS for this exercise (in any session)
-    const mostSetsRes = await this.supabaseService
-      .getClient()
-      .from('workout_sets')
-      .select('id, workout_exercise_id, created_at, workout_exercises!inner(id, exercise_id, workout_sessions!inner(id, user_id, completed_at, started_at))')
-      .eq('workout_exercises.exercise_id', exerciseId)
-      .eq('workout_exercises.workout_sessions.user_id', userId)
-      .is('workout_sets.deleted_at', null)
-      .is('workout_exercises.deleted_at', null)
-      .is('workout_exercises.workout_sessions.deleted_at', null);
-
-    if (!mostSetsRes.error && mostSetsRes.data.length > 0) {
-      // Since we're filtering by a specific exerciseId, all sets should belong to the same workout_exercise_id
-      // But let's still group by workout_exercise_id to be safe (though it should be just one group)
-      const setsByExerciseId = new Map();
-
-      for (const set of mostSetsRes.data) {
-        const workoutExerciseId = set.workout_exercise_id;
-        if (!setsByExerciseId.has(workoutExerciseId)) {
-          setsByExerciseId.set(workoutExerciseId, []);
-        }
-        setsByExerciseId.get(workoutExerciseId).push(set);
-      }
-
-      // Find the exerciseId with the most sets (should be just one in this filtered query)
-      let maxSets = 0;
-      let maxSetsExerciseId = null;
-      let maxSetsRecord = null; // To store a representative set for this exerciseId
-
-      for (const [workoutExerciseId, sets] of setsByExerciseId.entries()) {
-        if (sets.length > maxSets) {
-          maxSets = sets.length;
-          maxSetsExerciseId = workoutExerciseId;
-          maxSetsRecord = sets[0]; // Use the first set as representative
-        }
-      }
-
-      if (maxSetsRecord) {
-        const achievedAt = maxSetsRecord.created_at;
-        personalRecords.push({
-          type: PersonalRecordType.MOST_SETS,
-          value: maxSets,
-          achievedAt,
-          exerciseId: maxSetsRecord.workout_exercises.exercise_id,
-          sessionId: maxSetsRecord.workout_exercises.workout_sessions.id,
-        });
-      }
     }
 
     return personalRecords;
@@ -1572,7 +1520,7 @@ export class AnalyticsService {
       const sessionsRes = await this.supabaseService
         .getClient()
         .from('workout_sessions')
-        .select('id')
+        .select('id, workout_id')
         .eq('user_id', userId)
         .gte('started_at', startDate)
         .lte('started_at', endDate)
@@ -1583,21 +1531,18 @@ export class AnalyticsService {
       }
 
       const sessionIds = sessionsRes.data.map((s: any) => s.id);
+      const workoutIds = sessionsRes.data.map((s: any) => s.workout_id);
 
       if (sessionIds.length === 0) {
         return { totalVolume: 0, totalSets: 0, totalReps: 0 };
       }
 
-      // Get exercises for these sessions
+      // Get exercises for these workouts
       const exercisesRes = await this.supabaseService
         .getClient()
         .from('workout_exercises')
         .select('id')
-        .in('workout_id', this.supabaseService.getClient()
-          .from('workout_sessions')
-          .select('workout_id')
-          .in('id', sessionIds)
-        );
+        .in('workout_id', workoutIds);
 
       if (exercisesRes.error) {
         throw new InternalServerErrorException(exercisesRes.error.message);
@@ -1665,9 +1610,10 @@ export class AnalyticsService {
 	   * Returns null if no plateau detected, otherwise an object with detection details.
 	   */
 	  private async detectStrengthPlateau(userId: string, periodDays: number = 21): Promise<{ detected: boolean; confidence: number; explanation: string } | null> {
+	    const safeDays = Number.isFinite(periodDays) && periodDays > 0 ? periodDays : 21;
 	    const endDate = new Date().toISOString();
 	    const startDate = new Date();
-	    startDate.setDate(startDate.getDate() - periodDays);
+	    startDate.setDate(startDate.getDate() - safeDays);
 	    const startDateISO = startDate.toISOString();
 
 	    const strengthTrend = await this.getOverallStrengthTrend(userId, startDateISO, endDate);

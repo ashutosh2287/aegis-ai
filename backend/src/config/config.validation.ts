@@ -26,4 +26,10 @@ export const configValidationSchema = Joi.object({
   API_PREFIX: Joi.string().default('api'),
   // Swagger
   SWAGGER_ENABLED: Joi.boolean().default(true),
+  // AI
+  AI_PROVIDER: Joi.string().valid('openai', 'gemini').default('openai'),
+  OPENAI_API_KEY: Joi.string().allow('').optional(),
+  GEMINI_API_KEY: Joi.string().allow('').optional(),
+  AI_MODEL: Joi.string().optional(),
+  AI_TEMPERATURE: Joi.number().min(0).max(2).default(0.7),
 });

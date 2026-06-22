@@ -1,14 +1,21 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { AnalyticsService } from './analytics.service';
+import { SupabaseService } from '../supabase/supabase.service';
 import { RecommendationResponseDto } from './dto/recommendation-response.dto';
 import { PlateauDetectionResponseDto } from './dto/plateau-detection-response.dto';
 
 @Injectable()
 export class RecommendationService {
-  constructor(private readonly analyticsService: AnalyticsService) {}
+  constructor(
+    private readonly analyticsService: AnalyticsService,
+    private readonly supabaseService: SupabaseService,
+  ) {}
 
   async generateRecommendations(userId: string): Promise<RecommendationResponseDto[]> {
     const recommendations: RecommendationResponseDto[] = [];
+
+    // Fetch user goals from profile
+    const userGoals = await this.getUserGoals(userId);
 
     // Fetch necessary data in parallel
     const [
@@ -31,7 +38,7 @@ export class RecommendationService {
 
     // 1. Progressive Overload Recommendations
     recommendations.push(
-      ...this.generateProgressiveOverloadRecommendations(strengthTrend, weeklyVolume, monthlyVolume)
+      ...this.generateProgressiveOverloadRecommendations(strengthTrend, weeklyVolume, monthlyVolume, userGoals)
     );
 
     // 2. Recovery Recommendations
@@ -41,15 +48,40 @@ export class RecommendationService {
 
     // 3. Consistency Recommendations
     recommendations.push(
-      ...this.generateConsistencyRecommendations(workoutConsistency)
+      ...this.generateConsistencyRecommendations(workoutConsistency, userGoals)
     );
 
     // 4. Plateau-Based Recommendations
     recommendations.push(
-      ...this.generatePlateauBasedRecommendations(plateauDetection)
+      ...this.generatePlateauBasedRecommendations(plateauDetection, userGoals)
+    );
+
+    // 5. Goal-specific recommendations
+    recommendations.push(
+      ...this.generateGoalSpecificRecommendations(userGoals, weeklyVolume, workoutConsistency)
     );
 
     return recommendations;
+  }
+
+  private async getUserGoals(userId: string): Promise<string[]> {
+    try {
+      const { data, error } = await this.supabaseService
+        .getClient()
+        .from('profiles')
+        .select('goals')
+        .eq('id', userId)
+        .single();
+
+      if (error || !data) return [];
+      return data.goals ?? [];
+    } catch {
+      return [];
+    }
+  }
+
+  private hasGoal(goals: string[], ...goalNames: string[]): boolean {
+    return goals.some(g => goalNames.includes(g));
   }
 
   private getStartDateISO(daysAgo: number): string {
@@ -61,18 +93,22 @@ export class RecommendationService {
   private generateProgressiveOverloadRecommendations(
     strengthTrend: any,
     weeklyVolume: { totalVolume: number; totalSets: number; totalReps: number },
-    monthlyVolume: { totalVolume: number; totalSets: number; totalReps: number }
+    monthlyVolume: { totalVolume: number; totalSets: number; totalReps: number },
+    userGoals: string[]
   ): RecommendationResponseDto[] {
     const recs: RecommendationResponseDto[] = [];
+    const isStrengthFocused = this.hasGoal(userGoals, 'Gain Strength');
+    const isMuscleFocused = this.hasGoal(userGoals, 'Build Muscle');
 
     // Strength-based progressive overload
     if (strengthTrend.improvementPercentage >= 5) {
+      const priority = isStrengthFocused ? 'high' : 'medium';
       recs.push(
         new RecommendationResponseDto(
           'progressive overload',
-          'medium',
+          priority,
           'Consider increasing weight to continue strength gains',
-          `Your strength trend shows ${strengthTrend.improvementPercentage}% improvement over the analysis period, indicating good progress. To continue overload, gradually increase weight by 2.5-5% on your main lifts.`
+          `Your strength trend shows ${strengthTrend.improvementPercentage}% improvement over the analysis period, indicating good progress.${isStrengthFocused ? ' As you\'re focused on gaining strength, this is particularly important.' : ''} To continue overload, gradually increase weight by 2.5-5% on your main lifts.`
         )
       );
     } else if (strengthTrend.improvementPercentage > 0 && strengthTrend.improvementPercentage < 5) {
@@ -96,15 +132,15 @@ export class RecommendationService {
     }
 
     // Volume-based progressive overload
-    // Compare weekly to monthly volume to see if volume is increasing
-    const monthlyAvgWeekly = monthlyVolume.totalVolume / 4; // approximate weekly volume from monthly
+    const monthlyAvgWeekly = monthlyVolume.totalVolume / 4;
     if (weeklyVolume.totalVolume > monthlyAvgWeekly * 1.1) {
+      const priority = isMuscleFocused ? 'high' : 'medium';
       recs.push(
         new RecommendationResponseDto(
           'progressive overload',
-          'medium',
+          priority,
           'Volume is increasing; consider maintaining or slightly increasing',
-          `Your weekly volume is above your monthly average, indicating good volume progression. Continue to monitor recovery and consider deloading every 4-6 weeks.`
+          `Your weekly volume is above your monthly average, indicating good volume progression.${isMuscleFocused ? ' Great for muscle building — keep pushing volume.' : ''} Continue to monitor recovery and consider deloading every 4-6 weeks.`
         )
       );
     } else if (weeklyVolume.totalVolume < monthlyAvgWeekly * 0.9) {
@@ -172,20 +208,21 @@ export class RecommendationService {
   }
 
   private generateConsistencyRecommendations(
-    workoutConsistency: any
+    workoutConsistency: any,
+    userGoals: string[]
   ): RecommendationResponseDto[] {
     const recs: RecommendationResponseDto[] = [];
+    const isConditioning = this.hasGoal(userGoals, 'Conditioning');
 
     // Adherence percentage: how many days in the last 28 days had workouts
-    // Note: our adherencePercentage calculation is (totalWorkoutDays * 14) / 3, which seems off.
-    // Let's assume totalWorkoutDays is over some period. We'll use it relatively.
     if (workoutConsistency.adherencePercentage < 50) {
+      const priority = isConditioning ? 'high' : 'high';
       recs.push(
         new RecommendationResponseDto(
           'consistency',
-          'high',
+          priority,
           'Improve workout adherence by scheduling regular sessions',
-          `Your workout adherence is ${workoutConsistency.adherencePercentage}%. Aim to workout at least 3-4 times per week for consistent progress. Schedule your workouts in advance to improve adherence.`
+          `Your workout adherence is ${workoutConsistency.adherencePercentage}%.${isConditioning ? ' For conditioning goals, consistency is critical — try to train at least 4-5 times per week.' : ' Aim to workout at least 3-4 times per week for consistent progress.'} Schedule your workouts in advance to improve adherence.`
         )
       );
     } else if (workoutConsistency.adherencePercentage >= 50 && workoutConsistency.adherencePercentage < 75) {
@@ -210,12 +247,13 @@ export class RecommendationService {
 
     // Frequency improvement based on average workouts per week
     if (workoutConsistency.averageWorkoutsPerWeek < 3) {
+      const targetFreq = isConditioning ? '4-5' : '3-5';
       recs.push(
         new RecommendationResponseDto(
           'consistency',
           'high',
           'Increase weekly workout frequency',
-          `You're averaging ${workoutConsistency.averageWorkoutsPerWeek} workouts per week. For optimal progress, aim for 3-5 workouts per week with adequate recovery.`
+          `You're averaging ${workoutConsistency.averageWorkoutsPerWeek} workouts per week.${isConditioning ? ' For conditioning goals, aim for 4-5 workouts per week.' : ` For optimal progress, aim for ${targetFreq} workouts per week with adequate recovery.`}`
         )
       );
     } else if (workoutConsistency.averageWorkoutsPerWeek >= 3 && workoutConsistency.averageWorkoutsPerWeek < 5) {
@@ -242,9 +280,12 @@ export class RecommendationService {
   }
 
   private generatePlateauBasedRecommendations(
-    plateauDetection: PlateauDetectionResponseDto
+    plateauDetection: PlateauDetectionResponseDto,
+    userGoals: string[]
   ): RecommendationResponseDto[] {
     const recs: RecommendationResponseDto[] = [];
+    const isLoseWeight = this.hasGoal(userGoals, 'Lose Weight');
+    const isGainStrength = this.hasGoal(userGoals, 'Gain Strength');
 
     if (!plateauDetection.plateauDetected) {
       recs.push(
@@ -265,7 +306,7 @@ export class RecommendationService {
             'plateau-based',
             'high',
             'Implement strength plateau breaking strategies',
-            `Strength plateau detected (confidence: ${plateauDetection.confidence}%). ${plateauDetection.explanation}. Consider: 1) Deloading for a week, 2) Changing rep schemes, 3) Adding accessory work, 4) Focusing on weak points.`
+            `Strength plateau detected (confidence: ${plateauDetection.confidence}%). ${plateauDetection.explanation}.${isGainStrength ? ' Since gaining strength is a key goal, consider deloading for a week, then re-ramping with 5-10% heavier loads.' : ' Consider: 1) Deloading for a week, 2) Changing rep schemes, 3) Adding accessory work, 4) Focusing on weak points.'}`
           )
         );
         break;
@@ -291,6 +332,60 @@ export class RecommendationService {
         break;
       default:
         break;
+    }
+
+    return recs;
+  }
+
+  private generateGoalSpecificRecommendations(
+    userGoals: string[],
+    weeklyVolume: { totalVolume: number; totalSets: number; totalReps: number },
+    workoutConsistency: any
+  ): RecommendationResponseDto[] {
+    const recs: RecommendationResponseDto[] = [];
+
+    if (userGoals.includes('Lose Weight')) {
+      recs.push(
+        new RecommendationResponseDto(
+          'conditioning',
+          'high',
+          'Add cardiovascular and conditioning work to support weight loss',
+          `Your goal is to lose weight. In addition to resistance training, consider adding 2-3 sessions of cardiovascular exercise per week (HIIT, cycling, rowing, or brisk walking). Aim for 150+ minutes of moderate-intensity cardio weekly. Combine with a slight caloric deficit for best results.`
+        )
+      );
+    }
+
+    if (userGoals.includes('Conditioning')) {
+      recs.push(
+        new RecommendationResponseDto(
+          'conditioning',
+          'high',
+          'Focus on metabolic conditioning and circuit training',
+          `Your goal is conditioning. Consider incorporating circuit-style workouts with minimal rest between exercises, supersets, and high-intensity interval training. Aim for workouts that elevate your heart rate for sustained periods. Track your recovery between sessions carefully.`
+        )
+      );
+    }
+
+    if (userGoals.includes('Sport')) {
+      recs.push(
+        new RecommendationResponseDto(
+          'sport-specific',
+          'medium',
+          'Consider sport-specific training and periodization',
+          `Your goal is sport performance. Focus on exercises that translate directly to your sport: explosive movements (power cleans, box jumps), agility drills, and sport-specific skill work. Consider periodizing your training to peak during your competitive season.`
+        )
+      );
+    }
+
+    if (userGoals.includes('Fundamentals')) {
+      recs.push(
+        new RecommendationResponseDto(
+          'fundamentals',
+          'medium',
+          'Focus on mastering fundamental movement patterns',
+          `Your goal is to build fundamentals. Prioritize mastering the squat, hinge, push, pull, and carry patterns. Focus on form over load — use lighter weights to perfect technique before progressing. Consistent practice of these basics will build a strong foundation for future training.`
+        )
+      );
     }
 
     return recs;

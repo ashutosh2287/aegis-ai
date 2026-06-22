@@ -26,6 +26,7 @@ import { StrengthProjectionDto } from './dto/strength-projection.dto';
 import { VolumeProjectionDto } from './dto/volume-projection.dto';
 import { FrequencyProjectionDto } from './dto/frequency-projection.dto';
 import { GoalAchievementEstimateDto } from './dto/goal-achievement-estimate.dto';
+import { GoalProjectionDto } from './dto/goal-projection.dto';
 import { ForecastRecommendationDto } from './dto/forecast-recommendation.dto';
 import { RecommendationResponseDto } from './dto/recommendation-response.dto';
 
@@ -254,6 +255,20 @@ export class AnalyticsController {
     }
     return this.recommendationService.generateRecommendations(user.id);
   };
+
+  @Get('goals')
+  @UseGuards(JwtAuthGuard)
+  @ApiOperation({ summary: 'Get user goal projections' })
+  @ApiResponse({ status: 200, description: 'Return goal projections', type: [GoalProjectionDto] })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  @ApiBearerAuth()
+  async getGoals(@Req() req: AuthenticatedRequest): Promise<GoalProjectionDto[]> {
+    const user = req.user;
+    if (!user) {
+      throw new UnauthorizedException('User not found');
+    }
+    return this.goalProjectionService.getGoalProjections(user.id);
+  }
 
   // NEW METHODS START
   @Get('projection/strength')

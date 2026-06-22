@@ -17,12 +17,12 @@ export class ExerciseService {
    * @returns Promise of array of exercises with relations
    */
   async getExercises(query: ExerciseQueryDto): Promise<ExerciseWithRelations[]> {
-    let db = this.supabaseService.getClient().from('exercises');
+    let db = this.supabaseService.getClient().from('exercises').select('*');
 
     // Apply search
     if (query.search) {
       const searchTerm = `%${query.search}%`;
-      db = db.or(`name.ilike.${searchTerm},description.ilike.${searchTerm},tags.cs.{${query.search}}`);
+      db = db.or(`name.ilike.${searchTerm},description.ilike.${searchTerm}`);
     }
 
     // Apply filters
@@ -48,44 +48,36 @@ export class ExerciseService {
     }
 
     // Apply pagination
-    if (query.limit !== undefined) {
-      db = db.limit(query.limit);
-    }
-    if (query.offset !== undefined) {
-      db = db.offset(query.offset);
+    if (query.limit !== undefined || query.offset !== undefined) {
+      const limit = query.limit ?? 10;
+      const offset = query.offset ?? 0;
+      db = db.range(offset, offset + limit - 1);
     }
 
-    // Fetch exercises
-    const { data: exercisesData, error: exercisesError } = await db.select('*');
+    let exercisesData: any;
+    let exercisesError: any;
+    try {
+      const result = await db;
+      exercisesData = result.data;
+      exercisesError = result.error;
+    } catch (err) {
+      throw err;
+    }
 
     if (exercisesError) {
       throw new InternalServerErrorException(`Failed to fetch exercises: ${exercisesError.message}`);
     }
 
-    // Now, for each exercise, fetch the related muscles and equipment
-    const exercisesWithRelations: ExerciseWithRelations[] = [];
+    // Build exercises with muscle groups and equipment from tags
+    const exercisesWithRelations: ExerciseWithRelations[] = exercisesData.map((exercise: any) => {
+      const knownMuscles = ['chest', 'back', 'shoulders', 'biceps', 'triceps', 'legs', 'quads', 'hamstrings', 'glutes', 'calves', 'core', 'lats', 'abs'];
+      const knownEquipment = ['barbell', 'dumbbell', 'cable', 'machine', 'kettlebell', 'bodyweight'];
 
-    for (const exercise of exercisesData) {
-      const [musclesData, equipmentData] = await Promise.all([
-        this.supabaseService.getClient()
-          .from('exercise_muscles')
-          .select('muscles(name)')
-          .eq('exercise_id', exercise.id),
-        this.supabaseService.getClient()
-          .from('exercise_equipment')
-          .select('equipment(name)')
-          .eq('exercise_id', exercise.id),
-      ]);
+      const muscleGroups = exercise.tags?.filter((t: string) => knownMuscles.includes(t)) || [];
+      const equipmentNeeded = exercise.tags?.filter((t: string) => knownEquipment.includes(t)) || [];
 
-      const muscleGroups = musclesData.data?.map((m: any) => m.muscles.name) || [];
-      const equipmentNeeded = equipmentData.data?.map((e: any) => e.equipment.name) || [];
-
-      exercisesWithRelations.push({
-        ...exercise,
-        muscleGroups,
-        equipmentNeeded,
-      } as ExerciseWithRelations);
-    }
+      return { ...exercise, muscleGroups, equipmentNeeded } as ExerciseWithRelations;
+    });
 
     // Now, apply the muscle group and equipment filters if they were provided
     // We'll do it in memory for now, but note: we should have done it at the database level.
@@ -129,20 +121,12 @@ export class ExerciseService {
       return null;
     }
 
-    // Fetch related muscles and equipment
-    const [musclesData, equipmentData] = await Promise.all([
-      this.supabaseService.getClient()
-        .from('exercise_muscles')
-        .select('muscles(name)')
-        .eq('exercise_id', id),
-      this.supabaseService.getClient()
-        .from('exercise_equipment')
-        .select('equipment(name)')
-        .eq('exercise_id', id),
-    ]);
+    // Build muscle groups and equipment from tags (avoids missing relation tables)
+    const knownMuscles = ['chest', 'back', 'shoulders', 'biceps', 'triceps', 'legs', 'quads', 'hamstrings', 'glutes', 'calves', 'core', 'lats', 'abs'];
+    const knownEquipment = ['barbell', 'dumbbell', 'cable', 'machine', 'kettlebell', 'bodyweight'];
 
-    const muscleGroups = musclesData.data?.map((m: any) => m.muscles.name) || [];
-    const equipmentNeeded = equipmentData.data?.map((e: any) => e.equipment.name) || [];
+    const muscleGroups = exerciseData.tags?.filter((t: string) => knownMuscles.includes(t)) || [];
+    const equipmentNeeded = exerciseData.tags?.filter((t: string) => knownEquipment.includes(t)) || [];
 
     return {
       ...exerciseData,
