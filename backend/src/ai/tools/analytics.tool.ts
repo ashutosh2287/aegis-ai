@@ -48,15 +48,13 @@ export class AnalyticsTool {
 
   private async getStrengthTrends(userId: string): Promise<StrengthTrend> {
     try {
-      const now = new Date();
-      const thirtyDaysAgo = new Date(now);
-      thirtyDaysAgo.setDate(now.getDate() - 30);
-      const sixtyDaysAgo = new Date(now);
-      sixtyDaysAgo.setDate(now.getDate() - 60);
-
       const client = this.supabaseService.getClient();
 
-      // Get user sessions
+      const thirtyDaysAgo = new Date();
+      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+      const sixtyDaysAgo = new Date();
+      sixtyDaysAgo.setDate(sixtyDaysAgo.getDate() - 60);
+
       const sessionsRes = await client
         .from('workout_sessions')
         .select('id, workout_id, completed_at')
@@ -70,7 +68,6 @@ export class AnalyticsTool {
 
       const sessionIds = sessions.map((s: any) => s.id);
 
-      // Get workout_exercises
       const exercisesRes = await client
         .from('workout_exercises')
         .select('id, workout_id')
@@ -84,7 +81,6 @@ export class AnalyticsTool {
 
       const exerciseIds = exercises.map((e: any) => e.id);
 
-      // Get all sets
       const setsRes = await client
         .from('workout_sets')
         .select('id, weight, reps, created_at, workout_exercise_id')
@@ -92,11 +88,20 @@ export class AnalyticsTool {
         .is('deleted_at', null)
         .not('weight', 'is', null);
 
+      const exerciseSessionMap = new Map<string, string>();
+      for (const ex of exercises) {
+        exerciseSessionMap.set((ex as any).id, (ex as any).workout_id);
+      }
+
+      const sessionCompletedMap = new Map<string, string>();
+      for (const s of sessions) {
+        sessionCompletedMap.set((s as any).id, (s as any).completed_at || '');
+      }
+
       const allSets = (setsRes.data || []).map((set: any) => {
-        const ex = exercises.find((e: any) => e.id === set.workout_exercise_id);
-        const sessionId = ex?.workout_id || '';
-        const session = sessions.find((s: any) => s.id === sessionId);
-        return { ...set, completed_at: session?.completed_at || null };
+        const sessionId = exerciseSessionMap.get(set.workout_exercise_id) || '';
+        const completedAt = sessionCompletedMap.get(sessionId) || '';
+        return { ...set, completed_at: completedAt };
       });
 
       const recentSets = allSets.filter((s: any) => s.completed_at && new Date(s.completed_at) >= thirtyDaysAgo);
@@ -150,16 +155,16 @@ export class AnalyticsTool {
       const monthAgo = new Date(now);
       monthAgo.setDate(now.getDate() - 30);
 
-      const [weeklyVolume, monthlyVolume, workoutCount, totalSets] = await Promise.all([
-        this.getVolumeInRange(userId, weekAgo, now),
-        this.getVolumeInRange(userId, monthAgo, now),
-        this.getWorkoutCountInRange(userId, monthAgo, now),
-        this.getTotalSetsInRange(userId, monthAgo, now),
-      ]);
+      // Fetch monthly data once and derive weekly from it
+      const monthlyData = await this.getVolumeDataInRange(userId, monthAgo, now);
+      const weeklyData = await this.getVolumeDataInRange(userId, weekAgo, now);
+
+      const workoutCount = monthlyData.workoutCount;
+      const totalSets = monthlyData.totalSets;
 
       return {
-        weeklyVolume,
-        monthlyVolume,
+        weeklyVolume: weeklyData.volume,
+        monthlyVolume: monthlyData.volume,
         averageSetsPerWorkout: workoutCount > 0 ? Math.round(totalSets / workoutCount) : 0,
       };
     } catch (error) {
@@ -172,7 +177,7 @@ export class AnalyticsTool {
     }
   }
 
-  private async getVolumeInRange(userId: string, start: Date, end: Date): Promise<number> {
+  private async getVolumeDataInRange(userId: string, start: Date, end: Date): Promise<{ volume: number; workoutCount: number; totalSets: number }> {
     const { data: sessions } = await this.supabaseService
       .getClient()
       .from('workout_sessions')
@@ -182,7 +187,7 @@ export class AnalyticsTool {
       .lte('started_at', end.toISOString())
       .is('deleted_at', null);
 
-    if (!sessions || sessions.length === 0) return 0;
+    if (!sessions || sessions.length === 0) return { volume: 0, workoutCount: 0, totalSets: 0 };
 
     const workoutIds = [...new Set(sessions.map((s: any) => s.workout_id))];
 
@@ -192,65 +197,27 @@ export class AnalyticsTool {
       .select('id')
       .in('workout_id', workoutIds);
 
-    if (!exercises || exercises.length === 0) return 0;
+    if (!exercises || exercises.length === 0) return { volume: 0, workoutCount: sessions.length, totalSets: 0 };
+
+    const exerciseIds = exercises.map((e: any) => e.id);
 
     const { data: sets } = await this.supabaseService
       .getClient()
       .from('workout_sets')
       .select('weight, reps')
-      .in('workout_exercise_id', exercises.map((e: any) => e.id))
+      .in('workout_exercise_id', exerciseIds)
       .is('deleted_at', null);
 
-    if (!sets) return 0;
+    if (!sets) return { volume: 0, workoutCount: sessions.length, totalSets: 0 };
 
-    return sets.reduce((total: number, set: any) => {
-      return total + (set.weight ? set.weight * set.reps : 0);
-    }, 0);
-  }
+    let volume = 0;
+    let totalSets = 0;
+    for (const set of sets) {
+      if (set.weight) volume += set.weight * set.reps;
+      totalSets++;
+    }
 
-  private async getWorkoutCountInRange(userId: string, start: Date, end: Date): Promise<number> {
-    const { count } = await this.supabaseService
-      .getClient()
-      .from('workout_sessions')
-      .select('id', { count: 'exact', head: true })
-      .eq('user_id', userId)
-      .gte('started_at', start.toISOString())
-      .lte('started_at', end.toISOString())
-      .is('deleted_at', null);
-
-    return count || 0;
-  }
-
-  private async getTotalSetsInRange(userId: string, start: Date, end: Date): Promise<number> {
-    const { data: sessions } = await this.supabaseService
-      .getClient()
-      .from('workout_sessions')
-      .select('workout_id')
-      .eq('user_id', userId)
-      .gte('started_at', start.toISOString())
-      .lte('started_at', end.toISOString())
-      .is('deleted_at', null);
-
-    if (!sessions || sessions.length === 0) return 0;
-
-    const workoutIds = [...new Set(sessions.map((s: any) => s.workout_id))];
-
-    const { data: exercises } = await this.supabaseService
-      .getClient()
-      .from('workout_exercises')
-      .select('id')
-      .in('workout_id', workoutIds);
-
-    if (!exercises || exercises.length === 0) return 0;
-
-    const { count } = await this.supabaseService
-      .getClient()
-      .from('workout_sets')
-      .select('id', { count: 'exact', head: true })
-      .in('workout_exercise_id', exercises.map((e: any) => e.id))
-      .is('deleted_at', null);
-
-    return count || 0;
+    return { volume, workoutCount: sessions.length, totalSets };
   }
 
   private async getConsistencyMetrics(userId: string): Promise<ConsistencyMetrics> {
@@ -261,11 +228,6 @@ export class AnalyticsTool {
       const monthAgo = new Date(now);
       monthAgo.setDate(now.getDate() - 30);
 
-      const [workoutsThisWeek, workoutsThisMonth] = await Promise.all([
-        this.getWorkoutCountInRange(userId, weekAgo, now),
-        this.getWorkoutCountInRange(userId, monthAgo, now),
-      ]);
-
       const { data: allSessions } = await this.supabaseService
         .getClient()
         .from('workout_sessions')
@@ -274,6 +236,8 @@ export class AnalyticsTool {
         .is('deleted_at', null)
         .order('completed_at', { ascending: false });
 
+      let workoutsThisWeek = 0;
+      let workoutsThisMonth = 0;
       let currentStreak = 0;
       let longestStreak = 0;
 
@@ -281,6 +245,14 @@ export class AnalyticsTool {
         const dates = [...new Set(
           allSessions.map((s: any) => new Date(s.completed_at).toISOString().split('T')[0])
         )].sort().reverse();
+
+        // Derive week/month counts from allSessions
+        for (const session of allSessions) {
+          if (!session.completed_at) continue;
+          const completedDate = new Date(session.completed_at);
+          if (completedDate >= weekAgo && completedDate <= now) workoutsThisWeek++;
+          if (completedDate >= monthAgo && completedDate <= now) workoutsThisMonth++;
+        }
 
         const today = new Date().toISOString().split('T')[0];
         let streak = 0;

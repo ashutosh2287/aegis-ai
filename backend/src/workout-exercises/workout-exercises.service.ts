@@ -165,16 +165,20 @@ export class WorkoutExercisesService {
       throw new InternalServerErrorException(`Failed to fetch workout exercises: ${exercisesError.message}`);
     }
 
-    // For each exercise, fetch the exercise details and map to WorkoutExerciseWithExercise
-    const workoutExercises: WorkoutExerciseWithExercise[] = [];
-
-    for (const exercise of exercisesData) {
-      const exerciseDetails = await this.exerciseService.getExerciseById(exercise.exercise_id);
-      if (!exerciseDetails) {
-        // If the exercise is not found, we can skip it or throw an error.
-        // Since we have a foreign key constraint, it should exist, but we'll skip for safety.
-        continue;
+    // Batch fetch all exercise details at once
+    const exerciseIds = exercisesData.map((e: any) => e.exercise_id);
+    const exerciseDetailsMap = new Map<string, any>();
+    if (exerciseIds.length > 0) {
+      const exerciseDetails = await this.exerciseService.getExercisesByIds(exerciseIds);
+      for (const detail of exerciseDetails) {
+        exerciseDetailsMap.set(detail.id, detail);
       }
+    }
+
+    const workoutExercises: WorkoutExerciseWithExercise[] = [];
+    for (const exercise of exercisesData) {
+      const exerciseDetails = exerciseDetailsMap.get(exercise.exercise_id);
+      if (!exerciseDetails) continue;
 
       workoutExercises.push({
         id: exercise.id,
@@ -200,8 +204,6 @@ export class WorkoutExercisesService {
           isActive: exerciseDetails.isActive,
           createdAt: exerciseDetails.createdAt,
           updatedAt: exerciseDetails.updatedAt,
-          // Note: ExerciseWithRelations has muscleGroups and equipmentNeeded, but our Exercise interface doesn't.
-          // We are only mapping to the Exercise interface, so we omit the extra fields.
         },
       });
     }
@@ -436,19 +438,15 @@ export class WorkoutExercisesService {
       throw new BadRequestException('The number of workout exercise IDs provided does not match the number of exercises in the workout');
     }
 
-    // Update the order_index for each workout exercise in the dto
-    // We'll do this in a loop (Supabase doesn't have a bulk update with different values per row easily)
-    // We'll update one by one.
-    for (const item of dto.items) {
-      const { error: updateError } = await this.supabaseService
-        .getClient()
-        .from('workout_exercises')
-        .update({ order_index: item.orderIndex })
-        .eq('id', item.id);
-
-      if (updateError) {
-        throw new InternalServerErrorException(`Failed to reorder workout exercise: ${updateError.message}`);
-      }
-    }
+    // Update the order_index for each workout exercise concurrently
+    await Promise.all(
+      dto.items.map(item =>
+        this.supabaseService
+          .getClient()
+          .from('workout_exercises')
+          .update({ order_index: item.orderIndex })
+          .eq('id', item.id)
+      )
+    );
   }
 }

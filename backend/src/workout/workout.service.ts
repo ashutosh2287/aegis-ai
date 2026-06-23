@@ -46,92 +46,92 @@ export class WorkoutService {
 
     const workoutId = workoutDataResult.id;
 
-    // 2. For each exercise in dto.exercises, create a workout_exercise record
     const workoutExercises: (WorkoutExercise & { sets: WorkoutSet[] })[] = [];
 
-    for (const exerciseDto of dto.exercises) {
-      // Create workout_exercise
-      const workoutExerciseData = {
+    if (dto.exercises && dto.exercises.length > 0) {
+      const exerciseRows = dto.exercises.map(exerciseDto => ({
         workout_id: workoutId,
         exercise_id: exerciseDto.exerciseId,
-      };
+      }));
 
-      const { data: workoutExerciseDataResult, error: workoutExerciseError } = await this.supabaseService
+      const { data: insertedExercises, error: batchExError } = await this.supabaseService
         .getClient()
         .from('workout_exercises')
-        .insert(workoutExerciseData)
-        .select()
-        .single();
+        .insert(exerciseRows)
+        .select();
 
-      if (workoutExerciseError) {
-        // If we fail to create workout_exercise, we should clean up the workout and any previously created workout_exercises and sets.
+      if (batchExError) {
         await this.supabaseService.getClient().from('workouts').delete().eq('id', workoutId);
-        await this.supabaseService.getClient().from('workout_exercises').delete().eq('workout_id', workoutId);
-        throw new InternalServerErrorException(`Failed to create workout-exercise: ${workoutExerciseError.message}`);
+        throw new InternalServerErrorException(`Failed to create workout exercises: ${batchExError.message}`);
       }
 
-      if (!workoutExerciseDataResult) {
+      if (!insertedExercises || insertedExercises.length === 0) {
         await this.supabaseService.getClient().from('workouts').delete().eq('id', workoutId);
-        await this.supabaseService.getClient().from('workout_exercises').delete().eq('workout_id', workoutId);
-        throw new InternalServerErrorException('Workout-exercise created but no data returned');
+        throw new InternalServerErrorException('Workout exercises created but no data returned');
       }
 
-      const workoutExerciseId = workoutExerciseDataResult.id;
+      const allSetRows: any[] = [];
+      for (let i = 0; i < dto.exercises.length; i++) {
+        const exerciseDto = dto.exercises[i];
+        const workoutExerciseId = insertedExercises[i].id;
+        for (const setDto of exerciseDto.sets) {
+          allSetRows.push({
+            workout_exercise_id: workoutExerciseId,
+            set_number: setDto.setNumber,
+            reps: setDto.reps,
+            weight: setDto.weight ?? null,
+            rpe: setDto.rpe ?? null,
+            notes: setDto.notes ?? null,
+          });
+        }
+      }
 
-      // 3. For each set in exerciseDto.sets, create a workout_set record
-      const workoutSets: WorkoutSet[] = [];
-
-      for (const setDto of exerciseDto.sets) {
-        const workoutSetData = {
-          workout_exercise_id: workoutExerciseId,
-          set_number: setDto.setNumber,
-          reps: setDto.reps,
-          weight: setDto.weight ?? null,
-rpe: setDto.rpe ?? null,
-notes: setDto.notes ?? null,
-        };
-
-        const { data: workoutSetDataResult, error: workoutSetError } = await this.supabaseService
+      let insertedSets: any[] = [];
+      if (allSetRows.length > 0) {
+        const { data: setData, error: batchSetError } = await this.supabaseService
           .getClient()
           .from('workout_sets')
-          .insert(workoutSetData)
-          .select()
-          .single();
+          .insert(allSetRows)
+          .select();
 
-        if (workoutSetError) {
-          // Clean up: delete the workout, workout_exercises, and any workout_sets we created so far for this exercise.
+        if (batchSetError) {
           await this.supabaseService.getClient().from('workouts').delete().eq('id', workoutId);
           await this.supabaseService.getClient().from('workout_exercises').delete().eq('workout_id', workoutId);
-          await this.supabaseService.getClient().from('workout_sets').delete().eq('workout_exercise_id', workoutExerciseId);
-          throw new InternalServerErrorException(`Failed to create workout-set: ${workoutSetError.message}`);
+          throw new InternalServerErrorException(`Failed to create workout sets: ${batchSetError.message}`);
         }
 
-        if (!workoutSetDataResult) {
-          await this.supabaseService.getClient().from('workouts').delete().eq('id', workoutId);
-          await this.supabaseService.getClient().from('workout_exercises').delete().eq('workout_id', workoutId);
-          await this.supabaseService.getClient().from('workout_sets').delete().eq('workout_exercise_id', workoutExerciseId);
-          throw new InternalServerErrorException('Workout-set created but no data returned');
-        }
-
-        workoutSets.push({
-          id: workoutSetDataResult.id,
-          workoutExerciseId: workoutExerciseDataResult.id,
-          setNumber: workoutSetDataResult.set_number,
-          reps: workoutSetDataResult.reps,
-          weight: workoutSetDataResult.weight,
-rpe: workoutSetDataResult.rpe,
-notes: workoutSetDataResult.notes,
-          createdAt: workoutSetDataResult.created_at,
-        });
+        insertedSets = setData || [];
       }
 
-      workoutExercises.push({
-        id: workoutExerciseDataResult.id,
-        workoutId: workoutExerciseDataResult.workout_id,
-        exerciseId: workoutExerciseDataResult.exercise_id,
-        createdAt: workoutExerciseDataResult.created_at,
-        sets: workoutSets,
-      });
+      let setIndex = 0;
+      for (let i = 0; i < insertedExercises.length; i++) {
+        const exerciseDto = dto.exercises[i];
+        const exData = insertedExercises[i];
+        const exerciseSets: WorkoutSet[] = [];
+        for (const setDto of exerciseDto.sets) {
+          if (setIndex < insertedSets.length) {
+            const s = insertedSets[setIndex];
+            exerciseSets.push({
+              id: s.id,
+              workoutExerciseId: s.workout_exercise_id,
+              setNumber: s.set_number,
+              reps: s.reps,
+              weight: s.weight,
+              rpe: s.rpe,
+              notes: s.notes,
+              createdAt: s.created_at,
+            });
+            setIndex++;
+          }
+        }
+        workoutExercises.push({
+          id: exData.id,
+          workoutId: exData.workout_id,
+          exerciseId: exData.exercise_id,
+          createdAt: exData.created_at,
+          sets: exerciseSets,
+        });
+      }
     }
 
     // 4. Return the workout with exercises and sets
@@ -216,38 +216,47 @@ notes: workoutSetDataResult.notes,
       throw new InternalServerErrorException(`Failed to fetch workout exercises: ${exercisesError.message}`);
     }
 
-    // For each exercise, get the sets
+    const exerciseIds = exercisesData.map((e: any) => e.id);
     const workoutExercises: (WorkoutExercise & { sets: WorkoutSet[] })[] = [];
 
-    for (const exercise of exercisesData) {
-      const { data: setsData, error: setsError } = await this.supabaseService
+    if (exerciseIds.length > 0) {
+      const { data: allSets, error: setsError } = await this.supabaseService
         .getClient()
         .from('workout_sets')
         .select('*')
-        .eq('workout_exercise_id', exercise.id);
+        .in('workout_exercise_id', exerciseIds);
 
       if (setsError) {
         throw new InternalServerErrorException(`Failed to fetch workout sets: ${setsError.message}`);
       }
 
-      const sets: WorkoutSet[] = setsData.map((set: any) => ({
-        id: set.id,
-        workoutExerciseId: set.workout_exercise_id,
-        setNumber: set.set_number,
-        reps: set.reps,
-        weight: set.weight,
-rpe: set.rpe,
-notes: set.notes,
-        createdAt: set.created_at,
-      }));
+      const setsByExercise = new Map<string, any[]>();
+      for (const set of allSets || []) {
+        const exId = set.workout_exercise_id;
+        if (!setsByExercise.has(exId)) setsByExercise.set(exId, []);
+        setsByExercise.get(exId)!.push(set);
+      }
 
-      workoutExercises.push({
-        id: exercise.id,
-        workoutId: exercise.workout_id,
-        exerciseId: exercise.exercise_id,
-        createdAt: exercise.created_at,
-        sets: sets,
-      });
+      for (const exercise of exercisesData) {
+        const sets: WorkoutSet[] = (setsByExercise.get(exercise.id) || []).map((set: any) => ({
+          id: set.id,
+          workoutExerciseId: set.workout_exercise_id,
+          setNumber: set.set_number,
+          reps: set.reps,
+          weight: set.weight,
+          rpe: set.rpe,
+          notes: set.notes,
+          createdAt: set.created_at,
+        }));
+
+        workoutExercises.push({
+          id: exercise.id,
+          workoutId: exercise.workout_id,
+          exerciseId: exercise.exercise_id,
+          createdAt: exercise.created_at,
+          sets: sets,
+        });
+      }
     }
 
     return {
@@ -348,62 +357,73 @@ notes: set.notes,
         throw new InternalServerErrorException(`Failed to delete existing workout exercises: ${exDeleteError.message}`);
       }
 
-      // Now, create new exercises and sets from dto.exercises
-      for (const exerciseDto of dto.exercises) {
-        // Create workout_exercise
-        const workoutExerciseData = {
-          workout_id: id,
-          exercise_id: exerciseDto.exerciseId,
-        };
+      const exerciseRows = dto.exercises.map((exerciseDto: any) => ({
+        workout_id: id,
+        exercise_id: exerciseDto.exerciseId,
+      }));
 
-        const { data: workoutExerciseDataResult, error: workoutExerciseError } = await this.supabaseService
-          .getClient()
-          .from('workout_exercises')
-          .insert(workoutExerciseData)
-          .select()
-          .single();
+      const { data: insertedExercises, error: batchExError } = await this.supabaseService
+        .getClient()
+        .from('workout_exercises')
+        .insert(exerciseRows)
+        .select();
 
-        if (workoutExerciseError) {
-          throw new InternalServerErrorException(`Failed to create workout-exercise: ${workoutExerciseError.message}`);
-        }
+      if (batchExError) {
+        throw new InternalServerErrorException(`Failed to create workout exercises: ${batchExError.message}`);
+      }
 
-        if (!workoutExerciseDataResult) {
-          throw new InternalServerErrorException('Workout-exercise created but no data returned');
-        }
+      if (!insertedExercises || insertedExercises.length === 0) {
+        throw new InternalServerErrorException('Workout exercises created but no data returned');
+      }
 
-        const workoutExerciseId = workoutExerciseDataResult.id;
-
-        // Create sets for this exercise
+      const allSetRows: any[] = [];
+      for (let i = 0; i < dto.exercises.length; i++) {
+        const exerciseDto = dto.exercises[i];
+        const workoutExerciseId = insertedExercises[i].id;
         for (const setDto of exerciseDto.sets) {
-          const workoutSetData = {
+          allSetRows.push({
             workout_exercise_id: workoutExerciseId,
             set_number: setDto.setNumber,
             reps: setDto.reps,
             weight: setDto.weight ?? null,
-rpe: setDto.rpe ?? null,
-notes: setDto.notes ?? null,
-          };
+            rpe: setDto.rpe ?? null,
+            notes: setDto.notes ?? null,
+          });
+        }
+      }
 
-          const { data: workoutSetDataResult, error: workoutSetError } = await this.supabaseService
-            .getClient()
-            .from('workout_sets')
-            .insert(workoutSetData)
-            .select()
-            .single();
+      if (allSetRows.length > 0) {
+        const { error: batchSetError } = await this.supabaseService
+          .getClient()
+          .from('workout_sets')
+          .insert(allSetRows);
 
-          if (workoutSetError) {
-            throw new InternalServerErrorException(`Failed to create workout-set: ${workoutSetError.message}`);
-          }
-
-          if (!workoutSetDataResult) {
-            throw new InternalServerErrorException('Workout-set created but no data returned');
-          }
+        if (batchSetError) {
+          throw new InternalServerErrorException(`Failed to create workout sets: ${batchSetError.message}`);
         }
       }
     }
 
-    // Return the updated workout (we'll refetch to get the latest state)
-    return this.findOne(id, userId);
+    const { data: finalWorkout, error: finalError } = await this.supabaseService
+      .getClient()
+      .from('workouts')
+      .select('*')
+      .eq('id', id)
+      .single();
+
+    if (finalError || !finalWorkout) {
+      throw new InternalServerErrorException('Failed to fetch updated workout');
+    }
+
+    return {
+      id: finalWorkout.id,
+      userId: finalWorkout.user_id,
+      name: finalWorkout.name,
+      description: finalWorkout.description,
+      createdAt: finalWorkout.created_at,
+      updatedAt: finalWorkout.updated_at,
+      deletedAt: finalWorkout.deleted_at,
+    } as Workout;
   }
 
   /**
@@ -412,9 +432,21 @@ notes: setDto.notes ?? null,
    * @param userId - The ID of the user
    */
   async remove(id: string, userId: string): Promise<void> {
-    // First, check if the workout exists and belongs to the user
-    const existingWorkout = await this.findOne(id, userId);
-    // findOne will throw NotFoundException if not found.
+    const { error: checkError } = await this.supabaseService
+      .getClient()
+      .from('workouts')
+      .select('id')
+      .eq('id', id)
+      .eq('user_id', userId)
+      .is('deleted_at', null)
+      .single();
+
+    if (checkError) {
+      if (checkError.code === 'PGRST116') {
+        throw new NotFoundException(`Workout with ID ${id} not found`);
+      }
+      throw new InternalServerErrorException(`Failed to fetch workout: ${checkError.message}`);
+    }
 
     // Soft delete by setting deleted_at to current timestamp
     const { error: deleteError } = await this.supabaseService

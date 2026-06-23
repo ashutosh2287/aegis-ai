@@ -12,6 +12,14 @@ export interface UserProfile {
   preferred_units: string;
   timezone: string | null;
   notification_preferences: Record<string, boolean>;
+  goals: string[];
+  equipment: string[];
+  target_days_per_week: number | null;
+  weight: number | null;
+  weight_unit: string;
+  referral_source: string | null;
+  onboarding_completed_at: string | null;
+  is_onboarded: boolean;
   created_at: string;
   updated_at: string;
 }
@@ -22,6 +30,10 @@ export interface UpdateProfileData {
   bio?: string;
   preferred_units?: string;
   notification_preferences?: Record<string, boolean>;
+  goals?: string[];
+  equipment?: string[];
+  experience_level?: string;
+  target_days_per_week?: number;
 }
 
 export const profileService = {

@@ -26,6 +26,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
 
   async validate(payload: any) {
     const userId = payload.sub;
+    console.log(`[JWT] Validating token for userId=${userId}`);
 
     const { data, error } = await this.supabaseService
       .getClient()
@@ -40,6 +41,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       return { id: userId, email: null };
     }
 
+    console.log(`[JWT] Profile loaded for userId=${userId}, username=${data.username}`);
     return data;
   }
 }

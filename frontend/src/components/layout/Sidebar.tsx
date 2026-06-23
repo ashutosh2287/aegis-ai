@@ -27,15 +27,20 @@ export const Sidebar = () => {
     <aside className="w-64 bg-aegis-charcoal border-r border-aegis-border">
       <div className="flex items-center px-4 py-6">
         {user ? (
-          <>
-            <div className="h-10 w-10 bg-aegis-gold rounded-full flex items-center justify-center">
-              <User className="h-5 w-5 text-aegis-black" />
+          <button
+            onClick={() => navigate('/app/profile')}
+            className="flex items-center gap-3 w-full text-left hover:opacity-80 transition-opacity"
+          >
+            <div className="h-10 w-10 bg-aegis-gold rounded-full flex items-center justify-center shrink-0">
+              <span className="text-sm font-semibold text-aegis-black">
+                {user.firstName?.charAt(0)}{user.lastName?.charAt(0)}
+              </span>
             </div>
-            <div className="ml-3 space-y-1">
-              <p className="text-sm font-medium text-white">{user.firstName} {user.lastName}</p>
-              <p className="text-xs text-aegis-muted">{user.email}</p>
+            <div className="min-w-0 space-y-1">
+              <p className="text-sm font-medium text-white truncate">{user.firstName} {user.lastName}</p>
+              <p className="text-xs text-aegis-muted truncate">{user.email}</p>
             </div>
-          </>
+          </button>
         ) : (
           <div className="h-10 w-10 bg-aegis-gold rounded-full flex items-center justify-center">
             <User className="h-5 w-5 text-aegis-black" />

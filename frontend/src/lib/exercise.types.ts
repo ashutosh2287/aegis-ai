@@ -3,7 +3,9 @@ export interface Exercise {
   name: string;
   description?: string;
   muscleGroup?: string;
+  muscleGroups?: string[];
   equipment?: string;
+  equipmentNeeded?: string[];
   createdAt: string;
   updatedAt: string;
 }

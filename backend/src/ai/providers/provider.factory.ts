@@ -3,6 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import { AIProvider } from '../interfaces/ai-provider.interface';
 import { OpenAIProvider } from './openai.provider';
 import { GeminiProvider } from './gemini.provider';
+import { OllamaProvider } from './ollama.provider';
 
 export const AI_PROVIDER = 'AI_PROVIDER';
 
@@ -13,6 +14,10 @@ export const aiProviderFactory: Provider = {
 
     if (provider === 'gemini') {
       return new GeminiProvider(configService);
+    }
+
+    if (provider === 'ollama') {
+      return new OllamaProvider(configService);
     }
 
     return new OpenAIProvider(configService);

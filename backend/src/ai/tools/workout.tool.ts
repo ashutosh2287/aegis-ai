@@ -38,8 +38,9 @@ export class WorkoutTool {
     const thirtyDaysAgo = new Date();
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
-    const { data: sessions, error: sessionsError } = await this.supabaseService
-      .getClient()
+    const client = this.supabaseService.getClient();
+
+    const { data: sessions, error: sessionsError } = await client
       .from('workout_sessions')
       .select('id, workout_id, started_at, completed_at, duration_seconds')
       .eq('user_id', userId)
@@ -53,47 +54,79 @@ export class WorkoutTool {
       return [];
     }
 
+    if (sessions.length === 0) return [];
+
+    const workoutIds = [...new Set(sessions.map((s: any) => s.workout_id))];
+
+    const { data: allExercises } = await client
+      .from('workout_exercises')
+      .select('id, workout_id, exercise_id, exercises(name)')
+      .in('workout_id', workoutIds);
+
+    if (!allExercises || allExercises.length === 0) {
+      return sessions.map((s: any) => ({
+        id: s.id,
+        name: `Workout ${new Date(s.started_at).toLocaleDateString()}`,
+        completedAt: s.completed_at || s.started_at,
+        durationSeconds: s.duration_seconds,
+        totalVolume: 0,
+        totalSets: 0,
+        totalReps: 0,
+        exercises: [],
+      }));
+    }
+
+    const exerciseIds = allExercises.map((e: any) => e.id);
+
+    const { data: allSets } = await client
+      .from('workout_sets')
+      .select('workout_exercise_id, weight, reps')
+      .in('workout_exercise_id', exerciseIds)
+      .is('deleted_at', null);
+
+    const setsByExercise = new Map<string, { weight: number | null; reps: number }[]>();
+    for (const set of allSets || []) {
+      const exId = (set as any).workout_exercise_id;
+      const existing = setsByExercise.get(exId) || [];
+      existing.push({ weight: (set as any).weight, reps: (set as any).reps });
+      setsByExercise.set(exId, existing);
+    }
+
+    const exercisesByWorkout = new Map<string, any[]>();
+    for (const ex of allExercises) {
+      const wid = (ex as any).workout_id;
+      const existing = exercisesByWorkout.get(wid) || [];
+      existing.push(ex);
+      exercisesByWorkout.set(wid, existing);
+    }
+
     const workouts: WorkoutSummary[] = [];
 
     for (const session of sessions) {
-      const { data: exercises } = await this.supabaseService
-        .getClient()
-        .from('workout_exercises')
-        .select('id, exercise_id, exercises(name)')
-        .eq('workout_id', session.workout_id);
-
-      if (!exercises) continue;
+      const sessionExercises = exercisesByWorkout.get(session.workout_id) || [];
 
       const exerciseSummaries: WorkoutSummary['exercises'] = [];
       let sessionVolume = 0;
       let sessionSets = 0;
       let sessionReps = 0;
 
-      for (const exercise of exercises) {
-        const { data: sets } = await this.supabaseService
-          .getClient()
-          .from('workout_sets')
-          .select('weight, reps')
-          .eq('workout_exercise_id', exercise.id)
-          .is('deleted_at', null);
+      for (const exercise of sessionExercises) {
+        const sets = setsByExercise.get(exercise.id) || [];
+        const exerciseSets = sets.map((s) => ({
+          weight: s.weight,
+          reps: s.reps,
+        }));
 
-        if (sets) {
-          const exerciseSets = sets.map((s: any) => ({
-            weight: s.weight,
-            reps: s.reps,
-          }));
+        exerciseSets.forEach((s: { weight: number | null; reps: number }) => {
+          if (s.weight) sessionVolume += s.weight * s.reps;
+          sessionSets++;
+          sessionReps += s.reps;
+        });
 
-          exerciseSets.forEach((s: { weight: number | null; reps: number }) => {
-            if (s.weight) sessionVolume += s.weight * s.reps;
-            sessionSets++;
-            sessionReps += s.reps;
-          });
-
-          exerciseSummaries.push({
-            exerciseName: exercise.exercises?.name || 'Unknown Exercise',
-            sets: exerciseSets,
-          });
-        }
+        exerciseSummaries.push({
+          exerciseName: (exercise as any).exercises?.name || 'Unknown Exercise',
+          sets: exerciseSets,
+        });
       }
 
       workouts.push({

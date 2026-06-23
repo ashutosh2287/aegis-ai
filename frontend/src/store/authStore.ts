@@ -7,6 +7,10 @@ export interface AuthUser {
   lastName: string;
   email: string;
   isOnboarded?: boolean;
+  goals?: string[];
+  equipment?: string[];
+  experienceLevel?: string;
+  targetDaysPerWeek?: number | null;
 }
 
 interface AuthState {

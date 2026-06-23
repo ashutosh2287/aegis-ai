@@ -7,6 +7,12 @@ import { NutritionRequestDto } from '../dto/nutrition-request.dto';
 import { AnalysisRequestDto } from '../dto/analysis-request.dto';
 import { AI_PROVIDER } from '../providers/provider.factory';
 import { AIProvider } from '../interfaces/ai-provider.interface';
+import { ModelRouter } from '../providers/model-router';
+import { ProfileTool } from '../tools/profile.tool';
+import { WorkoutTool } from '../tools/workout.tool';
+import { ExerciseTool } from '../tools/exercise.tool';
+import { AnalyticsTool } from '../tools/analytics.tool';
+import { NutritionTool } from '../tools/nutrition.tool';
 
 const mockCompletionResponse = {
   content: 'Test AI response',
@@ -137,6 +143,16 @@ describe('AIService', () => {
     }),
   };
 
+  const mockModelRouter = {
+    getModelForEndpoint: jest.fn().mockReturnValue('qwen3:8b'),
+    getModels: jest.fn().mockReturnValue({
+      chat: 'qwen3:8b',
+      workout: 'qwen3:4b',
+      nutrition: 'qwen3:4b',
+      analysis: 'qwen3:4b',
+    }),
+  };
+
   beforeEach(async () => {
     jest.clearAllMocks();
 
@@ -144,7 +160,13 @@ describe('AIService', () => {
       providers: [
         AIService,
         { provide: AI_PROVIDER, useValue: mockProvider },
+        { provide: ModelRouter, useValue: mockModelRouter },
         { provide: ToolRegistry, useValue: mockToolRegistry },
+        { provide: ProfileTool, useValue: { getUserProfile: jest.fn().mockResolvedValue({ id: 'user-1', age: 25, gender: 'male', weight: 75, height: 180, goals: ['muscle_gain'], experienceLevel: 'intermediate', equipment: ['barbell'], primaryGoal: 'muscle_gain' }) } },
+        { provide: WorkoutTool, useValue: { getWorkoutHistory: jest.fn().mockResolvedValue({ recentWorkouts: [], trainingFrequency: 3, volumeMetrics: { weeklyVolume: 0, monthlyVolume: 0, averageVolumePerWorkout: 0, totalWorkouts: 10 } }) } },
+        { provide: ExerciseTool, useValue: { getExerciseLibrary: jest.fn().mockResolvedValue([]) } },
+        { provide: AnalyticsTool, useValue: { getAnalytics: jest.fn().mockResolvedValue({ strengthTrends: { currentOneRepMax: 100, bestOneRepMax: 100, improvementPercentage: 5, trend: 'UPWARD' }, volumeTrends: { weeklyVolume: 5000, monthlyVolume: 20000, averageSetsPerWorkout: 20 }, consistency: { currentStreak: 5, longestStreak: 14, workoutsThisWeek: 3, workoutsThisMonth: 12, averageWorkoutsPerWeek: 3 } }) } },
+        { provide: NutritionTool, useValue: { getNutritionContext: jest.fn().mockResolvedValue({ weight: 75, height: 180, age: 25, gender: 'male', activityLevel: 'moderate', goal: 'muscle_gain', dietaryPreference: 'non_vegetarian' }) } },
       ],
     }).compile();
 
@@ -163,7 +185,7 @@ describe('AIService', () => {
       const result = await service.healthCheck();
       expect(result.status).toBe('healthy');
       expect(result.provider).toBe('openai');
-      expect(result.model).toBe('gpt-4o-mini');
+      expect(result.model).toBe('qwen3:8b');
     });
 
     it('should return unhealthy when API call fails', async () => {
@@ -242,31 +264,14 @@ describe('AIService', () => {
       expect(result.notes).toContain('AI returned unstructured response. Please try again.');
     });
 
-    it('should allow model to retrieve profile and exercises via tools', async () => {
-      (mockProvider.complete as jest.Mock)
-        .mockResolvedValueOnce({
-          content: null,
-          toolCalls: [
-            {
-              id: 'call_1',
-              type: 'function' as const,
-              function: { name: 'getUserProfile', arguments: JSON.stringify({ userId: 'user-1' }) },
-            },
-            {
-              id: 'call_2',
-              type: 'function' as const,
-              function: { name: 'getExerciseLibrary', arguments: JSON.stringify({}) },
-            },
-          ],
-          finishReason: 'tool_calls',
-        })
-        .mockResolvedValueOnce(mockWorkoutJsonResponse);
+    it('should fetch profile and exercises directly without tool calls', async () => {
+      (mockProvider.complete as jest.Mock).mockResolvedValueOnce(mockWorkoutJsonResponse);
 
       const dto: WorkoutRequestDto = { goal: 'muscle_gain', daysPerWeek: 4 };
       const result = await service.generateWorkout('user-1', dto);
 
       expect(result.summary).toBe('Test workout plan');
-      expect(mockToolRegistry.executeTool).toHaveBeenCalledTimes(2);
+      expect(mockProvider.complete).toHaveBeenCalledTimes(1);
     });
   });
 
@@ -309,26 +314,15 @@ describe('AIService', () => {
       expect(result.recommendations).toContain('Add a dedicated leg session');
     });
 
-    it('should allow model to retrieve analytics via tools', async () => {
+    it('should fetch analytics directly without tool calls', async () => {
       (mockProvider.complete as jest.Mock)
-        .mockResolvedValueOnce({
-          content: null,
-          toolCalls: [
-            {
-              id: 'call_1',
-              type: 'function' as const,
-              function: { name: 'getAnalytics', arguments: JSON.stringify({ userId: 'user-1' }) },
-            },
-          ],
-          finishReason: 'tool_calls',
-        })
         .mockResolvedValueOnce(mockAnalysisJsonResponse);
 
       const dto: AnalysisRequestDto = { period: 'month' };
       const result = await service.analyzeProgress('user-1', dto);
 
       expect(result.summary).toBe('Great progress this month');
-      expect(mockToolRegistry.executeTool).toHaveBeenCalledWith('getAnalytics', { userId: 'user-1' });
+      expect(mockProvider.complete).toHaveBeenCalledTimes(1);
     });
 
     it('should default period to month when not provided', async () => {

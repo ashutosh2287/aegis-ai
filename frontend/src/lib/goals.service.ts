@@ -7,12 +7,12 @@ import type {
 
 export const goalsService = {
   async getGoals(): Promise<GoalProjection[]> {
-    const response = await api.get('/analytics/projection/goal-achievement');
+    const response = await api.get('/analytics/goals');
     return response.data;
   },
 
   async getGoalProjection(goalId: string): Promise<GoalProjection> {
-    const response = await api.get('/analytics/projection/goal-achievement', {
+    const response = await api.get('/analytics/goals', {
       params: { goalId },
     });
     return response.data;

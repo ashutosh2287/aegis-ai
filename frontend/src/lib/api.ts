@@ -63,9 +63,9 @@ api.interceptors.response.use(
       return Promise.reject(new Error(serverMessage || `Request failed with status ${status}`));
     }
 
-    // Network errors
+    // Network errors (no response received at all)
     if (error.request && !error.response) {
-      return Promise.reject(new Error('Network error. Please check your connection and try again.'));
+      return Promise.reject(new Error('Unable to connect to the server. Please ensure the backend is running and try again.'));
     }
 
     return Promise.reject(error);

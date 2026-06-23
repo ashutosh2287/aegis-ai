@@ -7,15 +7,18 @@ import {
   Dumbbell,
   ChevronRight,
   AlertCircle,
+  Sparkles,
 } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 import { exerciseService } from '../lib/exercise.service';
 import { ErrorCard } from '../components/ui/ErrorCard';
+import { useAuthStore } from '../store/authStore';
 import type { Exercise, StrengthTrend } from '../lib/exercise.types';
 
 export const ExerciseCatalogPage = () => {
   const [search, setSearch] = useState('');
   const [selectedExercise, setSelectedExercise] = useState<Exercise | null>(null);
+  const userEquipment = useAuthStore((s) => s.user?.equipment ?? []);
 
   const {
     data: exercises = [],
@@ -34,20 +37,36 @@ export const ExerciseCatalogPage = () => {
       (e) =>
         e.name.toLowerCase().includes(q) ||
         e.muscleGroup?.toLowerCase().includes(q) ||
-        e.equipment?.toLowerCase().includes(q)
+        e.equipment?.toLowerCase().includes(q) ||
+        e.equipmentNeeded?.some(eq => eq.toLowerCase().includes(q))
     );
   }, [exercises, search]);
 
+  const recommended = useMemo(() => {
+    if (!userEquipment.length || search.trim()) return [];
+    return filtered.filter((e) =>
+      e.equipmentNeeded?.some((eq) =>
+        userEquipment.some((ue) => eq.toLowerCase().includes(ue.toLowerCase()) || ue.toLowerCase().includes(eq.toLowerCase()))
+      )
+    );
+  }, [filtered, userEquipment, search]);
+
+  const nonRecommended = useMemo(() => {
+    if (!recommended.length) return filtered;
+    const recommendedIds = new Set(recommended.map((e) => e.id));
+    return filtered.filter((e) => !recommendedIds.has(e.id));
+  }, [filtered, recommended]);
+
   const grouped = useMemo(() => {
     const map = new Map<string, Exercise[]>();
-    for (const ex of filtered) {
+    for (const ex of nonRecommended) {
       const group = ex.muscleGroup || 'Other';
       if (!map.has(group)) map.set(group, []);
       map.get(group)!.push(ex);
     }
     const sorted = Array.from(map.entries()).sort((a, b) => a[0].localeCompare(b[0]));
     return sorted;
-  }, [filtered]);
+  }, [nonRecommended]);
 
   const handleSelect = useCallback((exercise: Exercise) => {
     setSelectedExercise(exercise);
@@ -116,6 +135,50 @@ export const ExerciseCatalogPage = () => {
       )}
 
       <div className="space-y-8">
+        {recommended.length > 0 && !search.trim() && (
+          <motion.div
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.25 }}
+          >
+            <div className="flex items-center gap-2 mb-3">
+              <Sparkles className="h-4 w-4 text-aegis-gold" />
+              <h2 className="text-sm font-semibold text-aegis-gold uppercase tracking-wide">
+                Recommended for you
+              </h2>
+            </div>
+            <p className="text-xs text-aegis-muted mb-3">
+              Exercises matching your available equipment
+            </p>
+            <div className="space-y-2">
+              {recommended.map((exercise) => (
+                <button
+                  key={exercise.id}
+                  onClick={() => handleSelect(exercise)}
+                  className="w-full flex items-center justify-between p-4 bg-aegis-charcoal rounded-lg border border-aegis-gold/20 hover:border-aegis-gold/40 hover:shadow-sm transition-all text-left focus:outline-none focus:ring-2 focus:ring-aegis-gold focus:ring-offset-1"
+                  aria-label={`View details for ${exercise.name}`}
+                >
+                  <div className="min-w-0">
+                    <p className="font-medium text-white truncate">{exercise.name}</p>
+                    <div className="flex items-center gap-2 mt-0.5">
+                      {exercise.muscleGroup && (
+                        <span className="text-xs text-aegis-muted">{exercise.muscleGroup}</span>
+                      )}
+                      {exercise.equipment && (
+                        <>
+                          <span className="text-aegis-border">·</span>
+                          <span className="text-xs text-aegis-muted">{exercise.equipment}</span>
+                        </>
+                      )}
+                    </div>
+                  </div>
+                  <ChevronRight className="h-4 w-4 text-aegis-muted shrink-0 ml-3" />
+                </button>
+              ))}
+            </div>
+          </motion.div>
+        )}
+
         {grouped.map(([muscleGroup, exercises]) => (
           <motion.div
             key={muscleGroup}

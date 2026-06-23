@@ -14,6 +14,11 @@ const AuthProtectedRoute = ({ children }: AuthProtectedRouteProps): ReactElement
     return <Navigate to="/login" replace />;
   }
 
+  // If user already completed onboarding, never let them see /onboarding again
+  if (user?.isOnboarded && location.pathname === '/onboarding') {
+    return <Navigate to="/app/dashboard" replace />;
+  }
+
   // If user is authenticated but hasn't completed onboarding, redirect to onboarding
   // (but not if we're already on /onboarding to avoid infinite loop)
   if (user && user.isOnboarded === false && location.pathname !== '/onboarding') {

@@ -27,9 +27,17 @@ export const configValidationSchema = Joi.object({
   // Swagger
   SWAGGER_ENABLED: Joi.boolean().default(true),
   // AI
-  AI_PROVIDER: Joi.string().valid('openai', 'gemini').default('openai'),
+  AI_PROVIDER: Joi.string().valid('openai', 'gemini', 'ollama').default('openai'),
   OPENAI_API_KEY: Joi.string().allow('').optional(),
   GEMINI_API_KEY: Joi.string().allow('').optional(),
+  OLLAMA_BASE_URL: Joi.string().optional().default('http://localhost:11434'),
   AI_MODEL: Joi.string().optional(),
   AI_TEMPERATURE: Joi.number().min(0).max(2).default(0.7),
+  REQUEST_TIMEOUT: Joi.number().default(120),
+  // AI Model Routing (per-endpoint models)
+  OLLAMA_CHAT_MODEL: Joi.string().optional(),
+  OLLAMA_STRUCT_MODEL: Joi.string().optional(),
+  OLLAMA_WORKOUT_MODEL: Joi.string().optional(),
+  OLLAMA_NUTRITION_MODEL: Joi.string().optional(),
+  OLLAMA_ANALYSIS_MODEL: Joi.string().optional(),
 });

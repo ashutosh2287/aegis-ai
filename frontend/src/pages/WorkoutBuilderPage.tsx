@@ -20,6 +20,7 @@ import { CSS } from '@dnd-kit/utilities';
 import { exerciseService } from '../lib/exercise.service';
 import { useWorkouts } from '../hooks/useWorkouts';
 import { useToast } from '../hooks/useToast';
+import { useAuthStore } from '../store/authStore';
 import type { Exercise } from '../lib/exercise.types';
 
 const DEBOUNCE_MS = 300;
@@ -124,6 +125,7 @@ const WorkoutBuilderPage = () => {
   const navigate = useNavigate();
   const { createWorkout, addWorkoutExercise } = useWorkouts();
   const { showToast } = useToast();
+  const userEquipment = useAuthStore((s) => s.user?.equipment ?? []);
 
   const [workoutName, setWorkoutName] = useState('');
   const [exercises, setExercises] = useState<Array<{
@@ -136,10 +138,20 @@ const WorkoutBuilderPage = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const debouncedQuery = useDebouncedValue(searchQuery, DEBOUNCE_MS);
 
-  const { data: searchResults = [], isLoading: searchLoading, error: searchError, isFetched } = useQuery<Exercise[], Error>({
+  const { data: rawSearchResults = [], isLoading: searchLoading, error: searchError, isFetched } = useQuery<Exercise[], Error>({
     queryKey: ['exerciseSearch', debouncedQuery],
     queryFn: () => exerciseService.searchExercises(debouncedQuery),
     enabled: debouncedQuery.trim().length > 0,
+  });
+
+  const searchResults = rawSearchResults.slice().sort((a, b) => {
+    const aMatch = a.equipmentNeeded?.some((eq) =>
+      userEquipment.some((ue) => eq.toLowerCase().includes(ue.toLowerCase()) || ue.toLowerCase().includes(eq.toLowerCase()))
+    ) ? 1 : 0;
+    const bMatch = b.equipmentNeeded?.some((eq) =>
+      userEquipment.some((ue) => eq.toLowerCase().includes(ue.toLowerCase()) || ue.toLowerCase().includes(eq.toLowerCase()))
+    ) ? 1 : 0;
+    return bMatch - aMatch;
   });
 
   const [isSaving, setIsSaving] = useState(false);
@@ -319,16 +331,25 @@ const WorkoutBuilderPage = () => {
             {!searchLoading && !searchError && isFetched && searchResults.length === 0 && (
               <p className="p-4 text-aegis-muted text-sm">No exercises found</p>
             )}
-            {!searchLoading && !searchError && isFetched && searchResults.map((exercise) => (
+            {!searchLoading && !searchError && isFetched && searchResults.map((exercise) => {
+              const matchesEquipment = userEquipment.length > 0 && exercise.equipmentNeeded?.some((eq) =>
+                userEquipment.some((ue) => eq.toLowerCase().includes(ue.toLowerCase()) || ue.toLowerCase().includes(eq.toLowerCase()))
+              );
+              return (
               <div
                 key={exercise.id}
                 className="p-4 flex justify-between items-center hover:bg-aegis-dark"
               >
                 <div>
-                  <p className="font-medium text-white">{exercise.name}</p>
+                  <div className="flex items-center gap-2">
+                    <p className="font-medium text-white">{exercise.name}</p>
+                    {matchesEquipment && (
+                      <span className="text-[10px] px-1.5 py-0.5 bg-aegis-gold/20 text-aegis-gold rounded">Your equipment</span>
+                    )}
+                  </div>
                   <p className="text-sm text-aegis-muted">
-                    {exercise.muscleGroup}
-                    {exercise.equipment && ` · ${exercise.equipment}`}
+                    {exercise.muscleGroups?.join(', ') || exercise.muscleGroup}
+                    {exercise.equipmentNeeded?.length ? ` · ${exercise.equipmentNeeded.join(', ')}` : exercise.equipment && ` · ${exercise.equipment}`}
                   </p>
                 </div>
                 <button
@@ -340,7 +361,8 @@ const WorkoutBuilderPage = () => {
                   {isAlreadyAdded(exercise.id) ? 'Added' : 'Add'}
                 </button>
               </div>
-            ))}
+            );
+            })}
           </div>
         )}
       </div>

@@ -1,0 +1,127 @@
+{
+  "timestamp": "2026-06-23T12:47:27.747Z",
+  "models": {
+    "chat": "qwen3:8b",
+    "struct": "qwen3:8b"
+  },
+  "benchmarks": {
+    "chat": {
+      "model": "qwen3:8b",
+      "maxTokens": 2048,
+      "avgLatencyMs": 10080,
+      "avgTokensPerSec": "8.5",
+      "runs": [
+        {
+          "latencyMs": 14253,
+          "promptTokens": 45,
+          "completionTokens": 41,
+          "contentLength": 142
+        },
+        {
+          "latencyMs": 10403,
+          "promptTokens": 45,
+          "completionTokens": 80,
+          "contentLength": 292
+        },
+        {
+          "latencyMs": 5585,
+          "promptTokens": 45,
+          "completionTokens": 41,
+          "contentLength": 138
+        }
+      ]
+    },
+    "workout": {
+      "model": "qwen3:8b",
+      "maxTokens": 512,
+      "avgLatencyMs": 4242,
+      "avgTokensPerSec": "N/A",
+      "runs": [
+        {
+          "latencyMs": 4094,
+          "promptTokens": 0,
+          "completionTokens": 0,
+          "contentLength": 31
+        },
+        {
+          "latencyMs": 4214,
+          "promptTokens": 0,
+          "completionTokens": 0,
+          "contentLength": 31
+        },
+        {
+          "latencyMs": 4418,
+          "promptTokens": 0,
+          "completionTokens": 0,
+          "contentLength": 31
+        }
+      ]
+    },
+    "nutrition": {
+      "model": "qwen3:8b",
+      "maxTokens": 512,
+      "avgLatencyMs": 4340,
+      "avgTokensPerSec": "N/A",
+      "runs": [
+        {
+          "latencyMs": 4243,
+          "promptTokens": 0,
+          "completionTokens": 0,
+          "contentLength": 31
+        },
+        {
+          "latencyMs": 4290,
+          "promptTokens": 0,
+          "completionTokens": 0,
+          "contentLength": 31
+        },
+        {
+          "latencyMs": 4487,
+          "promptTokens": 0,
+          "completionTokens": 0,
+          "contentLength": 31
+        }
+      ]
+    },
+    "analysis": {
+      "model": "qwen3:8b",
+      "maxTokens": 768,
+      "avgLatencyMs": 4233,
+      "avgTokensPerSec": "N/A",
+      "runs": [
+        {
+          "latencyMs": 4081,
+          "promptTokens": 0,
+          "completionTokens": 0,
+          "contentLength": 31
+        },
+        {
+          "latencyMs": 4169,
+          "promptTokens": 0,
+          "completionTokens": 0,
+          "contentLength": 31
+        },
+        {
+          "latencyMs": 4450,
+          "promptTokens": 0,
+          "completionTokens": 0,
+          "contentLength": 31
+        }
+      ]
+    }
+  },
+  "loadTest": {
+    "sequential": {
+      "totalMs": 88718,
+      "successRate": "20/20",
+      "avgMs": 4436,
+      "p95Ms": 4743
+    },
+    "concurrent": {
+      "totalMs": 51750,
+      "successRate": "10/10",
+      "avgMs": 28810,
+      "p95Ms": 51742
+    }
+  }
+}

@@ -498,18 +498,15 @@ export class WorkoutSetsService {
       throw new BadRequestException('The number of set IDs provided does not match the number of sets in the workout exercise');
     }
 
-    // Update the set_number for each set in the dto
-    // We'll do this in a loop (Supabase doesn't have a bulk update with different values per row easily)
-    for (const item of dto.items) {
-      const { error: updateError } = await this.supabaseService
-        .getClient()
-        .from('workout_sets')
-        .update({ set_number: item.setNumber })
-        .eq('id', item.id);
-
-      if (updateError) {
-        throw new InternalServerErrorException(`Failed to reorder set: ${updateError.message}`);
-      }
-    }
+    // Update the set_number for each set concurrently
+    await Promise.all(
+      dto.items.map(item =>
+        this.supabaseService
+          .getClient()
+          .from('workout_sets')
+          .update({ set_number: item.setNumber })
+          .eq('id', item.id)
+      )
+    );
   }
 }

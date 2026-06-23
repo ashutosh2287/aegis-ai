@@ -1,26 +1,12 @@
-export const COACH_SYSTEM_PROMPT = `You are AEGIS AI Coach, an expert fitness coaching assistant. Your role is to provide personalized, evidence-based fitness guidance.
+export const COACH_SYSTEM_PROMPT = `/no_think You are AEGIS AI Coach, a fitness coaching assistant. Provide personalized, evidence-based fitness guidance.
 
-Core Responsibilities:
-- Fitness Coaching: Provide general exercise guidance, form tips, and motivation
-- Workout Programming: Design workout plans based on user goals and available equipment
-- Nutrition Planning: Create meal plans and macro recommendations
-- Progress Analysis: Analyze workout data and provide actionable insights
-
-IMPORTANT RULES:
-1. Always use the user's profile data when making recommendations
-2. Never provide medical diagnoses or treatment advice
-3. If a user mentions pain or injury, recommend they consult a healthcare professional
-4. Base all recommendations on current exercise science evidence
-5. Prioritize safety in all exercise suggestions
-6. Be encouraging but realistic about expectations
-7. When unsure, err on the side of caution
-
-Response Style:
+Rules:
+- Use user's profile data for recommendations
+- No medical diagnoses; refer to healthcare professionals for pain/injury
 - Be concise and actionable
-- Use bullet points for clarity when listing exercises or meals
-- Include specific numbers (sets, reps, weights, calories) when relevant
-- Reference the user's data to personalize responses
-- Use a professional but friendly tone`;
+- Use bullet points for exercises/meals
+- Include specific numbers (sets, reps, calories)
+- Professional but friendly tone`;
 
 export function buildCoachMessage(userContext: string, userMessage: string): string {
   return `User Context:\n${userContext}\n\nUser Message: ${userMessage}`;
@@ -32,36 +18,27 @@ export function buildWorkoutGenerationMessage(
   exerciseLibrary: string,
   requirements: string,
 ): string {
-  return `Generate a personalized workout plan based on the following information:
+  return `Generate a workout plan.
 
-User Profile:
-${userProfile}
+Profile: ${userProfile}
+History: ${workoutHistory}
+Exercises: ${exerciseLibrary}
+Requirements: ${requirements}
 
-Recent Workout History:
-${workoutHistory}
-
-Available Exercises (from user's equipment):
-${exerciseLibrary}
-
-Requirements:
-${requirements}
-
-Provide a structured weekly workout split with specific exercises, sets, reps, rest times, and progression notes. Format the response as JSON matching the WorkoutPlanResponse interface.`;
+Return JSON: {"summary":"overview","weeklySplit":{"days":[{"day":"Monday","focus":"group","exercises":[{"name":"Ex","muscleGroups":["m"],"sets":4,"reps":"8-12","restSeconds":90,"notes":"tip"}]}]},"notes":["tip"]}`;
 }
 
 export function buildNutritionMessage(
   nutritionContext: string,
   requirements: string,
 ): string {
-  return `Create a personalized nutrition plan based on the following:
+  return `Create a nutrition plan.
 
-User Data:
-${nutritionContext}
+Data: ${nutritionContext}
+Requirements: ${requirements}
 
-Requirements:
-${requirements}
-
-Calculate maintenance calories, goal calories, and macro breakdown. Create a sample meal plan with breakfast, lunch, dinner, and snacks. Support the user's dietary preference. Format the response as JSON matching the NutritionPlanResponse interface.`;
+Calculate TDEE, goal calories, macros. Create meal plan (breakfast/lunch/dinner/snacks).
+Return JSON: {"summary":"overview","dailyCalories":2500,"goalCalories":2800,"macros":{"protein":180,"carbohydrates":315,"fat":78},"mealPlan":{"breakfast":{"name":"Meal","description":"desc","calories":600,"protein":40,"carbohydrates":70,"fat":15},"lunch":{},"dinner":{},"snacks":{}}}`;
 }
 
 export function buildAnalysisMessage(
@@ -70,26 +47,11 @@ export function buildAnalysisMessage(
   analytics: string,
   period: string,
 ): string {
-  return `Analyze the user's fitness progress over the past ${period}:
+  return `Analyze fitness progress over ${period}.
 
-User Profile:
-${userProfile}
+Profile: ${userProfile}
+History: ${workoutHistory}
+Analytics: ${analytics}
 
-Workout History:
-${workoutHistory}
-
-Analytics Data:
-${analytics}
-
-Provide a comprehensive analysis including:
-1. Overall summary of progress
-2. Workout consistency assessment
-3. Volume progression trends
-4. Strength progression trends
-5. Goal progress evaluation
-6. Identify any issues or concerns
-7. Provide specific recommendations
-8. Suggest next actions
-
-Format the response as JSON matching the AnalysisResponse interface.`;
+Return JSON: {"summary":"assessment","workoutConsistency":"analysis","volumeProgression":"trends","strengthProgression":"gains","goalProgress":"evaluation","issues":["issue"],"recommendations":["rec"],"nextActions":["action"]}`;
 }

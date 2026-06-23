@@ -135,6 +135,29 @@ export class ExerciseService {
     } as ExerciseWithRelations;
   }
 
+  async getExercisesByIds(ids: string[]): Promise<ExerciseWithRelations[]> {
+    if (ids.length === 0) return [];
+
+    const { data: exercises, error } = await this.supabaseService
+      .getClient()
+      .from('exercises')
+      .select('*')
+      .in('id', ids);
+
+    if (error || !exercises) {
+      return [];
+    }
+
+    const knownMuscles = ['chest', 'back', 'shoulders', 'biceps', 'triceps', 'legs', 'quads', 'hamstrings', 'glutes', 'calves', 'core', 'lats', 'abs'];
+    const knownEquipment = ['barbell', 'dumbbell', 'cable', 'machine', 'kettlebell', 'bodyweight'];
+
+    return exercises.map((ex: any) => ({
+      ...ex,
+      muscleGroups: ex.tags?.filter((t: string) => knownMuscles.includes(t)) || [],
+      equipmentNeeded: ex.tags?.filter((t: string) => knownEquipment.includes(t)) || [],
+    })) as ExerciseWithRelations[];
+  }
+
   /**
    * Create a new custom exercise.
    * @param createExerciseDto - The data for the new exercise

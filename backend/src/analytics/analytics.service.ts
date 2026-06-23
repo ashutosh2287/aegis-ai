@@ -151,17 +151,27 @@ export class AnalyticsService {
         return 0;
       }
 
-      // Get exercises for these sessions
+      const sessionWorkoutsRes = await this.supabaseService
+        .getClient()
+        .from('workout_sessions')
+        .select('workout_id')
+        .in('id', sessionIds);
+
+      if (sessionWorkoutsRes.error) {
+        throw new InternalServerErrorException(sessionWorkoutsRes.error.message);
+      }
+
+      const workoutIds = sessionWorkoutsRes.data.map((s: any) => s.workout_id);
+
+      if (workoutIds.length === 0) {
+        return 0;
+      }
+
       const exercisesRes = await this.supabaseService
         .getClient()
         .from('workout_exercises')
         .select('id')
-        .in('workout_id',
-          this.supabaseService.getClient()
-            .from('workout_sessions')
-            .select('workout_id')
-            .in('id', sessionIds)
-        );
+        .in('workout_id', workoutIds);
 
       if (exercisesRes.error) {
         throw new InternalServerErrorException(exercisesRes.error.message);
@@ -1016,22 +1026,14 @@ export class AnalyticsService {
     return { totalVolume, totalSets, totalReps };
   }
 
-  async getWeeklyVolume(userId: string) {
-    const endDate = new Date();
-    const startDate = new Date();
-    startDate.setDate(endDate.getDate() - 7); // Last 7 days
-
-    const startDateISO = startDate.toISOString();
-    const endDateISO = endDate.toISOString();
-
-    // Get sessions in the date range for the user
+  private async getVolumeForDateRange(userId: string, startDateISO: string, endDateISO: string) {
     const sessions = await this.supabaseService
       .getClient()
       .from('workout_sessions')
       .select('id')
       .eq('user_id', userId)
-.gte('started_at', startDateISO)
-        .lte('started_at', endDateISO)
+      .gte('started_at', startDateISO)
+      .lte('started_at', endDateISO)
       .is('deleted_at', null);
 
     if (sessions.error) {
@@ -1039,13 +1041,10 @@ export class AnalyticsService {
     }
 
     const sessionIds = sessions.data.map((s: any) => s.id);
-
     if (sessionIds.length === 0) {
       return { totalVolume: 0, totalSets: 0, totalReps: 0 };
     }
 
-    // Get all workoutExercises for these sessions
-    // First, get workouts for these sessions
     const sessionWorkouts = await this.supabaseService
       .getClient()
       .from('workout_sessions')
@@ -1057,12 +1056,10 @@ export class AnalyticsService {
     }
 
     const workoutIds = sessionWorkouts.data.map((s: any) => s.workout_id);
-
     if (workoutIds.length === 0) {
       return { totalVolume: 0, totalSets: 0, totalReps: 0 };
     }
 
-    // Get workoutExercises for these workouts
     const exercises = await this.supabaseService
       .getClient()
       .from('workout_exercises')
@@ -1074,12 +1071,10 @@ export class AnalyticsService {
     }
 
     const exerciseIds = exercises.data.map((e: any) => e.id);
-
     if (exerciseIds.length === 0) {
       return { totalVolume: 0, totalSets: 0, totalReps: 0 };
     }
 
-    // Get all sets for these exerciseIds
     const sets = await this.supabaseService
       .getClient()
       .from('workout_sets')
@@ -1104,109 +1099,31 @@ export class AnalyticsService {
     });
 
     return { totalVolume, totalSets, totalReps };
+  }
+
+  async getWeeklyVolume(userId: string) {
+    const endDate = new Date();
+    const startDate = new Date();
+    startDate.setDate(endDate.getDate() - 7);
+    return this.getVolumeForDateRange(userId, startDate.toISOString(), endDate.toISOString());
   }
 
   async getMonthlyVolume(userId: string) {
     const endDate = new Date();
     const startDate = new Date();
-    startDate.setDate(endDate.getDate() - 30); // Last 30 days
-
-    const startDateISO = startDate.toISOString();
-    const endDateISO = endDate.toISOString();
-
-    // Get sessions in the date range for the user
-    const sessions = await this.supabaseService
-      .getClient()
-      .from('workout_sessions')
-      .select('id')
-      .eq('user_id', userId)
-.gte('started_at', startDateISO)
-        .lte('started_at', endDateISO)
-      .is('deleted_at', null);
-
-    if (sessions.error) {
-      throw new InternalServerErrorException(`Failed to fetch sessions: ${sessions.error.message}`);
-    }
-
-    const sessionIds = sessions.data.map((s: any) => s.id);
-
-    if (sessionIds.length === 0) {
-      return { totalVolume: 0, totalSets: 0, totalReps: 0 };
-    }
-
-    // Get all workoutExercises for these sessions
-    const sessionWorkouts = await this.supabaseService
-      .getClient()
-      .from('workout_sessions')
-      .select('workout_id')
-      .in('id', sessionIds);
-
-    if (sessionWorkouts.error) {
-      throw new InternalServerErrorException(`Failed to fetch session workouts: ${sessionWorkouts.error.message}`);
-    }
-
-    const workoutIds = sessionWorkouts.data.map((s: any) => s.workout_id);
-
-    if (workoutIds.length === 0) {
-      return { totalVolume: 0, totalSets: 0, totalReps: 0 };
-    }
-
-    // Get workoutExercises for these workouts
-    const exercises = await this.supabaseService
-      .getClient()
-      .from('workout_exercises')
-      .select('id')
-      .in('workout_id', workoutIds);
-
-    if (exercises.error) {
-      throw new InternalServerErrorException(`Failed to fetch workout exercises: ${exercises.error.message}`);
-    }
-
-    const exerciseIds = exercises.data.map((e: any) => e.id);
-
-    if (exerciseIds.length === 0) {
-      return { totalVolume: 0, totalSets: 0, totalReps: 0 };
-    }
-
-    // Get all sets for these exerciseIds
-    const sets = await this.supabaseService
-      .getClient()
-      .from('workout_sets')
-      .select('reps, weight')
-      .in('workout_exercise_id', exerciseIds)
-      .is('deleted_at', null);
-
-    if (sets.error) {
-      throw new InternalServerErrorException(`Failed to fetch workout sets: ${sets.error.message}`);
-    }
-
-    let totalVolume = 0;
-    let totalSets = 0;
-    let totalReps = 0;
-
-    sets.data.forEach((set: any) => {
-      if (set.weight !== null) {
-        totalVolume += set.weight * set.reps;
-      }
-      totalSets++;
-      totalReps += set.reps;
-    });
-
-    return { totalVolume, totalSets, totalReps };
+    startDate.setDate(endDate.getDate() - 30);
+    return this.getVolumeForDateRange(userId, startDate.toISOString(), endDate.toISOString());
   }
 
   async getWorkoutConsistency(userId: string): Promise<WorkoutConsistency> {
     try {
       const now = new Date();
-      const nowISO = now.toISOString();
 
       const startOfWeek = new Date(now);
-      startOfWeek.setDate(now.getDate() - 6); // Last 7 days including today
-      const startOfWeekISO = startOfWeek.toISOString();
+      startOfWeek.setDate(now.getDate() - 6);
 
       const startOfMonth = new Date(now);
-      startOfMonth.setDate(now.getDate() - 29); // Last 30 days
-      const startOfMonthISO = startOfMonth.toISOString();
+      startOfMonth.setDate(now.getDate() - 29);
 
       // Get all workout sessions to calculate consistency metrics
       const allSessionsRes = await this.supabaseService
@@ -1232,37 +1149,18 @@ export class AnalyticsService {
 
       const totalWorkoutDays = workoutDates.size;
 
-      // Get workouts for the last week
-      const weekSessionsRes = await this.supabaseService
-        .getClient()
-        .from('workout_sessions')
-        .select('id')
-        .eq('user_id', userId)
-        .gte('completed_at', startOfWeekISO)
-        .lte('completed_at', nowISO)
-        .is('deleted_at', null);
-
-      if (weekSessionsRes.error) {
-        throw new InternalServerErrorException(weekSessionsRes.error.message);
+      let workoutsThisWeek = 0;
+      let workoutsThisMonth = 0;
+      for (const session of allSessions) {
+        if (!session.completed_at) continue;
+        const completedDate = new Date(session.completed_at);
+        if (completedDate >= startOfWeek && completedDate <= now) {
+          workoutsThisWeek++;
+        }
+        if (completedDate >= startOfMonth && completedDate <= now) {
+          workoutsThisMonth++;
+        }
       }
-
-      const workoutsThisWeek = weekSessionsRes.data.length;
-
-      // Get workouts for the last month
-      const monthSessionsRes = await this.supabaseService
-        .getClient()
-        .from('workout_sessions')
-        .select('id')
-        .eq('user_id', userId)
-        .gte('completed_at', startOfMonthISO)
-        .lte('completed_at', nowISO)
-        .is('deleted_at', null);
-
-      if (monthSessionsRes.error) {
-        throw new InternalServerErrorException(monthSessionsRes.error.message);
-      }
-
-      const workoutsThisMonth = monthSessionsRes.data.length;
 
       // Calculate currentStreak and longestStreak
       let currentStreak = 0;

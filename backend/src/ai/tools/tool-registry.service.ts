@@ -128,7 +128,9 @@ export class ToolRegistry {
     let content: string;
 
     try {
+      console.log(`[TOOL-EXEC] Dispatching tool=${toolName}, args.userId=${args.userId}`);
       content = await this.dispatchTool(toolName, args);
+      console.log(`[TOOL-EXEC] tool=${toolName} completed, contentLength=${content.length}`);
     } catch (error) {
       this.logger.error(`Tool ${toolName} execution failed: ${(error as Error).message}`);
       content = JSON.stringify({ error: (error as Error).message });

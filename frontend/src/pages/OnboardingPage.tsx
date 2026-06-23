@@ -445,6 +445,7 @@ export default function OnboardingPage() {
   const [state, dispatch] = useReducer(reducer, initialState);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [direction, setDirection] = useState(1);
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
   const isFirst = step === 0;
   const isLast = step === TOTAL_STEPS - 1;
@@ -468,6 +469,7 @@ export default function OnboardingPage() {
 
   const handleSubmit = async () => {
     setIsSubmitting(true);
+    setSubmitError(null);
     try {
       await onboardingService.completeOnboarding({
         goals: state.goals,
@@ -479,10 +481,8 @@ export default function OnboardingPage() {
       });
       setOnboarded(true);
       navigate('/app/dashboard', { replace: true });
-    } catch {
-      setOnboarded(true);
-      navigate('/app/dashboard', { replace: true });
-    } finally {
+    } catch (err) {
+      setSubmitError((err as Error).message || 'Failed to save. Please try again.');
       setIsSubmitting(false);
     }
   };
@@ -529,6 +529,9 @@ export default function OnboardingPage() {
         </div>
 
         <div className="pt-4">
+          {submitError && (
+            <p className="text-sm text-red-400 text-center mb-3">{submitError}</p>
+          )}
           <button
             onClick={goNext}
             disabled={!canContinue || isSubmitting}

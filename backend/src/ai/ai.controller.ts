@@ -53,6 +53,7 @@ export class AIController {
   @ApiResponse({ status: 500, description: 'Internal server error' })
   async chat(@Req() req: Request, @Body() dto: AiChatDto) {
     const user = req.user as any;
+    console.log(`[AI-CHAT] userId=${user.id}, message="${dto.message?.substring(0, 80)}..."`);
     return this.aiService.chat(user.id, dto);
   }
 
@@ -77,6 +78,7 @@ export class AIController {
   @ApiResponse({ status: 500, description: 'Internal server error' })
   async generateWorkout(@Req() req: Request, @Body() dto: WorkoutRequestDto) {
     const user = req.user as any;
+    console.log(`[AI-WORKOUT] userId=${user.id}, goal=${dto.goal}, days=${dto.daysPerWeek}`);
     return this.aiService.generateWorkout(user.id, dto);
   }
 
@@ -103,6 +105,7 @@ export class AIController {
   @ApiResponse({ status: 500, description: 'Internal server error' })
   async generateNutrition(@Req() req: Request, @Body() dto: NutritionRequestDto) {
     const user = req.user as any;
+    console.log(`[AI-NUTRITION] userId=${user.id}, diet=${dto.dietaryPreference}, activity=${dto.activityLevel}`);
     return this.aiService.generateNutrition(user.id, dto);
   }
 
@@ -132,6 +135,7 @@ export class AIController {
   @ApiResponse({ status: 500, description: 'Internal server error' })
   async analyzeProgress(@Req() req: Request, @Body() dto: AnalysisRequestDto) {
     const user = req.user as any;
+    console.log(`[AI-ANALYZE] userId=${user.id}, period=${dto.period}`);
     return this.aiService.analyzeProgress(user.id, dto);
   }
 
@@ -151,5 +155,13 @@ export class AIController {
   })
   async healthCheck() {
     return this.aiService.healthCheck();
+  }
+
+  @Get('benchmark')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Benchmark Ollama with thinking ON vs OFF' })
+  async benchmark() {
+    return this.aiService.runBenchmark();
   }
 }

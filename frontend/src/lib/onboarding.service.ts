@@ -26,7 +26,7 @@ export interface OnboardingResponse {
 
 export const onboardingService = {
   async completeOnboarding(data: OnboardingData): Promise<OnboardingResponse> {
-    const response = await api.post('/auth/onboarding', data);
+    const response = await api.patch('/auth/onboarding', data);
     return response.data;
   },
 

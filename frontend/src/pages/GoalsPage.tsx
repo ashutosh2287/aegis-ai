@@ -1,12 +1,14 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Lightbulb, Target, AlertTriangle } from 'lucide-react';
+import { Lightbulb, Target, AlertTriangle, Calendar, ChevronRight } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { useGoals, useStrengthForecast, useVolumeForecast, useFrequencyForecast, useForecastRecommendations } from '../hooks/useGoals';
 import { GoalCard, GoalCardSkeleton } from '../components/ui/GoalCard';
 import { ForecastTimelineChart, ForecastTimelineChartSkeleton } from '../components/ui/ForecastTimelineChart';
 import { EmptyForecastState } from '../components/ui/EmptyForecastState';
 import { DashboardSectionError } from '../components/dashboard/DashboardSectionError';
 import { SectionErrorBoundary } from '../components/dashboard/SectionErrorBoundary';
+import { useAuthStore } from '../store/authStore';
 
 const containerVariants = {
   hidden: {},
@@ -103,6 +105,7 @@ export const GoalsPage = () => {
   const strengthForecast = useStrengthForecast();
   const volumeForecast = useVolumeForecast();
   const frequencyForecast = useFrequencyForecast();
+  const targetDaysPerWeek = useAuthStore((s) => s.user?.targetDaysPerWeek);
 
   const [learnMoreUrl] = useState('https://docs.example.com/forecasts');
 
@@ -130,6 +133,36 @@ export const GoalsPage = () => {
           </p>
         </div>
       </div>
+
+      {/* Frequency Target from Onboarding */}
+      {targetDaysPerWeek && (
+        <motion.section variants={sectionVariants}>
+          <div className="bg-aegis-charcoal rounded-xl border border-aegis-border p-5">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-lg bg-aegis-gold/10 flex items-center justify-center shrink-0">
+                  <Calendar className="h-5 w-5 text-aegis-gold" />
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-white">
+                    Your weekly frequency target
+                  </p>
+                  <p className="text-xs text-aegis-muted">
+                    Set during onboarding — {targetDaysPerWeek} {targetDaysPerWeek === 1 ? 'day' : 'days'} per week
+                  </p>
+                </div>
+              </div>
+              <Link
+                to="/app/dashboard"
+                className="flex items-center gap-1 text-xs text-aegis-gold hover:text-aegis-gold-light transition-colors"
+              >
+                View progress
+                <ChevronRight className="h-3 w-3" />
+              </Link>
+            </div>
+          </div>
+        </motion.section>
+      )}
 
       {/* Section 1: Goal Cards */}
       <motion.section variants={sectionVariants}>

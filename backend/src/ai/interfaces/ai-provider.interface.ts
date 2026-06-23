@@ -36,6 +36,7 @@ export interface AICompletionRequest {
   responseFormat?: 'text' | 'json';
   tools?: AIToolDefinition[];
   toolChoice?: 'auto' | 'none' | 'required' | { type: 'function'; function: { name: string } };
+  model?: string;
 }
 
 export interface AICompletionResponse {

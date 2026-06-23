@@ -3,7 +3,9 @@ import { AIController } from './ai.controller';
 import { AIService } from './ai.service';
 import { OpenAIProvider } from './providers/openai.provider';
 import { GeminiProvider } from './providers/gemini.provider';
+import { OllamaProvider } from './providers/ollama.provider';
 import { aiProviderFactory, AI_PROVIDER } from './providers/provider.factory';
+import { ModelRouter } from './providers/model-router';
 import { ProfileTool } from './tools/profile.tool';
 import { WorkoutTool } from './tools/workout.tool';
 import { ExerciseTool } from './tools/exercise.tool';
@@ -18,14 +20,16 @@ import { SupabaseModule } from '../supabase/supabase.module';
   providers: [
     OpenAIProvider,
     GeminiProvider,
+    OllamaProvider,
     aiProviderFactory,
-    AIService,
+    ModelRouter,
     ProfileTool,
     WorkoutTool,
     ExerciseTool,
     AnalyticsTool,
     NutritionTool,
     ToolRegistry,
+    AIService,
   ],
   exports: [AIService],
 })

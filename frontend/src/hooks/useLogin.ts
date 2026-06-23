@@ -11,7 +11,6 @@ export const useLogin = () => {
     setLoading(true);
     try {
       const response = await api.post<AuthResponse>('/auth/login', { email, password });
-      // Assuming the response contains token, refreshToken, and user
       const { token, refreshToken, user } = response.data;
       setAuth(token, refreshToken, user);
 
@@ -19,14 +18,33 @@ export const useLogin = () => {
       try {
         const profileResponse = await api.get('/auth/me');
         const profile = profileResponse.data;
-        setOnboarded(!!profile.onboarding_completed_at);
-      } catch {
-        // If profile fetch fails, proceed to dashboard anyway
-      }
+        const isOnboarded = !!profile.onboarding_completed_at;
+        setOnboarded(isOnboarded);
+        useAuthStore.setState((state) => ({
+          user: state.user
+            ? {
+                ...state.user,
+                isOnboarded,
+                goals: profile.goals ?? [],
+                equipment: profile.equipment ?? [],
+                experienceLevel: profile.experience_level ?? null,
+                targetDaysPerWeek: profile.target_days_per_week ?? null,
+              }
+            : null,
+        }));
 
-      navigate('/app/dashboard'); // Redirect to dashboard after login
+        // Redirect based on actual onboarding status
+        if (isOnboarded) {
+          navigate('/app/dashboard', { replace: true });
+        } else {
+          navigate('/onboarding', { replace: true });
+        }
+      } catch {
+        // Profile fetch failed — go to dashboard (will be caught by route guard)
+        navigate('/app/dashboard', { replace: true });
+      }
     } catch (error: unknown) {
-      throw error; // Re-throw for the component to handle
+      throw error;
     } finally {
       setLoading(false);
     }
