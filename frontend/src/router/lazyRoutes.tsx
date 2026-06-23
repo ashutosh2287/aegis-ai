@@ -13,3 +13,8 @@ export const ActiveSessionPage = lazy(() => import('../pages/ActiveSessionPage')
 export const SessionSummaryPage = lazy(() => import('../pages/SessionSummaryPage'));
 export const ExerciseCatalogPage = lazy(() => import('../pages/ExerciseCatalogPage'));
 export const OnboardingPage = lazy(() => import('../pages/OnboardingPage'));
+export const AIChatPage = lazy(() => import('../pages/AIChatPage'));
+export const WorkoutGeneratorPage = lazy(() => import('../pages/WorkoutGeneratorPage'));
+export const NutritionPlannerPage = lazy(() => import('../pages/NutritionPlannerPage'));
+export const ProgressAnalysisPage = lazy(() => import('../pages/ProgressAnalysisPage'));
+export const AIInsightsPage = lazy(() => import('../pages/AIInsightsPage'));

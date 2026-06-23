@@ -1,13 +1,7 @@
 import api from './api';
 import type { Workout, WorkoutExercise } from './workout.types';
 
-export interface WorkoutExerciseWithExercise extends WorkoutExercise {
-  exercise?: {
-    id: string;
-    name: string;
-    muscleGroup?: string;
-  };
-}
+export type WorkoutExerciseWithExercise = WorkoutExercise;
 
 /**
  * Service for workout-related API calls

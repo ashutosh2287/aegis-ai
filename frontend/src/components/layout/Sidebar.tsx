@@ -7,10 +7,12 @@ import {
   FileText,
   Activity,
   Battery,
-  TrendingUp,
-  Target,
   LogOut,
   Dumbbell,
+  MessageCircle,
+  Apple,
+  LineChart,
+  Sparkles,
 } from 'lucide-react';
 
 export const Sidebar = () => {
@@ -134,27 +136,63 @@ export const Sidebar = () => {
           <p className="text-xs font-semibold text-aegis-muted uppercase">AI</p>
         </div>
         <NavLink
-          to="/app/insights"
+          to="/app/ai/chat"
           end
           className={({ isActive }) => `
             flex items-center px-3 py-2 text-sm font-medium rounded-md
             ${isActive ? 'bg-aegis-gold/10 text-aegis-gold' : 'text-aegis-muted hover:text-white hover:bg-white/5'}
           `}
         >
-          <TrendingUp className="mr-3 h-4 w-4" />
-          Insights
+          <MessageCircle className="mr-3 h-4 w-4" />
+          AI Coach
         </NavLink>
 
         <NavLink
-          to="/app/goals"
+          to="/app/ai/workout"
           end
           className={({ isActive }) => `
             flex items-center px-3 py-2 text-sm font-medium rounded-md
             ${isActive ? 'bg-aegis-gold/10 text-aegis-gold' : 'text-aegis-muted hover:text-white hover:bg-white/5'}
           `}
         >
-          <Target className="mr-3 h-4 w-4" />
-          Goals
+          <Dumbbell className="mr-3 h-4 w-4" />
+          Workout Generator
+        </NavLink>
+
+        <NavLink
+          to="/app/ai/nutrition"
+          end
+          className={({ isActive }) => `
+            flex items-center px-3 py-2 text-sm font-medium rounded-md
+            ${isActive ? 'bg-aegis-gold/10 text-aegis-gold' : 'text-aegis-muted hover:text-white hover:bg-white/5'}
+          `}
+        >
+          <Apple className="mr-3 h-4 w-4" />
+          Nutrition Planner
+        </NavLink>
+
+        <NavLink
+          to="/app/ai/analysis"
+          end
+          className={({ isActive }) => `
+            flex items-center px-3 py-2 text-sm font-medium rounded-md
+            ${isActive ? 'bg-aegis-gold/10 text-aegis-gold' : 'text-aegis-muted hover:text-white hover:bg-white/5'}
+          `}
+        >
+          <LineChart className="mr-3 h-4 w-4" />
+          Progress Analysis
+        </NavLink>
+
+        <NavLink
+          to="/app/ai/insights"
+          end
+          className={({ isActive }) => `
+            flex items-center px-3 py-2 text-sm font-medium rounded-md
+            ${isActive ? 'bg-aegis-gold/10 text-aegis-gold' : 'text-aegis-muted hover:text-white hover:bg-white/5'}
+          `}
+        >
+          <Sparkles className="mr-3 h-4 w-4" />
+          AI Insights
         </NavLink>
       </nav>
 

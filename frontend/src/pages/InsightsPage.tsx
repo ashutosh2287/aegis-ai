@@ -9,7 +9,6 @@ import {
   Lightbulb,
   Trophy,
   Zap,
-  BarChart3,
   Dumbbell,
 } from 'lucide-react';
 import { useComparativeAnalytics, usePlateauDetection, useRecommendations, usePersonalRecords } from '../hooks/useAnalytics';
@@ -22,7 +21,7 @@ const containerVariants = {
 
 const cardVariants = {
   hidden: { opacity: 0, y: 12 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.3, ease: [0.16, 1, 0.3, 1] } },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.3, ease: [0.16, 1, 0.3, 1] as const } },
 };
 
 interface Insight {

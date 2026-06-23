@@ -3,7 +3,7 @@ import {
   Menu,
   Activity,
   BarChart2,
-  TrendingUp,
+  MessageCircle,
   User,
 } from 'lucide-react';
 
@@ -47,15 +47,15 @@ export const MobileNav = () => {
       </NavLink>
 
       <NavLink
-        to="/app/insights"
+        to="/app/ai/chat"
         end
         className={({ isActive }) => `
           flex flex-col items-center px-2 py-1 text-sm font-medium
           ${isActive ? 'text-aegis-gold' : 'text-aegis-muted'}
         `}
       >
-        <TrendingUp className="h-4 w-4 mb-1" />
-        Insights
+        <MessageCircle className="h-4 w-4 mb-1" />
+        AI Coach
       </NavLink>
 
       <NavLink

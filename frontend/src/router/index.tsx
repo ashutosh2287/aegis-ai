@@ -18,6 +18,11 @@ import {
   SessionSummaryPage,
   ExerciseCatalogPage,
   OnboardingPage,
+  AIChatPage,
+  WorkoutGeneratorPage,
+  NutritionPlannerPage,
+  ProgressAnalysisPage,
+  AIInsightsPage,
 } from './lazyRoutes';
 
 const router = createBrowserRouter([
@@ -63,6 +68,11 @@ const router = createBrowserRouter([
       { path: 'exercises', element: <SuspenseWrapper><ExerciseCatalogPage /></SuspenseWrapper> },
       { path: 'session/:sessionId', element: <SuspenseWrapper><ActiveSessionPage /></SuspenseWrapper> },
       { path: 'session-summary/:sessionId', element: <SuspenseWrapper><SessionSummaryPage /></SuspenseWrapper> },
+      { path: 'ai/chat', element: <SuspenseWrapper><AIChatPage /></SuspenseWrapper> },
+      { path: 'ai/workout', element: <SuspenseWrapper><WorkoutGeneratorPage /></SuspenseWrapper> },
+      { path: 'ai/nutrition', element: <SuspenseWrapper><NutritionPlannerPage /></SuspenseWrapper> },
+      { path: 'ai/analysis', element: <SuspenseWrapper><ProgressAnalysisPage /></SuspenseWrapper> },
+      { path: 'ai/insights', element: <SuspenseWrapper><AIInsightsPage /></SuspenseWrapper> },
     ],
   },
 ]);

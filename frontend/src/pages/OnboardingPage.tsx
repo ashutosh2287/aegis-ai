@@ -11,11 +11,10 @@ import {
   Trophy,
   Zap,
   Mountain,
-  Gauge,
   Scale,
 } from 'lucide-react';
 import { useAuthStore } from '../store/authStore';
-import { onboardingService, type OnboardingData } from '../lib/onboarding.service';
+import { onboardingService } from '../lib/onboarding.service';
 import { ExperienceLevel, WeightUnit } from '../lib/goals.types';
 
 const TOTAL_STEPS = 5;
@@ -155,7 +154,6 @@ function WeightPicker({
 }) {
   const containerRef = useRef<HTMLDivElement>(null);
   const itemHeight = 48;
-  const visibleCount = 5;
   const min = unit === WeightUnit.METRIC ? 30 : 66;
   const max = unit === WeightUnit.METRIC ? 200 : 440;
   const values = Array.from({ length: max - min + 1 }, (_, i) => min + i);

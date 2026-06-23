@@ -1,31 +1,6 @@
 import { useDashboard } from '../../hooks/useDashboard';
 import { DashboardSectionError } from './DashboardSectionError';
 
-interface ChartTooltipProps {
-  active?: boolean;
-  payload?: Array<{ value: number }>;
-  label?: string;
-}
-
-const ChartTooltip = ({ active, payload, label }: ChartTooltipProps) => {
-  if (!active || !payload?.length) return null;
-
-  return (
-    <div className="bg-aegis-charcoal border border-aegis-border rounded-lg shadow-lg px-3 py-2">
-      <p className="text-xs text-aegis-muted">{label}</p>
-      <p className="text-sm font-semibold text-white">
-        {payload[0].value.toLocaleString()} kg
-      </p>
-    </div>
-  );
-};
-
-const getWeeksAgo = (weeks: number) => {
-  const date = new Date();
-  date.setDate(date.getDate() - weeks * 7);
-  return date.toISOString().split('T')[0];
-};
-
 export const StrengthProgressWidget = () => {
   const { dashboard } = useDashboard();
 
